@@ -1,0 +1,36 @@
+{
+  "receipt_number": "TB-20261107-003",
+  "sold_at": "2026-11-07T12:52:00-05:00",
+  "channel_id": "in_store",
+  "status": "completed",
+  "currency": "USD",
+  "subtotal": "25.50",
+  "discount": "0.00",
+  "tax": "2.04",
+  "tip": "0.00",
+  "total": "27.54",
+  "items": [
+    {
+      "description": "Classic Burger",
+      "dish_id": "classic_burger",
+      "quantity": "1",
+      "unit_price": "12.00",
+      "gross_amount": "12.00",
+      "discount_amount": "0.00",
+      "net_amount": "12.00",
+      "source_page": 1,
+      "source_text": "1 x Classic Burger @ $12.00 = $12.00"
+    },
+    {
+      "description": "Mushroom Swiss Burger",
+      "dish_id": null,
+      "quantity": "1",
+      "unit_price": "13.50",
+      "gross_amount": "13.50",
+      "discount_amount": "0.00",
+      "net_amount": "13.50",
+      "source_page": 1,
+      "source_text": "1 x Mushroom Swiss Burger @ $13.50 = $13.50"
+    }
+  ]
+}

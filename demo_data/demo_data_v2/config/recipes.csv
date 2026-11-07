@@ -1,0 +1,11 @@
+dish_id,ingredient_id,quantity,unit
+classic_burger,beef,0.5,lb
+classic_burger,bun,1,each
+classic_burger,produce,1,each
+cheeseburger,beef,0.5,lb
+cheeseburger,bun,1,each
+cheeseburger,produce,1,each
+cheeseburger,cheese,1,each
+veggie_burger,veggie_patty,1,each
+veggie_burger,bun,1,each
+veggie_burger,produce,1,each

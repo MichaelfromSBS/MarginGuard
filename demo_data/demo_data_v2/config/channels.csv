@@ -1,0 +1,3 @@
+channel_id,name,fee_rate,packaging_cost
+in_store,In-store,0.00,0.00
+delivery,Delivery (fictional fee assumption),0.30,0.60

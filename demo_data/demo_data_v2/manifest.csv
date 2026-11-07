@@ -1,0 +1,19 @@
+file,document_type,business_id,category,expected_state,expected_amounts,purpose
+history/invoices/RF-20260915-001.pdf,invoice,RF-20260915-001,history,completed,total 2392.80,baseline prices
+history/invoices/RF-20260922-001.pdf,invoice,RF-20260922-001,history,completed,total 2392.80,baseline prices
+history/invoices/RF-20260929-001.pdf,invoice,RF-20260929-001,history,completed,total 2404.80,baseline prices
+history/invoices/RF-20261006-001.pdf,invoice,RF-20261006-001,history,completed,total 2425.80,baseline prices
+history/invoices/RF-20261013-001.pdf,invoice,RF-20261013-001,history,completed,total 2332.80,baseline prices
+history/invoices/RF-20261020-001.pdf,invoice,RF-20261020-001,history,completed,total 2392.80,baseline prices
+history/invoices/RF-20261027-001.pdf,invoice,RF-20261027-001,history,completed,total 2432.80,baseline prices
+history/invoices/RF-20261103-001.pdf,invoice,RF-20261103-001,history,completed,total 2312.80,baseline prices
+live_demo/1_receipt_TB-20261107-001.pdf,receipt,TB-20261107-001,live_demo,completed,subtotal 37.00; total 39.96,main sample receipt; partial day
+live_demo/2_invoice_RF-20261107-004.pdf,invoice,RF-20261107-004,live_demo,completed,total 94.40; beef 4.72/lb,main beef increase (+18%)
+live_demo/3_receipt_TB-20261107-002_photo.png,receipt,TB-20261107-002,live_demo,completed,subtotal 23.00; total 24.84,image input; delivery
+edge_cases/E1_duplicate_bytes_TB-20261107-001.pdf,receipt,TB-20261107-001,edge_case,duplicate (no new records),none,exact byte copy of live receipt 1
+edge_cases/E2_conflicting_RF-20261107-004.pdf,invoice,RF-20261107-004,edge_case,needs_review,total 104.40 vs approved 94.40,"same vendor+number, different total"
+edge_cases/E3_pack_size_change_RF-20261107-005.pdf,invoice,RF-20261107-005,edge_case,completed (no price alert),total 94.40; beef 4.72/lb,"20-lb case: case price doubles, $/lb unchanged"
+edge_cases/E4_needs_review_APC-20261107-01.pdf,invoice,APC-20261107-01,edge_case,needs_review,total 83.20,unknown item (ingredient_id null) + beef case weight omitted
+edge_cases/E4b_unknown_dish_TB-20261107-003.pdf,receipt,TB-20261107-003,edge_case,needs_review,subtotal 25.50,unknown dish (dish_id null)
+edge_cases/E5_late_arrival_RF-20261030-002.pdf,invoice,RF-20261030-002,edge_case,completed (history only),total 82.00; beef 4.10/lb effective 2026-10-30,older invoice processed after newer one; current price stays 4.72
+history/coverage.csv (2026-11-07 rows),coverage,2026-11-07,edge_case,partial / unknown,n/a,"partial day: in_store partial, delivery unknown; no low-sales alert"

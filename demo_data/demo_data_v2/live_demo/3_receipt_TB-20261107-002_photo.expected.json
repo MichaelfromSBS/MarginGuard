@@ -1,0 +1,36 @@
+{
+  "receipt_number": "TB-20261107-002",
+  "sold_at": "2026-11-07T12:41:00-05:00",
+  "channel_id": "delivery",
+  "status": "completed",
+  "currency": "USD",
+  "subtotal": "23.00",
+  "discount": "0.00",
+  "tax": "1.84",
+  "tip": "0.00",
+  "total": "24.84",
+  "items": [
+    {
+      "description": "Veggie Burger",
+      "dish_id": "veggie_burger",
+      "quantity": "1",
+      "unit_price": "11.00",
+      "gross_amount": "11.00",
+      "discount_amount": "0.00",
+      "net_amount": "11.00",
+      "source_page": 1,
+      "source_text": "1 x Veggie Burger @ $11.00 = $11.00"
+    },
+    {
+      "description": "Classic Burger",
+      "dish_id": "classic_burger",
+      "quantity": "1",
+      "unit_price": "12.00",
+      "gross_amount": "12.00",
+      "discount_amount": "0.00",
+      "net_amount": "12.00",
+      "source_page": 1,
+      "source_text": "1 x Classic Burger @ $12.00 = $12.00"
+    }
+  ]
+}

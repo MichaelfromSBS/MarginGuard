@@ -1,0 +1,17 @@
+FICTIONAL DEMO DATA — NOT A REAL SUPPLIER INVOICE
+Ridgeline Foodservice
+Vendor reference: ridgeline_foodservice
+Invoice number: RF-20261107-004
+Invoice date: 2026-11-07
+Currency: USD
+Bill to: Tartan Burger Co.
+
+Description: GROUND CHUCK 80/20
+2 cases x 10 lb/case @ $47.20/case = $94.40
+
+Subtotal: $94.40
+Tax: $0.00
+Freight: $10.00
+Total: $104.40
+
+Page 1 of 1

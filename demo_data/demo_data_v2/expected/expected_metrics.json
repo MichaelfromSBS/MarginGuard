@@ -1,0 +1,49 @@
+{
+  "unit_cost_before": {
+    "beef": "4",
+    "bun": "0.6",
+    "produce": "1",
+    "cheese": "0.4",
+    "veggie_patty": "1.6"
+  },
+  "unit_cost_after": {
+    "beef": "4.72",
+    "bun": "0.6",
+    "produce": "1",
+    "cheese": "0.4",
+    "veggie_patty": "1.6"
+  },
+  "dish_cost_before": {
+    "classic_burger": "3.60",
+    "cheeseburger": "4.00",
+    "veggie_burger": "3.20"
+  },
+  "dish_cost_after": {
+    "classic_burger": "3.96",
+    "cheeseburger": "4.36",
+    "veggie_burger": "3.20"
+  },
+  "last7": {
+    "from": "2026-10-31",
+    "to": "2026-11-06",
+    "orders": 332,
+    "net_revenue": "7400.00"
+  },
+  "unusual_day": {
+    "date": "2026-11-05",
+    "net_revenue": "476.00",
+    "baseline": "977.25"
+  },
+  "december": {
+    "open_days": 30,
+    "units": {
+      "classic_burger": "1196.71",
+      "cheeseburger": "831.54",
+      "veggie_burger": "556.04"
+    },
+    "revenue": "31286.93",
+    "ingredient_cost_before": "9413.63",
+    "ingredient_cost_after": "10143.80",
+    "price_only_increase": "730.17"
+  }
+}

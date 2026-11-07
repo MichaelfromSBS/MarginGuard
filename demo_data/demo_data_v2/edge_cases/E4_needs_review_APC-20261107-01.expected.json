@@ -1,0 +1,37 @@
+{
+  "vendor_id": null,
+  "vendor_name": "Allegheny Produce Co.",
+  "invoice_number": "APC-20261107-01",
+  "invoice_date": "2026-11-07",
+  "currency": "USD",
+  "subtotal": "83.20",
+  "tax": "0.00",
+  "freight": "0.00",
+  "total": "83.20",
+  "items": [
+    {
+      "description": "MICROGREENS MIX",
+      "ingredient_id": null,
+      "quantity": "2",
+      "purchase_unit": "each",
+      "pack_size": null,
+      "pack_unit": null,
+      "unit_price": "18.00",
+      "line_total": "36.00",
+      "source_page": 1,
+      "source_text": "2 each @ $18.00/each = $36.00"
+    },
+    {
+      "description": "GROUND CHUCK 80/20",
+      "ingredient_id": "beef",
+      "quantity": "1",
+      "purchase_unit": "case",
+      "pack_size": null,
+      "pack_unit": null,
+      "unit_price": "47.20",
+      "line_total": "47.20",
+      "source_page": 1,
+      "source_text": "1 case @ $47.20/case = $47.20"
+    }
+  ]
+}

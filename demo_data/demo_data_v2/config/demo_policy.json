@@ -1,0 +1,24 @@
+{
+  "restaurant": "Tartan Burger Co.",
+  "timezone": "America/New_York",
+  "currency": "USD",
+  "illustrative_tax_rate": "0.08",
+  "tax_rounding": "per receipt, half-up to cents",
+  "ingredient_price_increase_alert_pct": "10",
+  "projected_cost_increase_alert": {
+    "pct": "5",
+    "or_usd": "250"
+  },
+  "unusual_sales_day_alert_pct": "30",
+  "unusual_sales_baseline": "mean net revenue of previous 4 same weekdays with complete coverage in both channels",
+  "forecast": {
+    "method": "weekday average of units by dish and channel",
+    "history_weeks": 8,
+    "uses_only": "date/channel pairs with status complete",
+    "scenarios_pct": {
+      "low": "-15",
+      "high": "15"
+    }
+  },
+  "note": "Fictional demo policies, not restaurant standards or tax claims."
+}

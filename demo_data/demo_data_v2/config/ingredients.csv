@@ -1,0 +1,6 @@
+ingredient_id,name,base_unit,aliases_json
+beef,Ground beef 80/20,lb,"[""GROUND CHUCK 80/20"", ""ground chuck"", ""ground beef""]"
+bun,Burger bun,each,"[""BURGER BUN"", ""brioche bun""]"
+produce,Burger produce portion,each,"[""BURGER PRODUCE PORTION"", ""lettuce tomato portion""]"
+cheese,Cheese slice,each,"[""CHEESE SLICE"", ""american cheese""]"
+veggie_patty,Veggie patty,each,"[""VEGGIE PATTY"", ""plant patty""]"

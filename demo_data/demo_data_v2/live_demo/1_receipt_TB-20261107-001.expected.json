@@ -1,0 +1,36 @@
+{
+  "receipt_number": "TB-20261107-001",
+  "sold_at": "2026-11-07T12:30:00-05:00",
+  "channel_id": "in_store",
+  "status": "completed",
+  "currency": "USD",
+  "subtotal": "37.00",
+  "discount": "0.00",
+  "tax": "2.96",
+  "tip": "0.00",
+  "total": "39.96",
+  "items": [
+    {
+      "description": "Classic Burger",
+      "dish_id": "classic_burger",
+      "quantity": "2",
+      "unit_price": "12.00",
+      "gross_amount": "24.00",
+      "discount_amount": "0.00",
+      "net_amount": "24.00",
+      "source_page": 1,
+      "source_text": "2 x Classic Burger @ $12.00 = $24.00"
+    },
+    {
+      "description": "Cheeseburger",
+      "dish_id": "cheeseburger",
+      "quantity": "1",
+      "unit_price": "13.00",
+      "gross_amount": "13.00",
+      "discount_amount": "0.00",
+      "net_amount": "13.00",
+      "source_page": 1,
+      "source_text": "1 x Cheeseburger @ $13.00 = $13.00"
+    }
+  ]
+}

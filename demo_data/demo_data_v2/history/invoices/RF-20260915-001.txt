@@ -1,0 +1,29 @@
+FICTIONAL DEMO DATA — NOT A REAL SUPPLIER INVOICE
+Ridgeline Foodservice
+Vendor reference: ridgeline_foodservice
+Invoice number: RF-20260915-001
+Invoice date: 2026-09-15
+Currency: USD
+Bill to: Tartan Burger Co.
+
+Description: GROUND CHUCK 80/20
+26 cases x 10 lb/case @ $40.00/case = $1040.00
+
+Description: BURGER BUN
+13 cases x 48 each/case @ $28.80/case = $374.40
+
+Description: BURGER PRODUCE PORTION
+620 each @ $1.00/each = $620.00
+
+Description: CHEESE SLICE
+2 cases x 160 each/case @ $64.00/case = $128.00
+
+Description: VEGGIE PATTY
+6 cases x 24 each/case @ $38.40/case = $230.40
+
+Subtotal: $2392.80
+Tax: $0.00
+Freight: $0.00
+Total: $2392.80
+
+Page 1 of 1

@@ -1,0 +1,7 @@
+dish_id,channel_id,price,effective_date
+classic_burger,in_store,12.00,2026-09-01
+classic_burger,delivery,12.00,2026-09-01
+cheeseburger,in_store,13.00,2026-09-01
+cheeseburger,delivery,13.00,2026-09-01
+veggie_burger,in_store,11.00,2026-09-01
+veggie_burger,delivery,11.00,2026-09-01

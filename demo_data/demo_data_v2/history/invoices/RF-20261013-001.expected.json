@@ -1,0 +1,73 @@
+{
+  "vendor_id": "ridgeline_foodservice",
+  "vendor_name": "Ridgeline Foodservice",
+  "invoice_number": "RF-20261013-001",
+  "invoice_date": "2026-10-13",
+  "currency": "USD",
+  "subtotal": "2332.80",
+  "tax": "0.00",
+  "freight": "0.00",
+  "total": "2332.80",
+  "items": [
+    {
+      "description": "GROUND CHUCK 80/20",
+      "ingredient_id": "beef",
+      "quantity": "24",
+      "purchase_unit": "case",
+      "pack_size": "10",
+      "pack_unit": "lb",
+      "unit_price": "40.00",
+      "line_total": "960.00",
+      "source_page": 1,
+      "source_text": "24 cases x 10 lb/case @ $40.00/case = $960.00"
+    },
+    {
+      "description": "BURGER BUN",
+      "ingredient_id": "bun",
+      "quantity": "13",
+      "purchase_unit": "case",
+      "pack_size": "48",
+      "pack_unit": "each",
+      "unit_price": "28.80",
+      "line_total": "374.40",
+      "source_page": 1,
+      "source_text": "13 cases x 48 each/case @ $28.80/case = $374.40"
+    },
+    {
+      "description": "BURGER PRODUCE PORTION",
+      "ingredient_id": "produce",
+      "quantity": "640",
+      "purchase_unit": "each",
+      "pack_size": null,
+      "pack_unit": null,
+      "unit_price": "1.00",
+      "line_total": "640.00",
+      "source_page": 1,
+      "source_text": "640 each @ $1.00/each = $640.00"
+    },
+    {
+      "description": "CHEESE SLICE",
+      "ingredient_id": "cheese",
+      "quantity": "2",
+      "purchase_unit": "case",
+      "pack_size": "160",
+      "pack_unit": "each",
+      "unit_price": "64.00",
+      "line_total": "128.00",
+      "source_page": 1,
+      "source_text": "2 cases x 160 each/case @ $64.00/case = $128.00"
+    },
+    {
+      "description": "VEGGIE PATTY",
+      "ingredient_id": "veggie_patty",
+      "quantity": "6",
+      "purchase_unit": "case",
+      "pack_size": "24",
+      "pack_unit": "each",
+      "unit_price": "38.40",
+      "line_total": "230.40",
+      "source_page": 1,
+      "source_text": "6 cases x 24 each/case @ $38.40/case = $230.40"
+    }
+  ]
+}

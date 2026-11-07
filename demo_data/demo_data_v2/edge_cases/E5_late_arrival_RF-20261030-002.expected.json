@@ -1,0 +1,25 @@
+{
+  "vendor_id": "ridgeline_foodservice",
+  "vendor_name": "Ridgeline Foodservice",
+  "invoice_number": "RF-20261030-002",
+  "invoice_date": "2026-10-30",
+  "currency": "USD",
+  "subtotal": "82.00",
+  "tax": "0.00",
+  "freight": "0.00",
+  "total": "82.00",
+  "items": [
+    {
+      "description": "GROUND CHUCK 80/20",
+      "ingredient_id": "beef",
+      "quantity": "2",
+      "purchase_unit": "case",
+      "pack_size": "10",
+      "pack_unit": "lb",
+      "unit_price": "41.00",
+      "line_total": "82.00",
+      "source_page": 1,
+      "source_text": "2 cases x 10 lb/case @ $41.00/case = $82.00"
+    }
+  ]
+}

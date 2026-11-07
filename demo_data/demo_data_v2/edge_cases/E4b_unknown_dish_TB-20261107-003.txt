@@ -1,0 +1,18 @@
+FICTIONAL DEMO DATA — NOT A REAL CUSTOMER RECEIPT
+Tartan Burger Co.
+Receipt number: TB-20261107-003
+Sold at: 2026-11-07T12:52:00-05:00 (America/New_York)
+Channel: in_store
+Status: completed
+Currency: USD
+
+1 x Classic Burger @ $12.00 = $12.00
+1 x Mushroom Swiss Burger @ $13.50 = $13.50
+
+Subtotal: $25.50
+Discount: $0.00
+Tax: $2.04
+Tip: $0.00
+Total: $27.54
+
+Page 1 of 1
