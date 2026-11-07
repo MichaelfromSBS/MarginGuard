@@ -45,7 +45,7 @@ def test_fixture_cannot_approve_expected_json_into_non_demo_restaurant(tmp_path)
     assert not settings.upload_directory.exists()
 
 
-@pytest.mark.parametrize("old_version", [1, 2])
+@pytest.mark.parametrize("old_version", [1, 2, 3])
 def test_current_schema_upgrades_previous_versions_without_reset(tmp_path, monkeypatch, old_version):
     migrations = tmp_path / "previous_schema"
     migrations.mkdir()

@@ -6,7 +6,7 @@ NOVA 2026 · Carnegie Mellon University · DoorDash Back of House track
 
 MarginGuard is being developed to maintain restaurant records automatically, connect ingredient-price changes to dish costs, project next month's sales and ingredient consumption, and explain significant changes through database-backed chat and evidence-linked alerts.
 
-**Current status:** checkpoints 1–3 and the teammate's restaurant frontend are integrated. Overview shows observed sales and modeled dish costs; Trends & Outlook shows price history, daily sales and next-month forecasts; Inbox handles uploads, extraction status, retries and original documents. Use Calculate/Recalculate forecast to refresh projections. The independent worker, automatic recomputation, anomaly alerts and business-data chat remain subsequent checkpoints. See [checkpoint 3](docs/checkpoint-3.md) for definitions and review commands.
+**Current status:** checkpoint 4 is implemented locally for review. The independent worker processes queued uploads and watched invoice/receipt folders, automatically refreshes forecasts, and creates evidence-based alerts inside the website. The bell, alert list and toasts use persistent new/acknowledged/resolved state. Notifications stay in the website. Database-backed owner chat remains checkpoint 5. See [checkpoint 4](docs/checkpoint-4.md) for run instructions; the teammate's frontend wording files are unchanged.
 
 ## Development progress
 
@@ -21,7 +21,7 @@ Last updated: **November 7, 2026**. API contract version: **1.0.0**.
 | Checkpoint 2: document ingestion | Implemented; pending team review | PDF/image upload, structured extraction, validation, review/retry, duplicate-safe persistence and explicit fixture import |
 | Checkpoint 3: metrics and forecasting | Implemented; pending team review | Sales/day/dish/channel summaries, effective recipe costs, completeness-aware next-month forecasts, sensitivity scenarios and held-out evaluation |
 | Restaurant frontend integration | Merged and verified | Overview, Trends & Outlook, Inbox and explicit future-chat notice; forecast calculation/freshness and mobile navigation checked |
-| Checkpoint 4: background processing and alerts | Planned | Persistent worker, automatic recalculation, measured anomalies and notification state |
+| Checkpoint 4: background processing and alerts | Implemented locally; pending review | Durable queue/claims, inbox watcher, automatic recalculation, measured findings, in-app notifications and acknowledgement |
 | Checkpoint 5: database-backed chat | Planned | Read-only metric tools, grounded answers and evidence references |
 
 See [the progress record](docs/progress.md) for commits, verification evidence and integration notes. Each checkpoint ends with a focused review before the next begins.
@@ -85,7 +85,7 @@ For the full v2 history, use a separate fresh database instead of the small seed
 
 Set `MARGINGUARD_DATABASE_PATH=data/demo-v2.db` in `.env` before starting the server. This is explicit pre-approved fixture import, makes no model calls, and refuses to mix with the checkpoint-1 seed. See [checkpoint 2 setup and review](docs/checkpoint-2.md).
 
-Start both services:
+Start the API, independent worker and frontend:
 
 ```bash
 npm run dev
@@ -95,13 +95,15 @@ npm run dev
 - [Interactive API documentation](http://127.0.0.1:8000/docs)
 - [API capabilities](http://127.0.0.1:8000/api/capabilities)
 
-Ctrl+C stops both services. Frontend edits reload automatically; restart after Python or `.env` changes. Ports 8000 and 5173 must be free. If PowerShell blocks `npm.ps1`, use `npm.cmd run dev`.
+Ctrl+C stops all three processes. Frontend edits reload automatically; restart after Python or `.env` changes. Ports 8000 and 5173 must be free. If PowerShell blocks `npm.ps1`, use `npm.cmd run dev`.
 
 For backend-only development with reload:
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
+For queued document processing and automatic analytics, also run `.\.venv\Scripts\python.exe -m backend.worker` in another terminal using the same database settings. API-only uploads remain queued without the worker. `/api/worker` reports runtime health independently of API availability. See [checkpoint 4](docs/checkpoint-4.md).
 
 ## Configuration
 
@@ -151,15 +153,18 @@ Environment variables override `.env`. Relative database paths resolve from the 
 | POST | `/api/forecasts/recalculate` | Calculate and persist a versioned next-calendar-month planning snapshot |
 | GET | `/api/forecasts` | Paginated saved snapshots with freshness status |
 | GET | `/api/forecasts/{run_id}` | Forecast details, daily/series values, ingredient requirements, scenarios and evaluation |
-| GET | `/api/alerts` | Persisted alerts; no anomaly detection runs at checkpoint 1 |
+| GET | `/api/alerts` | Persistent evidence-based findings and in-app notification state |
+| POST | `/api/alerts/{alert_id}/acknowledge` | Persist owner acknowledgement without changing financial facts |
+| POST | `/api/alerts/{alert_id}/resolve` | Mark a reviewed finding resolved, preserving evidence |
+| GET | `/api/worker` | Worker heartbeat, queue counts, new-alert count and safe processing errors |
 
 Money and quantities are decimal strings. List endpoints return `items`, `total`, `limit` and `offset`. Product errors use a versioned `error` object. A fresh database returns empty catalogs/lists and a typed restaurant-not-configured response until configured or explicitly seeded.
 
-Well-formed requests to reserved alert-acknowledgement and business-chat routes return **HTTP 501** until checkpoints 4–5. Checkpoint 3 calculations use Python and approved records, with no model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
+Well-formed requests to the reserved business-chat route return **HTTP 501** until checkpoint 5. Calculations use Python and approved records, with no model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
 
-Approved inputs immediately affect observed sales and effective recipe costs. They invalidate saved forecasts; use `POST /api/forecasts/recalculate` to refresh them at checkpoint 3. Automatic recalculation belongs to the independent checkpoint-4 worker. Forecasts distinguish ingredient consumption from purchases/actual profit and sensitivity scenarios from statistical prediction intervals.
+Approved inputs immediately affect observed sales and effective recipe costs. They invalidate saved forecasts; the worker automatically refreshes current projections. The explicit recalculation endpoint remains available. Forecasts distinguish ingredient consumption from purchases/actual profit and sensitivity scenarios from statistical prediction intervals.
 
-Uploads return HTTP 202; poll the document detail for `completed`, `needs_review` or `failed`. Exact-byte duplicates return the existing ID, while different bytes with an existing invoice/receipt business key enter review. Images are labeled as visual evidence, without claiming an independent OCR quote check. See [checkpoint 2](docs/checkpoint-2.md) for supported formats, limits, corrections, retry and offline examples.
+Uploads return HTTP 202 with a durable pending job; the independent worker advances document status. Poll for `completed`, `needs_review` or `failed`. Exact-byte duplicates return the existing ID, while different bytes with an existing invoice/receipt business key enter review. Images are labeled as visual evidence, without claiming an independent OCR quote check. See [checkpoint 2](docs/checkpoint-2.md) for formats/review and [checkpoint 4](docs/checkpoint-4.md) for queue/restart behavior.
 
 Authoritative handoff artifacts:
 
@@ -169,6 +174,7 @@ Authoritative handoff artifacts:
 - [Checkpoint 1 review checklist](docs/checkpoint-1.md)
 - [Checkpoint 2 upload/review checklist](docs/checkpoint-2.md)
 - [Checkpoint 3 calculation definitions and copyable test commands](docs/checkpoint-3.md)
+- [Checkpoint 4 worker, anomaly policies and in-app notification review](docs/checkpoint-4.md)
 
 ## Demo data and document generation
 
@@ -224,9 +230,13 @@ backend/
     ingestion.py             Upload state, approval, review and retry
     analytics.py             Observed sales, coverage and replacement recipe costs
     forecasting.py           Versioned weekday-average projections and evaluation
+    jobs.py                  Cross-process extraction claims and retry limits
+    detectors.py             Measured findings, evidence and in-app alert state
+    alert_explanations.py    Optional AI follow-up with deterministic fallback
     import_demo.py           Explicit validated full-history fixture importer
     fixture.py               Explicit offline single-document demonstration
     seed.py                  Opt-in fictional seed CLI
+  worker.py                  Independent inbox/queue/analytics/alert process
 frontend/src/
   App.tsx                    MarginGuard navigation and connection/alert state
   mg/                        Restaurant screens, API client and presentation helpers

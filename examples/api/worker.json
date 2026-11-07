@@ -1,0 +1,10 @@
+{
+  "status": "not_started",
+  "heartbeat_at": null,
+  "error_code": null,
+  "processing_mode": "worker",
+  "queued_documents": 0,
+  "processing_documents": 0,
+  "new_alerts": 0,
+  "watched_file_errors": 0
+}

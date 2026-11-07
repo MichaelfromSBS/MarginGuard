@@ -120,7 +120,7 @@ def test_invalid_upload_and_future_write_routes_do_not_persist_records(seeded_cl
     assert response.status_code == 415
     assert seeded_client.get("/api/documents").json()["total"] == count
     assert seeded_client.post("/api/chat", json={"question": "What were sales?"}).status_code == 501
-    assert seeded_client.post("/api/alerts/test/acknowledge").status_code == 501
+    assert seeded_client.post("/api/alerts/test/acknowledge").status_code == 404
     data = json.loads((ROOT / "examples/invoice.expected.json").read_text())
     assert seeded_client.post("/api/documents/test/review", json={"document_type": "invoice", "extraction": data}).status_code == 404
 
@@ -160,6 +160,6 @@ def test_contract_openapi_covers_multipart_and_future_success_shapes(seeded_clie
 def test_checkpoint_features_and_configuration_do_not_expose_credentials(tmp_path):
     with TestClient(create_app(Settings(_env_file=None, database_path=tmp_path / "key.db", openrouter_api_key="private-test-value"))) as client:
         features = client.get("/api/capabilities").json()
-        assert [f["name"] for f in features["capabilities"] if f["available"]] == ["catalog_and_seed_ledger", "document_ingestion", "metrics_and_forecasting"]
+        assert [f["name"] for f in features["capabilities"] if f["available"]] == ["catalog_and_seed_ledger", "document_ingestion", "metrics_and_forecasting", "background_processing_and_alerts"]
         assert "private-test-value" not in client.get("/api/health").text
         assert client.get("/api/health").json()["database"] == "ready"

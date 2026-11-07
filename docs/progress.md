@@ -17,6 +17,7 @@ Last updated: November 7, 2026. This record distinguishes implemented functional
 | 2026-11-07 | Gemini compatibility fix published | [`376042a`](https://github.com/MichaelfromSBS/nova-hackathon/commit/376042a): provider schema compatibility, preserved local item bounds and live extraction verification. |
 | 2026-11-07 | Checkpoint 3 implemented | [`8767d3c`](https://github.com/MichaelfromSBS/nova-hackathon/commit/8767d3c): observed sales, evidence-linked replacement recipe costs, audited coverage confirmation and versioned weekday-average forecasts. |
 | 2026-11-07 | Restaurant frontend integrated | Teammate frontend [`e89557b`](https://github.com/MichaelfromSBS/nova-hackathon/commit/e89557b) merged with checkpoint 3 in `0a5ee2b`, followed by integration fixes and verification below. |
+| 2026-11-07 | Checkpoint 4 implemented locally | Persistent worker, automatic forecasts, measured anomaly evidence and website-only notifications; pending team review/publication. |
 
 ## Checkpoint 1: completed implementation, pending team review
 
@@ -152,13 +153,43 @@ Integration fixes:
 
 Verification: **202 backend tests**, **7 frontend tests**, TypeScript and production build passed. Frontend regression tests cover discounted revenue/rounding, stale-total suppression and forecast readiness. An isolated real-browser check verified observed $7,400 sales, UI forecast calculation, invoice upload in mock mode followed by explicit manual review, stale suppression, recalculation to $10,143.80 ingredient cost, original PDF retrieval, the honest checkpoint-5 chat notice and navigation at 390px width. No JavaScript errors or page-level horizontal overflow were observed. Desktop/mobile screenshots were inspected. Browser review used a temporary database and no paid extraction; the user's database and `.env` were preserved.
 
+## Checkpoint 4: persistent worker and website-only notifications
+
+Implemented locally for team review:
+
+- `backend.worker` runs independently of browser/API requests. The development launcher starts API, worker and frontend together. `GET /api/worker` separates worker runtime health from API availability.
+- Uploads enqueue durable extraction jobs by default. The inbox scanner watches separate invoice/receipt folders, waits for stable files, shares the upload hash/validation path and preserves originals. The old explicit inline mode remains available for compatibility tests.
+- Migration 4 adds worker heartbeat/ownership, extraction job leases/backoff, file observations, saved version/date cursor and alert finding/revision/suggestion metadata. Migrations 1–3 remain immutable. Active claims fence review/retry/completion races; cancellation releases a claim, and expired interrupted jobs recover within the saved attempt budget.
+- Approved record/coverage versions and local-date changes trigger automatic current-forecast refresh. Cached policy/date/source versions prevent duplicate snapshots. No owner question or Calculate button is required.
+- Deterministic price-spike, fixed-demand projected-cost, recent-complete-day sales and data-quality checks persist measured facts and source references. Repacked/same-price and late older invoices do not create duplicate price/cost events. Data corrections update/resolve supported findings without modifying their source financial facts.
+- Stable alert IDs/revisions and new/acknowledged/resolved state power the existing website bell/toasts. Acknowledgement survives restarts. No external delivery implementation/configuration is included; the unused legacy notification-outbox table remains empty.
+- Optional AI follow-up is supplementary to the committed measured message. Provider/format/number-validation failures retain the deterministic suggestion, so an AI failure cannot erase the alert or change its numeric evidence.
+- Existing `.env` key/model/database values were preserved, and missing worker/inbox/AI-suggestion settings were added. Frontend wording/component files were not edited; only the shared TypeScript API contract changed.
+
+Recorded final verification:
+
+| Check | Result |
+| --- | --- |
+| Full backend suite | **220 passed**, one existing test-client deprecation warning |
+| Frontend tests / TypeScript / build | **7 passed**; production build and type checking passed |
+| Focused final worker suite | **17 passed**: queue, scanner stability, retries, lease fencing, cancellation/restart, evidence, correction and persistent in-app state |
+| Independent API + worker, actual model extraction | Watched main invoice completed with Gemini/OpenRouter; automatic December cost became $10,143.80, revenue $31,286.93; three measured alerts; duplicate ledger/alert prevention after an expired-lease restart; original bytes and SQLite integrity passed |
+| Final website-only browser check | Toast appeared without a prompt; bell count 1 → 3 → 2 after acknowledgement; automatic forecast showed $10,143.80; no JavaScript errors. Used isolated mock mode plus explicit validated fixture insertion to test the website/worker path without another paid call |
+| External notification boundary | No external owner messages sent; legacy external outbox remained empty in the final browser/database check |
+| Schema upgrade | Versions 1–3 upgrade to 4 preserving an existing row; checksummed migration behavior remains tested |
+| Contract handoff | OpenAPI, capabilities/worker/read examples and TypeScript contract updated; [checkpoint 4 guide](checkpoint-4.md) includes startup and review commands |
+
+Policy clarification: the agreed unusual-sales rule uses **units**: November 5 has 39 units against an 80.5-unit prior-weekday mean, down 51.55279503%. The fixture answer key's roughly 51.3% figure uses revenue. The default alert window covers seven finished dates and uses eight weeks for prior comparisons. October 14 unknown coverage and November 7 partial/current coverage are excluded; October 25 is outside the recent alert window.
+
+The worker remains a local single-database service, with explicit leases and bounded serial provider work. Chat tools and grounded owner answers remain checkpoint 5. Existing user databases were not reset; test processes/databases were isolated.
+
 ## Upcoming checkpoints
 
 | Checkpoint | Required outcome | State |
 | --- | --- | --- |
 | 2 | Invoice and receipt ingestion, schema/business validation, mapping, persistence and deduplication | Implemented; pending review |
 | 3 | Actual sales metrics, recipe economics, completeness-aware forecasts and evaluation | Implemented; frontend integrated and verified |
-| 4 | Independent worker, automatic recomputation, measured alerts and notification delivery state | Not started |
+| 4 | Independent worker, automatic recomputation, measured alerts and in-app notification state | Implemented locally; pending review/publication |
 | 5 | Read-only database tools, grounded owner chat and evidence-linked answers | Not started |
 
 For each checkpoint, record the implementation commit, validation commands/results, contract changes, known limitations and team review decision. Do not move a planned feature to complete based only on a schema or fixture.

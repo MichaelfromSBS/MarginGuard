@@ -1,4 +1,4 @@
-"""Launch both services without shell-specific environment activation."""
+"""Launch the API, independent worker and frontend without shell activation."""
 import os
 from pathlib import Path
 import shutil
@@ -37,9 +37,10 @@ def main():
             if time.monotonic() >= deadline:
                 raise SystemExit("The backend did not become ready within 15 seconds.")
             time.sleep(0.2)
+        processes.append(subprocess.Popen([str(PYTHON), "-m", "backend.worker"], cwd=ROOT))
         processes.append(subprocess.Popen([node, str(VITE), "--config", "vite.config.ts"], cwd=ROOT / "frontend"))
         print("\nNOVA: http://127.0.0.1:5173 | API docs: http://127.0.0.1:8000/docs", flush=True)
-        print("React edits reload automatically. Restart this command after backend or .env edits. Ctrl+C stops both services.", flush=True)
+        print("React edits reload automatically. Restart after backend or .env edits. Ctrl+C stops API, worker and frontend.", flush=True)
         while all(process.poll() is None for process in processes):
             time.sleep(0.25)
         failed = next(process.returncode for process in processes if process.returncode is not None)

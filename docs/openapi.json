@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MarginGuard API",
-    "description": "Checkpoint 2: validated document ingestion, review and read APIs. Forecasts, the independent worker, alerts and business chat remain later checkpoints. Monetary values and quantities are decimal strings.",
+    "description": "Checkpoint 4: durable document worker, metrics, automatic forecasts and evidence-based in-app alerts. No external owner notifications. Business chat remains checkpoint 5. Monetary values and quantities are decimal strings.",
     "version": "1.0.0"
   },
   "paths": {
@@ -1443,6 +1443,97 @@
         }
       }
     },
+    "/api/worker": {
+      "get": {
+        "tags": [
+          "MarginGuard v1"
+        ],
+        "summary": "Worker Health",
+        "operationId": "worker_health_api_worker_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkerStatus"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/documents/{document_id}/review": {
       "post": {
         "tags": [
@@ -2637,6 +2728,108 @@
         }
       }
     },
+    "/api/alerts/{alert_id}/resolve": {
+      "post": {
+        "tags": [
+          "MarginGuard v1"
+        ],
+        "summary": "Resolve Alert",
+        "operationId": "resolve_alert_api_alerts__alert_id__resolve_post",
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Alert Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alert"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        }
+      }
+    },
     "/api/chat": {
       "post": {
         "tags": [
@@ -2806,6 +2999,36 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "finding": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Finding"
+          },
+          "suggestion": {
+            "type": "string",
+            "title": "Suggestion",
+            "default": ""
+          },
+          "explanation_status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "ai",
+              "fallback"
+            ],
+            "title": "Explanation Status",
+            "default": "pending"
+          },
+          "calculation_version": {
+            "type": "string",
+            "title": "Calculation Version",
+            "default": "detectors_v1"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision",
+            "default": 1
           }
         },
         "additionalProperties": false,
@@ -2890,9 +3113,9 @@
           },
           "checkpoint": {
             "type": "integer",
-            "const": 3,
+            "const": 4,
             "title": "Checkpoint",
-            "default": 3
+            "default": 4
           },
           "capabilities": {
             "items": {
@@ -6390,6 +6613,80 @@
           "mean_units"
         ],
         "title": "WeekdayEstimate"
+      },
+      "WorkerStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "stopped",
+              "stale",
+              "not_started"
+            ],
+            "title": "Status"
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "processing_mode": {
+            "type": "string",
+            "enum": [
+              "worker",
+              "inline"
+            ],
+            "title": "Processing Mode"
+          },
+          "queued_documents": {
+            "type": "integer",
+            "title": "Queued Documents"
+          },
+          "processing_documents": {
+            "type": "integer",
+            "title": "Processing Documents"
+          },
+          "new_alerts": {
+            "type": "integer",
+            "title": "New Alerts"
+          },
+          "watched_file_errors": {
+            "type": "integer",
+            "title": "Watched File Errors"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "heartbeat_at",
+          "error_code",
+          "processing_mode",
+          "queued_documents",
+          "processing_documents",
+          "new_alerts",
+          "watched_file_errors"
+        ],
+        "title": "WorkerStatus"
       }
     }
   }

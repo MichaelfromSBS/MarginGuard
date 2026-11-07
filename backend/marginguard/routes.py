@@ -1,4 +1,4 @@
-"""Checkpoint 3 APIs: ingestion, observed metrics and persisted forecasts."""
+"""Checkpoint 4 APIs: durable ingestion, analytics, worker and alert delivery state."""
 import json
 import hashlib
 from datetime import date
@@ -12,11 +12,13 @@ from .db import connect
 from .errors import DomainError
 from . import ingestion
 from . import analytics, forecasting
+from .detectors import alert_payload
+from backend.worker import worker_status
 from .schemas import (
     API_VERSION, Alert, CapabilitiesResponse, CatalogResponse, ChatRequest,
     ChatResponse, Coverage, CoverageRequest, DashboardResponse, Document, DocumentDetail,
     DocumentStatus, DocumentType, ErrorResponse, ForecastResponse, IngredientPrice,
-    Invoice, Page, Receipt, Restaurant, ReviewRequest, ForecastRequest, SalesSummary, DishCost,
+    Invoice, Page, Receipt, Restaurant, ReviewRequest, ForecastRequest, SalesSummary, DishCost, WorkerStatus,
 )
 
 
@@ -48,8 +50,8 @@ def unavailable(checkpoint: int, feature: str):
 
 @router.get("/capabilities", response_model=CapabilitiesResponse)
 def capabilities():
-    return {"api_version": API_VERSION, "checkpoint": 3, "capabilities": [
-        {"name": name, "available": checkpoint <= 3, "checkpoint": checkpoint}
+    return {"api_version": API_VERSION, "checkpoint": 4, "capabilities": [
+        {"name": name, "available": checkpoint <= 4, "checkpoint": checkpoint}
         for name, checkpoint in [
             ("catalog_and_seed_ledger", 1), ("document_ingestion", 2),
             ("metrics_and_forecasting", 3), ("background_processing_and_alerts", 4),
@@ -168,9 +170,14 @@ def coverage(request: Request, limit: Limit = 50, offset: Offset = 0):
 def alerts(request: Request, limit: Limit = 50, offset: Offset = 0, status: Literal["new", "acknowledged", "resolved"] | None = None):
     with connection(request) as conn:
         page = page_query(conn, "alerts", limit, offset, "status=?" if status else "", (status,) if status else (), "created_at,id")
-        for item in page["items"]:
-            item["evidence"] = json.loads(item.pop("evidence_json"))
+        page["items"] = [alert_payload(item) for item in page["items"]]
         return page
+
+
+@router.get("/worker", response_model=WorkerStatus)
+def worker_health(request: Request):
+    with connection(request) as conn:
+        return worker_status(conn, request.app.state.settings)
 
 
 @router.post("/documents", response_model=Document, status_code=202)
@@ -183,7 +190,7 @@ async def upload_document(request: Request, background_tasks: BackgroundTasks, r
     finally:
         await file.close()
     response.headers["X-MarginGuard-Duplicate"] = "true" if duplicate else "false"
-    if not duplicate:
+    if not duplicate and request.app.state.settings.processing_mode == "inline":
         background_tasks.add_task(ingestion.process_document, request.app, doc["id"])
     return doc
 
@@ -196,7 +203,8 @@ def review_document(document_id: str, body: ReviewRequest, request: Request):
 @router.post("/documents/{document_id}/process", response_model=Document, status_code=202)
 def process_document(document_id: str, request: Request, background_tasks: BackgroundTasks):
     result = ingestion.queue_retry(request.app, document_id)
-    background_tasks.add_task(ingestion.process_document, request.app, document_id)
+    if request.app.state.settings.processing_mode == "inline":
+        background_tasks.add_task(ingestion.process_document, request.app, document_id)
     return result
 
 
@@ -250,9 +258,7 @@ def dashboard(request: Request, start: date | None = None, end: date | None = No
             warnings.append("The saved forecast is stale; recalculate it after approved data or coverage changes.")
         alerts = []
         for row in conn.execute("SELECT * FROM alerts ORDER BY created_at DESC,id DESC LIMIT 20"):
-            alert = dict(row)
-            alert["evidence"] = json.loads(alert.pop("evidence_json"))
-            alerts.append(alert)
+            alerts.append(alert_payload(row))
         return {"restaurant": owner, "as_of": summary["as_of"], "source_data_version": owner["data_version"],
                 "metrics": metrics, "forecast": forecast, "alerts": alerts, "limitations": warnings,
                 "sales": summary, "dish_costs": costs}
@@ -280,8 +286,24 @@ def forecast_detail(run_id: str, request: Request):
 
 
 @router.post("/alerts/{alert_id}/acknowledge", response_model=Alert)
-def acknowledge_alert(alert_id: str):
-    unavailable(4, "Alert acknowledgement")
+def acknowledge_alert(alert_id: str, request: Request):
+    return change_alert_status(request, alert_id, "acknowledged")
+
+
+@router.post("/alerts/{alert_id}/resolve", response_model=Alert)
+def resolve_alert(alert_id: str, request: Request):
+    return change_alert_status(request, alert_id, "resolved")
+
+
+def change_alert_status(request, alert_id, status):
+    with connection(request) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute("SELECT * FROM alerts WHERE id=?", (alert_id,)).fetchone()
+        if row is None:
+            raise DomainError("alert_not_found", "Alert does not exist.", 404)
+        if row["status"] != "resolved" and row["status"] != status:
+            conn.execute("UPDATE alerts SET status=?,updated_at=? WHERE id=?", (status, ingestion.now(), alert_id))
+        return alert_payload(conn.execute("SELECT * FROM alerts WHERE id=?", (alert_id,)).fetchone())
 
 
 @router.post("/chat", response_model=ChatResponse)

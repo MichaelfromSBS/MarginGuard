@@ -36,6 +36,7 @@ def main():
                 "invoices": "/api/invoices", "receipts": "/api/receipts",
                 "coverage": "/api/coverage", "ingredient-prices": "/api/ingredients/beef/prices",
                 "alerts": "/api/alerts", "capabilities": "/api/capabilities",
+                "worker": "/api/worker",
                 "sales": "/api/sales?as_of=2026-11-07",
                 "dish-cost": "/api/dishes/classic_burger/cost?as_of=2026-11-07",
                 "dashboard": "/api/dashboard?as_of=2026-11-07",

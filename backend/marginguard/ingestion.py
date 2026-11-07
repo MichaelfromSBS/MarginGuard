@@ -200,8 +200,13 @@ def approve_extraction(conn, doc_id, extraction, source_pages, *, image=False, m
     return document_payload(conn.execute("SELECT * FROM documents WHERE id=?", (doc_id,)).fetchone(), detail=True)
 
 
-def mark_problem(database, document_id, code, message, *, review=False):
+def mark_problem(database, document_id, code, message, *, review=False, token=None):
     with connect(database) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        if token:
+            from .jobs import owns_claim
+            if not owns_claim(conn, token):
+                return
         stamp = now()
         issues = [{"code": code, "message": message, "item_index": None}]
         conn.execute("UPDATE documents SET status=?,updated_at=?,error_code=?,error_message=?,validation_issues_json=? WHERE id=?",
@@ -210,21 +215,31 @@ def mark_problem(database, document_id, code, message, *, review=False):
 
 
 async def process_document(app, document_id: str):
-    """Request-process background task; bounded, serialized, and manually resumable."""
+    """Shared worker/explicit-inline processor, fenced by a durable job lease."""
+    from .jobs import claim_document, owns_claim, release_claim, retry_transient
     if document_id in app.state.active_documents:
         return
     app.state.active_documents.add(document_id)
     settings = app.state.settings
+    claim = None
+
+    def failure(code, message, review=False):
+        if claim is None:
+            return
+        mark_problem(settings.database_path, document_id, code, message, review=review, token=claim["token"])
+        if settings.processing_mode == "worker":
+            with connect(settings.database_path) as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                retry_transient(conn, claim, settings.extraction_max_attempts, code)
+
     try:
         async with app.state.ai_lock:
             with connect(settings.database_path) as conn:
                 conn.execute("BEGIN IMMEDIATE")
-                row = conn.execute("SELECT * FROM documents WHERE id=?", (document_id,)).fetchone()
-                if row is None or row["status"] != "detected":
+                claim = claim_document(conn, document_id, settings.ai_timeout_seconds, settings.extraction_max_attempts)
+                if claim is None:
                     return
-                stored = dict(row)
-                conn.execute("UPDATE documents SET status='processing',updated_at=? WHERE id=?", (now(), document_id))
-                conn.execute("UPDATE processing_jobs SET status='processing',attempts=attempts+1,updated_at=? WHERE document_id=? AND status='pending'", (now(), document_id))
+                stored = claim["document"]
                 owner = restaurant_record(conn)
                 catalog = extraction_catalog(conn)
             path = Path(stored["storage_path"])
@@ -235,6 +250,9 @@ async def process_document(app, document_id: str):
                 raise DomainError("source_integrity_failed", "The stored source bytes no longer match the uploaded document hash.", 409)
             prepared = await asyncio.to_thread(read_document, data, stored["media_type"])
             with connect(settings.database_path) as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                if not owns_claim(conn, claim["token"]):
+                    return
                 conn.execute("UPDATE documents SET source_text=?,page_count=?,evidence_mode=? WHERE id=?",
                              (prepared.source_text, prepared.page_count, "visual" if prepared.image_data_url else "text", document_id))
                 conn.execute("DELETE FROM document_pages WHERE document_id=?", (document_id,))
@@ -244,18 +262,23 @@ async def process_document(app, document_id: str):
                 extraction = await app.state.document_extractor(app.state.client, settings, stored["type"], prepared, catalog, owner["timezone"])
             with connect(settings.database_path) as conn:
                 conn.execute("BEGIN IMMEDIATE")
-                approve_extraction(conn, document_id, extraction, prepared.page_texts, image=bool(prepared.image_data_url))
+                if owns_claim(conn, claim["token"]):
+                    approve_extraction(conn, document_id, extraction, prepared.page_texts, image=bool(prepared.image_data_url))
     except DocumentReadError as exc:
-        mark_problem(settings.database_path, document_id, exc.code, exc.message, review=exc.needs_review)
+        failure(exc.code, exc.message, review=exc.needs_review)
     except ExtractionError as exc:
-        mark_problem(settings.database_path, document_id, exc.code, exc.message)
+        failure(exc.code, exc.message)
     except (TimeoutError, asyncio.TimeoutError):
-        mark_problem(settings.database_path, document_id, "extraction_timeout", "Document extraction exceeded the total time limit.")
+        failure("extraction_timeout", "Document extraction exceeded the total time limit.")
     except DomainError as exc:
-        mark_problem(settings.database_path, document_id, exc.code, exc.message)
+        failure(exc.code, exc.message)
     except (OSError, sqlite3.Error, ValueError, KeyError, TypeError):
-        mark_problem(settings.database_path, document_id, "processing_failed", "The document could not be processed. Inspect its source and retry or submit a correction.")
+        failure("processing_failed", "The document could not be processed. Inspect its source and retry or submit a correction.")
     finally:
+        if claim:
+            with connect(settings.database_path) as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                release_claim(conn, claim["token"])
         app.state.active_documents.discard(document_id)
 
 
@@ -265,6 +288,9 @@ def queue_retry(app, document_id):
     settings = app.state.settings
     with connect(settings.database_path) as conn:
         conn.execute("BEGIN IMMEDIATE")
+        from .jobs import active_claim
+        if active_claim(conn, document_id):
+            raise DomainError("document_busy", "This document has an active processing lease. Wait for it to finish or expire.", 409)
         row = conn.execute("SELECT * FROM documents WHERE id=?", (document_id,)).fetchone()
         if not row:
             raise DomainError("document_not_found", "Document does not exist.", 404)
@@ -285,6 +311,9 @@ def review_document(app, document_id, extraction, note):
         raise DomainError("document_busy", "Wait for processing to finish before reviewing this document.", 409)
     with connect(app.state.database_path) as conn:
         conn.execute("BEGIN IMMEDIATE")
+        from .jobs import active_claim
+        if active_claim(conn, document_id):
+            raise DomainError("document_busy", "Wait for the active extraction lease before reviewing this document.", 409)
         row = conn.execute("SELECT * FROM documents WHERE id=?", (document_id,)).fetchone()
         if row is None:
             raise DomainError("document_not_found", "Document does not exist.", 404)

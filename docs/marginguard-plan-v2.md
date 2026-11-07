@@ -2,7 +2,7 @@
 
 NOVA 2026 · DoorDash Back of House · Team requirements revision · November 7, 2026
 
-This supersedes the narrower invoice-only plan in `marginguard-plan.md`. It is a project plan; see [progress.md](progress.md) for implementation status. The backend now implements checkpoints 1–3 and is integrated with the teammate's restaurant frontend. Automatic monitoring and database-backed chat remain later checkpoints.
+This supersedes the narrower invoice-only plan in `marginguard-plan.md`. It is a project plan; see [progress.md](progress.md) for implementation status. The backend implements checkpoints 1–4 and is integrated with the teammate's restaurant frontend. Notifications stay inside the website, per the team's revised scope. Database-backed chat remains checkpoint 5.
 
 ## Product and five required capabilities
 
@@ -14,7 +14,7 @@ This supersedes the narrower invoice-only plan in `marginguard-plan.md`. It is a
 | Customer receipts → sales, revenue and next-month sales | Extract completed sales and items; aggregate by date/dish/channel; calculate a demand baseline | Actual units and net item revenue; next-month units and revenue projection |
 | Owner asks questions | Model selects validated read-only metric tools; Python queries and calculates; model explains returned results | Answer cards with period, coverage, source references and assumptions |
 | Owner does not ask | Persistent worker processes newly uploaded/dropped files and updates derived state | Dashboard updates automatically; ingestion continues with the browser closed |
-| Abnormalities trigger alerts | Python generates measurable findings; AI explains evidence and possible follow-up | Persistent in-app alert plus one external notification channel |
+| Abnormalities trigger alerts | Python generates measurable findings; AI optionally suggests follow-up | Persistent in-app alert, bell count, toasts and acknowledgement |
 
 The owner does not need to start a chat to trigger processing. The model is not the financial calculator or an independent source of sales forecasts.
 
@@ -28,7 +28,7 @@ All five capabilities above are in scope. Keep each narrow:
 - One transparent sales forecasting method, not an LLM prediction or a large ML system.
 - A few database-backed chat intents rather than arbitrary SQL or arbitrary business tasks.
 - Four initial alert types rather than unrestricted anomaly claims.
-- In-app notifications plus a Discord webhook for the external notification demonstration. If the webhook is unavailable, the in-app alert remains visible; do not claim a phone notification was delivered.
+- In-app notifications only: persistent findings, a bell count and toasts. No external owner-message delivery is in scope.
 
 Defer payout reconciliation, live POS/platform/email integrations, actual inventory accounting, staffing, automatic repricing, outgoing supplier messages and a general-purpose autonomous agent. Supplier drafts and the previous price what-if screen become optional after the team's five requirements work.
 
@@ -170,7 +170,7 @@ Run price checks immediately on approved invoices. Evaluate complete-day sales a
 
 Each alert contains type, severity, event time, period, measured change, comparison basis, source references, calculation version and a suggested investigation. AI may explain plausible causes but must distinguish a hypothesis from a measured fact. A sales drop is not proof of why customers bought less; a supplier price rise is not proof of an invoice error.
 
-Persist New / Acknowledged / Resolved states. Update the existing alert when its evidence changes; do not create another alert on every dashboard refresh. Use event keys and a persisted notification outbox. A committed alert survives model-wording or webhook failure; deterministic wording is the fallback. Track attempted/sent/failed notification status and bound retries. Do not promise exactly-once webhook delivery.
+Persist New / Acknowledged / Resolved states. Update the existing alert when its evidence changes; do not create another alert on every dashboard refresh. Stable event keys identify findings. The alert feed powers the website's bell and toasts; the persisted finding survives model-wording failure or a closed browser. Deterministic wording is the fallback. Acknowledgement changes notification state, not the underlying financial facts.
 
 ## Architecture and data model
 
@@ -189,7 +189,7 @@ Dashboard uploads / watched invoice and receipt folders
                          ↓
     Forecast snapshots + anomaly/event detection
                   ↙                    ↘
-    Dashboard and chat tools       Alerts + notification outbox
+    Dashboard and chat tools       In-app alert feed + bell/toasts
 ```
 
 Do model calls outside database write transactions. Use short transactions for approved ledger updates and durable recomputation jobs. Derived results carry a source data version; never present an old forecast as current after a newer import. The worker resumes pending jobs after restart, persists import deduplication, and does not depend on an open browser session.
@@ -203,9 +203,9 @@ Do model calls outside database write transactions. Use short transactions for a
 | receipts / receipt_items | unique order key, local date, status, dish mapping and reconciled amounts |
 | daily_coverage / daily_sales | date/channel completeness and derived approved aggregates |
 | forecast_runs / forecast_values | horizon, method, source version, assumptions, projected units/revenue/ingredient costs |
-| alerts / notification_outbox | event key, findings, evidence, acknowledgement and delivery state |
+| alerts | event key, findings, evidence, revision and in-app acknowledgement state |
 
-Suggested modules: `ingestion.py`, `extraction.py`, `db.py`, `economics.py`, `forecasting.py`, `chat_tools.py`, `detectors.py`, `notifications.py`, plus `backend/worker.py`. Both document routes share queue, validation, provenance and deduplication infrastructure.
+Modules include `ingestion.py`, `extraction.py`, `db.py`, `analytics.py`, `forecasting.py`, `detectors.py`, `alert_explanations.py`, plus `backend/worker.py`; `chat_tools.py` remains planned. Both document routes share queue, validation, provenance and deduplication infrastructure.
 
 Suggested API contracts:
 
@@ -227,7 +227,7 @@ Four compact views are enough:
 3. **Trends and outlook:** ingredient prices, complete-day sales, next-month demand/revenue/ingredient requirement and sensitivity scenarios.
 4. **Ask MarginGuard:** questions and source-linked metric cards; the relevant alert can open directly into its evidence.
 
-Include last updated time, data coverage and source links in context. In-app alerts should appear within the same interface without an owner question; the external notification is supplemental.
+Include last updated time, data coverage and source links in context. In-app alerts appear within the same interface without an owner question. Findings created with the browser closed remain available on reopening.
 
 ## Demo data and checked example
 
@@ -270,7 +270,7 @@ Keep a labeled recording of a real successful run as a backup. Fixture/mock mode
 | 11:00–11:30 | Agree schemas and get one invoice/receipt extraction working | Agree fixtures, metric definitions and forecast method | Both document types parse representative examples |
 | 11:30–1:00 | Database, queue, both extraction schemas, normalization/deduplication | Weekday baseline and core dashboard against fixed contract | Both sides can run independently on agreed fixtures |
 | 1:00–2:00 | Integrate actuals/prices and refresh jobs | Connect current metrics and forecast cards | Both document types update persisted metrics end to end |
-| 2:00–3:00 | Metric tool endpoints and anomaly rules/outbox | Chat interface/tool selection, evidence and alert presentation | All five requirements work in a narrow integrated flow |
+| 2:00–3:00 | Metric tool endpoints and anomaly rules/alert feed | Chat interface/tool selection, evidence and alert presentation | All five requirements work in a narrow integrated flow |
 | 3:00–4:00 | Error handling, restart/deduplication and notification checks | Forecast holdout, coverage/assumption labels and negative controls | Acceptance cases pass; no invented empty-data predictions |
 | 4:00–5:00 | Rehearse, capture backup and prepare submission together | Fix demo-critical issues and polish together | Working demo preserved before deadline |
 
@@ -288,7 +288,7 @@ This is more ambitious than v1. Save time by keeping the five capabilities simpl
 8. Valid anomaly findings create one persistent alert with reproducible calculations; duplicate imports and worker restarts do not repeatedly create the same event.
 9. Complete-day sales alerts do not fire solely because the current day or channel import is partial.
 10. Bad arithmetic, ambiguous mappings, unsupported credits or unreadable documents enter review without contaminating approved totals or financial alerts.
-11. AI-wording or webhook failure leaves the underlying alert intact and its notification state visible.
+11. AI-wording failure leaves the underlying measured alert intact and its in-app notification state visible.
 12. Forecast evaluation uses a held-out period and reports MAE; sensitivity scenarios are not mislabeled as calibrated prediction intervals.
 
 ## References and boundaries

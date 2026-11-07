@@ -48,7 +48,7 @@ def client_for(tmp_path, extractor=None, *, seed=True):
     database = tmp_path / "ledger.db"
     if seed:
         seed_demo(database)
-    settings = Settings(_env_file=None, database_path=database, upload_directory=tmp_path / "uploads")
+    settings = Settings(_env_file=None, database_path=database, upload_directory=tmp_path / "uploads", processing_mode="inline")
     app = create_app(settings, document_extractor=extractor)
     with TestClient(app) as client:
         yield client, database, settings

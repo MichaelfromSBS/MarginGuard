@@ -1,6 +1,6 @@
 {
   "api_version": "1.0.0",
-  "checkpoint": 3,
+  "checkpoint": 4,
   "capabilities": [
     {
       "name": "catalog_and_seed_ledger",
@@ -19,7 +19,7 @@
     },
     {
       "name": "background_processing_and_alerts",
-      "available": false,
+      "available": true,
       "checkpoint": 4
     },
     {

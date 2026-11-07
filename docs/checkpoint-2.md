@@ -2,7 +2,7 @@
 
 Implemented: readable PDF and PNG/JPEG uploads, structured OpenRouter extraction, deterministic validation, review/correction, duplicate-safe ledger approval, source inspection, retry and explicit offline fixture/history import. The teammate's restaurant frontend is now integrated: use Inbox for uploads/status/source inspection/retry, or `/docs` and the commands below for full manual-review API checks.
 
-This is the checkpoint-2 ingestion review guide. Checkpoint 3 now adds [sales summaries, recipe costs and forecasts](checkpoint-3.md). The independent folder watcher, automatic recalculation, anomaly alerts, notification sending and business-data chat remain checkpoints 4–5. The upload request starts a bounded in-process background task, not the checkpoint-4 worker.
+This is the ingestion review guide. Checkpoint 3 adds [sales summaries, recipe costs and forecasts](checkpoint-3.md); checkpoint 4 adds the [independent worker and in-app alerts](checkpoint-4.md). At the current checkpoint, the upload API enqueues durable jobs. Run `npm.cmd run dev` or start `python -m backend.worker` alongside the API to process them. Business-data chat remains checkpoint 5.
 
 ## Configure and start
 
@@ -109,7 +109,7 @@ It labels the result `fixture_expected`, makes no model call, and is not an HTTP
 
 ## Review checklist
 
-1. Inspect `/api/capabilities`: ingestion and checkpoint-3 metrics are available; watcher/alerts and business chat are not.
+1. Inspect `/api/capabilities`: ingestion, metrics and worker/alerts are implemented; business chat is not. `/api/worker` reports whether the worker is actually running.
 2. Load v2 history into a fresh database twice; check eight invoices/2,733 receipts and no second import.
 3. Upload the main receipt and invoice with an actual configured model, or use the explicitly labeled offline fixture path.
 4. Reimport the receipt's exact duplicate bytes; verify the same ID and unchanged sales/version.

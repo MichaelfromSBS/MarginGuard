@@ -297,6 +297,22 @@ class Alert(ContractModel):
     evidence: list[EvidenceReference]
     created_at: datetime
     updated_at: datetime
+    finding: dict = Field(default_factory=dict)
+    suggestion: str = ""
+    explanation_status: Literal["pending", "ai", "fallback"] = "pending"
+    calculation_version: str = "detectors_v1"
+    revision: int = 1
+
+
+class WorkerStatus(ContractModel):
+    status: Literal["running", "stopped", "stale", "not_started"]
+    heartbeat_at: datetime | None
+    error_code: str | None
+    processing_mode: Literal["worker", "inline"]
+    queued_documents: int
+    processing_documents: int
+    new_alerts: int
+    watched_file_errors: int
 
 
 class Period(ContractModel):
@@ -545,5 +561,5 @@ class Capability(ContractModel):
 
 class CapabilitiesResponse(ContractModel):
     api_version: Literal["1.0.0"] = API_VERSION
-    checkpoint: Literal[3] = 3
+    checkpoint: Literal[4] = 4
     capabilities: list[Capability]

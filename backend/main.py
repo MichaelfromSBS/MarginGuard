@@ -16,6 +16,8 @@ from .marginguard.db import initialize_database
 from .marginguard.routes import DomainError, router as marginguard_router
 from .marginguard.schemas import API_VERSION, ErrorDetail, ErrorResponse
 from .marginguard.extraction import extract_document
+from .worker import worker_status
+from .marginguard.db import connect
 
 
 def create_app(settings: Settings | None = None, transport=None, document_extractor=None) -> FastAPI:
@@ -37,7 +39,7 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
             yield
 
     app = FastAPI(title="MarginGuard API", version=API_VERSION, lifespan=lifespan,
-                  description="Checkpoint 2: validated document ingestion, review and read APIs. Forecasts, the independent worker, alerts and business chat remain later checkpoints. Monetary values and quantities are decimal strings.")
+                  description="Checkpoint 4: durable document worker, metrics, automatic forecasts and evidence-based in-app alerts. No external owner notifications. Business chat remains checkpoint 5. Monetary values and quantities are decimal strings.")
 
     @app.exception_handler(DomainError)
     async def domain_error_handler(request: Request, exc: DomainError):
@@ -76,9 +78,12 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
 
     @app.get("/api/health")
     async def health():
+        with connect(settings.database_path) as conn:
+            worker = worker_status(conn, settings)
         return {
             "status": "ok", "mode": settings.ai_mode,
-            "api_version": API_VERSION, "checkpoint": 3, "database": "ready",
+            "api_version": API_VERSION, "checkpoint": 4, "database": "ready", "worker": worker["status"],
+            "processing_mode": settings.processing_mode,
             "model": settings.openrouter_model if settings.ai_mode == "openrouter" else "mock-fixture",
             "configured": settings.ai_mode == "mock" or bool(settings.openrouter_api_key.get_secret_value().strip() and settings.openrouter_model.strip()),
         }

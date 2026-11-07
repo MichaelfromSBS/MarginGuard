@@ -1,6 +1,6 @@
 /**
- * Checkpoint 3 contracts mirrored from backend/marginguard/schemas.py.
- * Runtime authority: GET /openapi.json. Alerts/chat writes still return 501.
+ * Checkpoint 4 contracts mirrored from backend/marginguard/schemas.py.
+ * Runtime authority: GET /openapi.json. Business chat still returns 501.
  * Decimal strings are unsigned fixed decimals with up to eight fractional digits.
  */
 export type ApiVersion = '1.0.0';
@@ -236,6 +236,22 @@ export interface Alert {
   evidence: EvidenceReference[];
   created_at: ISODateTime;
   updated_at: ISODateTime;
+  finding: Record<string, unknown>;
+  suggestion: string;
+  explanation_status: 'pending' | 'ai' | 'fallback';
+  calculation_version: string;
+  revision: number;
+}
+
+export interface WorkerStatus {
+  status: 'running' | 'stopped' | 'stale' | 'not_started';
+  heartbeat_at: ISODateTime | null;
+  error_code: string | null;
+  processing_mode: 'worker' | 'inline';
+  queued_documents: number;
+  processing_documents: number;
+  new_alerts: number;
+  watched_file_errors: number;
 }
 
 export interface Period {
@@ -460,6 +476,6 @@ export interface Capability {
 
 export interface CapabilitiesResponse {
   api_version: ApiVersion;
-  checkpoint: 3;
+  checkpoint: 4;
   capabilities: Capability[];
 }
