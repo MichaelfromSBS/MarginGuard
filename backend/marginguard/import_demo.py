@@ -19,7 +19,7 @@ from .document_io import DocumentReadError, read_document
 from .ingestion import approve_extraction, identifier, insert, now
 from .schemas import Channel, Coverage, Ingredient, InvoiceExtraction, MenuPrice, ReceiptExtraction
 
-DEFAULT_SOURCE = ROOT / "demo_data" / "demo_data_v2"
+DEFAULT_SOURCE = ROOT / "demo_data"
 MAX_CORPUS_BYTES = 50 * 1024 * 1024
 MAX_RECEIPTS = 20_000
 

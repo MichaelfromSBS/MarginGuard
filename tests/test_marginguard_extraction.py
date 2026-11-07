@@ -14,7 +14,7 @@ from backend.marginguard.document_io import DocumentReadError, PreparedDocument,
 from backend.marginguard.extraction import ExtractionError, extract_document
 from backend.marginguard.schemas import InvoiceExtraction, ReceiptExtraction
 
-DEMO = ROOT / "demo_data/demo_data_v2/live_demo"
+DEMO = ROOT / "demo_data/live_demo"
 CATALOG = {"ingredients": [{"id": "beef", "name": "Ground beef", "base_unit": "lb"}], "dishes": [{"id": "classic_burger", "name": "Classic Burger"}]}
 
 

@@ -14,7 +14,7 @@ from backend.marginguard.extraction import ExtractionError
 from backend.marginguard.schemas import DocumentDetail, InvoiceExtraction, ReceiptExtraction
 from backend.marginguard.seed import seed_demo
 
-DATA = ROOT / "demo_data" / "demo_data_v2"
+DATA = ROOT / "demo_data"
 INVOICE = "live_demo/2_invoice_RF-20261107-004"
 RECEIPT = "live_demo/1_receipt_TB-20261107-001"
 IMAGE = "live_demo/3_receipt_TB-20261107-002_photo"

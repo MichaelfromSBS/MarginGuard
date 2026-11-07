@@ -12,6 +12,8 @@ Last updated: November 7, 2026. This record distinguishes implemented functional
 | 2026-11-07 | Checkpoint 1 implemented | [`8e74884`](https://github.com/MichaelfromSBS/nova-hackathon/commit/8e74884): SQLite foundation, schemas, explicit seed, read APIs, OpenAPI, TypeScript and sample-data handoff. |
 | 2026-11-07 | Team demo corpus contributed | [`291062e`](https://github.com/MichaelfromSBS/nova-hackathon/commit/291062e): restaurant configuration, history, PDF/image documents and expected outputs. Integration remains pending. |
 | 2026-11-07 | Parallel work merged | [`f47d90b`](https://github.com/MichaelfromSBS/nova-hackathon/commit/f47d90b): preserved checkpoint 1 and the contributed dataset. Resolved the `.gitignore` overlap by retaining both sets of runtime-data exclusions. |
+| 2026-11-07 | Checkpoint 2 implemented | [`84a4f97`](https://github.com/MichaelfromSBS/nova-hackathon/commit/84a4f97): ingestion, extraction, validation, review/retry, source integrity and explicit fixture/history import. |
+| 2026-11-07 | Dataset folder flattened | Teammate commit [`3840d46`](https://github.com/MichaelfromSBS/nova-hackathon/commit/3840d46) moves the v2 corpus directly under `demo_data/`. Importer, tests and documentation paths were updated after merging it. |
 
 ## Checkpoint 1: completed implementation, pending team review
 
@@ -47,7 +49,7 @@ Review instructions: [checkpoint-1.md](checkpoint-1.md). The following checkpoin
 
 ## Demo dataset integration notes
 
-The team replaced the original corpus with [contract-compatible v2 data](../demo_data/demo_data_v2/README.md) in commit `0ed21bd`. The differences below describe the original corpus and are resolved by v2. The small built-in seed and full historical importer remain deliberately separate.
+The team replaced the original corpus with [contract-compatible v2 data](../demo_data/README.md) in commit `0ed21bd`. The differences below describe the original corpus and are resolved by v2. The small built-in seed and full historical importer remain deliberately separate.
 
 Resolve these differences explicitly during checkpoint 2 and update shared contracts together if needed:
 

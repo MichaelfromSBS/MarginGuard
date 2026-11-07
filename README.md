@@ -17,7 +17,7 @@ Last updated: **November 7, 2026**. API contract version: **1.0.0**.
 | Reusable AI starter | Complete; prepared November 6 | React/TypeScript, FastAPI, OpenRouter transport, mock mode and streaming |
 | Project specification | Current | [MarginGuard v2](docs/marginguard-plan-v2.md) defines the five product capabilities |
 | Checkpoint 1: database and shared contract | Complete | SQLite schema, explicit demo seed, validated schemas, read APIs, OpenAPI, TypeScript and sample-data handoff |
-| Team demo dataset v2 | Contract-validated; explicit bulk importer available | [History and demo documents](demo_data/demo_data_v2/README.md); eight invoices and 2,733 receipts |
+| Team demo dataset v2 | Contract-validated; explicit bulk importer available | [History and demo documents](demo_data/README.md); eight invoices and 2,733 receipts |
 | Checkpoint 2: document ingestion | Implemented; pending team review | PDF/image upload, structured extraction, validation, review/retry, duplicate-safe persistence and explicit fixture import |
 | Checkpoint 3: metrics and forecasting | Planned | Sales summaries, recipe costs, completeness-aware next-month projections |
 | Checkpoint 4: background processing and alerts | Planned | Persistent worker, automatic recalculation, measured anomalies and notification state |
@@ -166,7 +166,7 @@ There are two distinct fixture collections:
 | Collection | Purpose | Current integration |
 | --- | --- | --- |
 | `examples/` and the built-in seed | Canonical contracts, paired source/expected extraction examples and a small ledger | Supported by the explicit seed command and contract tests |
-| `demo_data/demo_data_v2/` | Contract-compatible JSONL history, paired invoice PDFs/text/JSON, image receipts and negative controls | Explicit validated bulk importer and shared approval tests |
+| `demo_data/` | Contract-compatible JSONL history, paired invoice PDFs/text/JSON, image receipts and negative controls | Explicit validated bulk importer and shared approval tests |
 
 Give the document-generating teammate [the sample-data contract and copyable Claude prompt](docs/sample-data-contract.md). Its examples specify stable IDs, decimal strings, timezone-aware timestamps and source references.
 

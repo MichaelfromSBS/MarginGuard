@@ -9,7 +9,7 @@ from backend.marginguard.errors import DomainError
 from backend.marginguard.fixture import ingest_fixture
 from backend.marginguard.seed import seed_demo
 
-DATA = ROOT / "demo_data/demo_data_v2"
+DATA = ROOT / "demo_data"
 
 
 def test_offline_fixture_is_explicit_demo_only_and_uses_normal_validation(tmp_path):

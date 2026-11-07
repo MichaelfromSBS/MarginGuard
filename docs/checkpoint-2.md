@@ -41,7 +41,7 @@ Open [interactive API docs](http://127.0.0.1:8000/docs). Use `npm run dev` inste
 ## Upload and poll
 
 ```powershell
-curl.exe -X POST http://127.0.0.1:8000/api/documents -F "document_type=receipt" -F "file=@demo_data/demo_data_v2/live_demo/1_receipt_TB-20261107-001.pdf;type=application/pdf"
+curl.exe -X POST http://127.0.0.1:8000/api/documents -F "document_type=receipt" -F "file=@demo_data/live_demo/1_receipt_TB-20261107-001.pdf;type=application/pdf"
 ```
 
 The response is HTTP 202 with the document ID. Poll `GET /api/documents/{id}` for the final state. Browser requests can observe `detected`, then `processing`, then a terminal state. The response header `X-MarginGuard-Duplicate` indicates whether the bytes already existed; duplicates reuse the existing ID and do not trigger another model call.
@@ -88,7 +88,7 @@ In `AI_MODE=mock`, HTTP uploads do not invent approvals. A readable upload becom
 For explicitly fictional demo databases only, this command supplies expected extraction JSON directly while exercising the real reader, business validation and approval transaction:
 
 ```powershell
-.\.venv\Scripts\python.exe -m backend.marginguard.fixture --database data/demo-v2.db --type invoice --file demo_data/demo_data_v2/live_demo/2_invoice_RF-20261107-004.pdf --expected demo_data/demo_data_v2/live_demo/2_invoice_RF-20261107-004.expected.json
+.\.venv\Scripts\python.exe -m backend.marginguard.fixture --database data/demo-v2.db --type invoice --file demo_data/live_demo/2_invoice_RF-20261107-004.pdf --expected demo_data/live_demo/2_invoice_RF-20261107-004.expected.json
 ```
 
 It labels the result `fixture_expected`, makes no model call, and is not an HTTP-sidecar fallback. It refuses non-demo restaurants. Do not present this path or `fixture_history` as measured AI extraction accuracy.

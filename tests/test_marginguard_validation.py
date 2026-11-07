@@ -8,7 +8,7 @@ from backend.config import ROOT
 from backend.marginguard.schemas import InvoiceExtraction, ReceiptExtraction
 from backend.marginguard.validation import validate_extraction
 
-DATA = ROOT / "demo_data" / "demo_data_v2"
+DATA = ROOT / "demo_data"
 CATALOG = {
     "ingredients": [
         {"id": "beef", "base_unit": "lb"}, {"id": "bun", "base_unit": "each"},
