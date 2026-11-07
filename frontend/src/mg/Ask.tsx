@@ -17,8 +17,9 @@ export default function Ask({ onSource }: { onSource: (id: string) => void }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
-  useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [msgs]);
+  const box = useRef<HTMLDivElement>(null);
+  // Scroll only inside the chat box, so opening the Overview never jumps the page.
+  useEffect(() => { if (box.current && msgs.length) box.current.scrollTop = box.current.scrollHeight; }, [msgs, busy]);
 
   const send = async (question: string) => {
     const text = question.trim();
@@ -35,7 +36,7 @@ export default function Ask({ onSource }: { onSource: (id: string) => void }) {
 
   return (
     <Card title="Ask MarginGuard" action={<small className="muted">answers come from your records, read-only</small>} className="ask">
-      <div className="chat">
+      <div className="chat" ref={box}>
         {msgs.length === 0 && (
           <div className="chat-empty">
             <p>Ask about sales, costs, forecasts or alerts.</p>
@@ -59,7 +60,6 @@ export default function Ask({ onSource }: { onSource: (id: string) => void }) {
           </div>
         ))}
         {busy && <div className="bubble assistant"><p className="muted"><i className="pulse" /> Looking it up…</p></div>}
-        <div ref={end} />
       </div>
       <form className="ask-row" onSubmit={(e) => { e.preventDefault(); send(q); }}>
         <input aria-label="Question about restaurant records" maxLength={4000} value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. What does the Classic Burger cost now?" />

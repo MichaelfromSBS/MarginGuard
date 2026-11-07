@@ -203,7 +203,7 @@ The November 5 fixture anomaly is reported on November 6 only; a new November 7 
 
 ## Checkpoint 5: database-grounded owner chat
 
-Implemented November 7, 2026; pending team review. The existing `.env`, business databases and teammate files were preserved. This checkpoint is not yet committed or pushed.
+Implemented November 7, 2026; pending team review. The existing `.env`, business databases and teammate files were preserved. Implementation committed as [`e8dab40`](https://github.com/MichaelfromSBS/nova-hackathon/commit/e8dab40); the subsequent teammate frontend integration is recorded below.
 
 - `POST /api/chat` now makes one structured OpenRouter planning request, validates at most four allowlisted calls, and returns Python-rendered answers with exact decimal metrics, periods, coverage, source versions, evidence and executed query traces. The model does not generate financial figures or SQL.
 - Six tools cover approved sales and rankings, normalized ingredient-price history, recipe replacement costs, existing monthly forecasts, existing alerts and compatible saved-forecast attribution. Forecast comparison separates usage/dish mix, supplier-price, interaction and rounding effects and names the main changed ingredients.
@@ -227,6 +227,18 @@ Verification on an isolated fictional full-history database:
 The first complex Gemini plan was truncated under the original 1,800-token output budget. The final defaults use 3,000 tokens and automatic low reasoning for Gemini; other model families preserve provider defaults. The same forecast-change question then passed live API and browser checks. Reasoning/provider bodies are never exposed in owner answers. No real model correctness guarantee is implied by these smoke checks; routing remains bounded and visible for review.
 
 The browser test used a temporary imported history, explicitly approved fictional invoice fixture and saved before/after projections. The local test server was stopped afterward. Existing user runtime data, `.env` values and `.vscode/` were not changed. The full-history forecast and alerts are not fabricated when inputs are missing.
+
+## Teammate alert lifecycle and Overview chat integration
+
+Integrated teammate commits [`ed82757`](https://github.com/MichaelfromSBS/nova-hackathon/commit/ed82757) and [`c5035f2`](https://github.com/MichaelfromSBS/nova-hackathon/commit/c5035f2) with checkpoint 5 (`e8dab40`).
+
+- Acknowledge moves a new alert into a separate expandable Acknowledged list and refreshes the bell immediately. Resolve persists the handled status and removes the finding from both live lists. Both lists query their own status, so resolved archives do not displace their first page. The existing two detector types and website-only notification policy are unchanged.
+- Chat sits at the bottom of Overview; the separate Ask tab is removed. Responses scroll inside the bounded panel, without jumping to chat on initial load. Checkpoint-5 metrics, history, errors, query traces and source links remain connected. Overview stays mounted across navigation so visiting a source in Inbox does not discard the conversation.
+- Retained the teammate's clearer ingredient-usage table, per-unit prices, consumption-versus-purchase explanation and summed forecast ingredient cost.
+
+Verification: **128 focused backend tests passed** (worker/alerts, API and chat), **7 frontend tests passed**, TypeScript and production build passed. The complete checkpoint-5 suite had passed **349 tests** before this frontend-only merge. An isolated live browser check verified acknowledge → separate list → resolve, immediate bell clearing, acknowledgement after reload, persisted resolved status, Overview chat placement, initial page scroll at zero, real beef-price and Classic Burger answers, internal chat scrolling, PDF source HTTP 200, retained history through Inbox, and the forecast ingredient table. Desktop and 390px mobile screenshots were inspected; no page errors or horizontal overflow occurred.
+
+The test used a copied fictional database and an explicit local detector cycle, with optional AI alert suggestions disabled. Only chat used the configured model. Existing `.env`, business data and `.vscode/` were preserved; the temporary review server was stopped afterward.
 
 ## Checkpoint review status
 

@@ -11,7 +11,7 @@ cd "E:\CMU\Sophomore\Fall\NOVA Hackathon"
 npm.cmd run dev
 ```
 
-Open http://127.0.0.1:5173 and select **Ask MarginGuard**. Existing `.env` settings are preserved. Chat requires `AI_MODE=openrouter`, `OPENROUTER_API_KEY` and a compatible `OPENROUTER_MODEL`. Keys remain server-side. Mock/unconfigured chat returns an explicit configuration error instead of simulated business answers. Restart the backend after changing `.env`.
+Open http://127.0.0.1:5173. **Ask MarginGuard** is at the bottom of **Overview**; there is no separate Ask tab. The conversation scrolls inside its panel and stays available when returning from Inbox. Existing `.env` settings are preserved. Chat requires `AI_MODE=openrouter`, `OPENROUTER_API_KEY` and a compatible `OPENROUTER_MODEL`. Keys remain server-side. Mock/unconfigured chat returns an explicit configuration error instead of simulated business answers. Restart the backend after changing `.env`.
 
 Try these questions individually:
 

@@ -4,23 +4,30 @@ import { api, errorText, isNotYet, loadDocuments, usePoll } from './client';
 import { localDate, money, pctChange, shortDate, timeAgo } from './format';
 import { Card, ErrorBox, NotYet } from './ui';
 import { MetricCard } from './Metrics';
+import Ask from './Ask';
 
 type Go = (tab: 'trends' | 'documents') => void;
 
 export function AlertItem({ a, onChanged }: { a: Alert; onChanged?: () => void }) {
   const [err, setErr] = useState('');
-  const ack = async () => {
-    try { await api.acknowledge(a.id); onChanged?.(); } catch (e) { setErr(isNotYet(e) ? 'Acknowledging alerts arrives with checkpoint 4.' : errorText(e)); }
+  const [busy, setBusy] = useState(false);
+  const act = async (fn: (id: string) => Promise<Alert>) => {
+    setBusy(true); setErr('');
+    try { await fn(a.id); onChanged?.(); window.dispatchEvent(new Event('mg:alerts-changed')); } catch (e) { setErr(errorText(e)); } finally { setBusy(false); }
   };
   return (
-    <div className={`alert ${a.severity}`}>
+    <div className={`alert ${a.severity} ${a.status === 'acknowledged' ? 'seen' : ''}`}>
       <div className="alert-main">
         <b>{a.title}</b>
         <p>{a.message}</p>
-        <small>{timeAgo(a.created_at)}{a.evidence.length ? ` · ${a.evidence.length} source${a.evidence.length > 1 ? 's' : ''}` : ''}{a.status !== 'new' ? ` · ${a.status}` : ''}</small>
+        {a.suggestion && <span className="suggest"><b>Suggested next step:</b> {a.suggestion}{a.explanation_status === 'ai' ? ' (AI suggestion)' : ''}</span>}
+        <small>{timeAgo(a.created_at)}{a.evidence.length ? ` · ${a.evidence.length} source${a.evidence.length > 1 ? 's' : ''}` : ''}</small>
         {err && <small className="err">{err}</small>}
       </div>
-      {a.status === 'new' && <button className="ghost" onClick={ack}>Acknowledge</button>}
+      <div className="alert-actions">
+        {a.status === 'new' && <button className="ghost" disabled={busy} onClick={() => act(api.acknowledge)}>Acknowledge</button>}
+        <button className="ghost" disabled={busy} onClick={() => act(api.resolve)} title="Mark as handled and remove from the list">Resolve</button>
+      </div>
     </div>
   );
 }
@@ -43,8 +50,12 @@ const GHOST: Record<string, string> = {
 };
 const RECENT_DAYS = 14;
 
-export default function Overview({ go }: { go: Go }) {
-  const alerts = usePoll(() => api.alerts(), 5000);
+export default function Overview({ go, onSource }: { go: Go; onSource: (id: string) => void }) {
+  // Archived resolved findings cannot displace either live list's first page.
+  const alerts = usePoll(async () => {
+    const [fresh, acknowledged] = await Promise.all([api.alerts('new'), api.alerts('acknowledged')]);
+    return { items: [...fresh.items, ...acknowledged.items] };
+  }, 5000);
   const capabilities = usePoll(() => api.capabilities(), 0);
   const worker = usePoll(() => api.worker(), 5000);
   const dash = usePoll(() => api.dashboard(), 15000);
@@ -55,7 +66,8 @@ export default function Overview({ go }: { go: Go }) {
     return Promise.all(catalog.data.ingredients.map(async (ing) => ({ ing, items: (await api.prices(ing.id)).items })));
   }, 10000, [catalog.data]);
 
-  const open = (alerts.data?.items ?? []).filter((a) => a.status !== 'resolved');
+  const open = (alerts.data?.items ?? []).filter((a) => a.status === 'new');
+  const seen = (alerts.data?.items ?? []).filter((a) => a.status === 'acknowledged');
   const monitoringAvailable = capabilities.data?.capabilities.some((c) => c.name === 'background_processing_and_alerts' && c.available);
   const monitoring = monitoringAvailable && worker.data?.status === 'running' && !worker.error && !worker.data.error_code;
   const review = (docs.data ?? []).filter((d) => d.status === 'needs_review' || d.status === 'failed');
@@ -93,6 +105,12 @@ export default function Overview({ go }: { go: Go }) {
           : monitoring ? <p className="allclear">All clear.</p>
           : monitoringAvailable ? <p className="issues">Automatic monitoring is unavailable. Alerts and forecasts may be out of date.</p>
           : <NotYet checkpoint={4} what="Cost increases and yesterday’s unusual sales" />)}
+        {seen.length > 0 && (
+          <details className="seen-list">
+            <summary>Acknowledged ({seen.length}): resolve when handled</summary>
+            {seen.map((a) => <AlertItem key={a.id} a={a} onChanged={alerts.refresh} />)}
+          </details>
+        )}
       </Card>
 
       <section>
@@ -125,6 +143,8 @@ export default function Overview({ go }: { go: Go }) {
           </Card>
         </section>
       </div>
+
+      <Ask onSource={onSource} />
     </div>
   );
 }
