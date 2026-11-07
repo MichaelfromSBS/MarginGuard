@@ -12,6 +12,8 @@ import pytest
 
 from backend.config import ROOT, Settings
 from backend.main import create_app
+from backend.marginguard import analytics
+from backend.marginguard.chat_tools import execute_tool
 from backend.worker import Worker
 from backend.marginguard.db import connect
 from backend.marginguard.errors import DomainError
@@ -124,6 +126,71 @@ def test_api_only_queues_worker_processes_and_restarts_without_duplicate_records
         assert len(records(settings, "alerts")) == 1
         assert len(records(settings, "notification_outbox")) == 0
         assert client.get("/api/dashboard?as_of=2026-11-07").json()["forecast"]["status"] == "ready"
+
+
+def test_receipt_upload_updates_default_live_sales_before_day_end(settings, monkeypatch):
+    monkeypatch.setattr(analytics, "local_today", lambda owner: DAY)
+    fake = Extractor(expected(RECEIPT))
+    with TestClient(create_app(settings)) as client:
+        async def exercise():
+            async with Worker(settings, extractor=fake) as worker:
+                await worker.cycle(DAY)
+                before = client.get("/api/dashboard").json()
+                closed_period = client.get("/api/sales?start=2026-10-31&end=2026-11-06").json()
+                doc_id = upload(client, RECEIPT)
+                # Upload acceptance is not approval: queued/review inputs cannot change sales.
+                assert client.get("/api/dashboard").json()["sales"]["net_revenue"] == before["sales"]["net_revenue"]
+                await worker.cycle(DAY)
+                assert client.get(f"/api/documents/{doc_id}").json()["status"] == "completed"
+                after = client.get("/api/dashboard").json()
+                sales = client.get("/api/sales").json()
+                assert after["sales"]["period"] == {"start": "2026-11-01", "end": "2026-11-07"}
+                for result in [sales, after["sales"]]:
+                    assert Decimal(result["net_revenue"]) == Decimal(before["sales"]["net_revenue"]) + 37
+                    assert result["orders"] == before["sales"]["orders"] + 1
+                    assert Decimal(result["units"]) == Decimal(before["sales"]["units"]) + 3
+                    today = next(d for d in result["by_day"] if d["date"] == DAY.isoformat())
+                    assert today == {"date": "2026-11-07", "dish_id": None, "channel_id": None,
+                                     "orders": 1, "units": "3", "net_revenue": "37.00"}
+                    assert result["coverage"]["status"] == "partial"
+                cards = {m["id"]: m["value"] for m in after["metrics"]}
+                assert cards["sales.net_revenue"] == sales["net_revenue"]
+                assert cards["sales.orders"] == str(sales["orders"])
+                with connect(settings.database_path) as conn:
+                    chat_today, _ = execute_tool(conn, "get_sales_summary", {"period": "today"}, DAY)
+                    chat_week, _ = execute_tool(conn, "get_sales_summary", {}, DAY)
+                    assert "$37.00" in chat_today.answer
+                    assert "2026-11-07 through 2026-11-07" in chat_today.answer
+                    assert next(m["value"] for m in chat_week.metrics if m["id"] == "sales.net_revenue") == sales["net_revenue"]
+                assert after["source_data_version"] == before["source_data_version"] + 1
+                # Refresh the saved forecast/version without feeding an unfinished day into training.
+                assert after["forecast"]["status"] == "ready"
+                assert after["forecast"]["source_data_version"] == after["source_data_version"]
+                assert [m["value"] for m in after["forecast"]["metrics"]] == [m["value"] for m in before["forecast"]["metrics"]]
+                assert all(DAY.isoformat() not in w["sample_dates"] for s in after["forecast"]["series"] for w in s["weekday_estimates"])
+                assert client.get("/api/sales?start=2026-10-31&end=2026-11-06").json()["net_revenue"] == closed_period["net_revenue"]
+                version = after["source_data_version"]
+                assert upload(client, RECEIPT) == doc_id
+                await worker.cycle(DAY)
+                assert client.get("/api/dashboard").json()["source_data_version"] == version
+                assert client.get("/api/alerts").json()["total"] == 0
+        asyncio.run(exercise())
+
+
+def test_receipt_held_for_review_does_not_change_live_sales(settings, monkeypatch):
+    monkeypatch.setattr(analytics, "local_today", lambda owner: DAY)
+    invalid = expected(RECEIPT).model_copy(update={"total": "40.00"})
+    with TestClient(create_app(settings)) as client:
+        before = client.get("/api/dashboard").json()
+        doc_id = upload(client, RECEIPT)
+        async def exercise():
+            async with Worker(settings, extractor=Extractor(invalid)) as worker:
+                await worker.cycle(DAY)
+        asyncio.run(exercise())
+        assert client.get(f"/api/documents/{doc_id}").json()["status"] == "needs_review"
+        after = client.get("/api/dashboard").json()
+        assert after["source_data_version"] == before["source_data_version"]
+        assert after["sales"]["net_revenue"] == before["sales"]["net_revenue"]
 
 
 def test_no_historical_sales_backlog_and_invoice_creates_one_combined_alert(settings):

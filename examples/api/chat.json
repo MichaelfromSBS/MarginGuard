@@ -1,18 +1,18 @@
 {
-  "answer": "From 2026-10-31 through 2026-11-06, approved receipts show 2 orders, 5 units and $60.00 net item revenue. Tax and tips are excluded.",
-  "as_of": "2026-11-07T20:52:54.948468Z",
+  "answer": "From 2026-11-01 through 2026-11-07, approved receipts show 3 orders, 6 units and $72.00 net item revenue. Tax and tips are excluded.",
+  "as_of": "2026-11-07T21:17:08.152225Z",
   "metrics": [
     {
       "id": "chat.c1.sales.units",
       "label": "Observed units sold",
-      "value": "5",
+      "value": "6",
       "unit": "units",
       "kind": "actual",
       "period": {
-        "start": "2026-10-31",
-        "end": "2026-11-06"
+        "start": "2026-11-01",
+        "end": "2026-11-07"
       },
-      "as_of": "2026-11-07T20:52:54.946598Z",
+      "as_of": "2026-11-07T21:17:08.152225Z",
       "coverage": "partial",
       "source_data_version": 1,
       "evidence": [
@@ -55,14 +55,14 @@
     {
       "id": "chat.c1.sales.orders",
       "label": "Observed completed orders",
-      "value": "2",
+      "value": "3",
       "unit": "orders",
       "kind": "actual",
       "period": {
-        "start": "2026-10-31",
-        "end": "2026-11-06"
+        "start": "2026-11-01",
+        "end": "2026-11-07"
       },
-      "as_of": "2026-11-07T20:52:54.946598Z",
+      "as_of": "2026-11-07T21:17:08.152225Z",
       "coverage": "partial",
       "source_data_version": 1,
       "evidence": [
@@ -105,14 +105,14 @@
     {
       "id": "chat.c1.sales.net_revenue",
       "label": "Observed net item revenue",
-      "value": "60.00",
+      "value": "72.00",
       "unit": "USD",
       "kind": "actual",
       "period": {
-        "start": "2026-10-31",
-        "end": "2026-11-06"
+        "start": "2026-11-01",
+        "end": "2026-11-07"
       },
-      "as_of": "2026-11-07T20:52:54.946598Z",
+      "as_of": "2026-11-07T21:17:08.152225Z",
       "coverage": "partial",
       "source_data_version": 1,
       "evidence": [
@@ -155,14 +155,14 @@
     {
       "id": "chat.c1.sales.average_order_revenue",
       "label": "Average net item revenue per order",
-      "value": "30.00",
+      "value": "24.00",
       "unit": "USD",
       "kind": "actual",
       "period": {
-        "start": "2026-10-31",
-        "end": "2026-11-06"
+        "start": "2026-11-01",
+        "end": "2026-11-07"
       },
-      "as_of": "2026-11-07T20:52:54.946598Z",
+      "as_of": "2026-11-07T21:17:08.152225Z",
       "coverage": "partial",
       "source_data_version": 1,
       "evidence": [
@@ -229,6 +229,13 @@
       "kind": "receipt_item",
       "record_id": "item_receipt_002_2",
       "document_id": "doc_receipt_002",
+      "source_page": 1,
+      "quote": "1 x Classic Burger @ $12.00 = $12.00"
+    },
+    {
+      "kind": "receipt_item",
+      "record_id": "item_receipt_003_1",
+      "document_id": "doc_receipt_003",
       "source_page": 1,
       "quote": "1 x Classic Burger @ $12.00 = $12.00"
     }

@@ -65,7 +65,7 @@ Expected with full v2 history:
 | December projected net item revenue | $31,286.93 | $31,286.93 |
 | December projected ingredient consumption cost | $9,413.63 | $10,143.80 |
 
-The invoice's price-only monthly cost difference is $730.17 with unchanged projected demand. A November 7 receipt adds its observed sales immediately but does not become a finished complete training day. Repeating the forecast request with the same policy/date/source version returns the same saved run.
+The invoice's price-only monthly cost difference is $730.17 with unchanged projected demand. A November 7 receipt adds its observed sales immediately to the default dashboard, sales API and daily chart, but does not become a finished complete training day. The UI refreshes sales every three seconds after approval. Repeating the forecast request with the same policy/date/source version returns the same saved run.
 
 To verify an invoice or receipt change, calculate a forecast, approve the document using checkpoint 2, and inspect the saved forecast:
 
@@ -88,7 +88,7 @@ The old run becomes `pending`, with its original values and source version prese
 | `GET /api/forecasts/{run_id}` | One saved snapshot with daily/series projections, ingredient requirements, scenarios and evaluation |
 | `POST /api/coverage/complete` | Explicit owner/importer confirmation that a finished local date/channel is complete, or a channel is closed |
 
-Sales and dashboard query arguments: `start`, `end`, `as_of`. Dates are inclusive; at most 366 days. Default sales period is the seven finished local dates preceding `as_of`, which defaults to today in the restaurant timezone. Sales can include the current as-of day explicitly, but dates beyond it are rejected. `/api/sales` additionally accepts `dish_id` and `channel_id`. Group order counts count distinct matching receipts; orders across dishes are not additive because one receipt can contain several dishes. `by_day` contains observed-sale dates; completeness rows identify explicit zero/closed/missing dates.
+Sales and dashboard query arguments: `start`, `end`, `as_of`. Dates are inclusive; at most 366 days. Default sales period is `as_of` plus its six previous local dates, including today by default in the restaurant timezone. Approved receipts update observed totals immediately; today remains partial/in progress. Dates beyond `as_of` are rejected. Explicit start/end ranges remain fixed. `/api/sales` additionally accepts `dish_id` and `channel_id`. Group order counts count distinct matching receipts; orders across dishes are not additive because one receipt can contain several dishes. `by_day` contains observed-sale dates; completeness rows identify explicit zero/closed/missing dates.
 
 Forecast request fields are optional:
 

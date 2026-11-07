@@ -23,7 +23,7 @@ Try these questions individually:
 - Why did next month's ingredient cost increase?
 - Which alerts need my attention?
 
-The last seven days means seven **finished restaurant-local dates**. Last week means the previous **Monday–Sunday calendar week**. This month/week includes the current day and reports incomplete coverage where applicable. Explicit historical as-of queries should state the date as `YYYY-MM-DD`.
+The last seven days means **today plus the six previous restaurant-local dates**, matching the live dashboard. Ask for today to see approved receipts so far, or for the last seven finished days to exclude today. Last week means the previous **Monday–Sunday calendar week**. This month/week includes the current day and reports incomplete coverage where applicable. Explicit historical as-of queries should state the date as `YYYY-MM-DD`.
 
 Each successful answer shows its ledger version and checked time. Expand **Sources** and click an invoice/receipt source to open its document in Inbox. Expand **Queries used** to inspect exact dates, filters and tool status. Forecast-only references identify saved runs without pretending to be source PDFs.
 
@@ -76,7 +76,7 @@ Forecast-change analysis uses the same horizon, method, training policy, recipe 
 
 For the full fictional v2 history on **November 7, 2026**:
 
-- October 31–November 6: **332 orders, 610 units, $7,400.00** observed net sales.
+- November 1–7 before uploading the live receipt: **264 orders, 488 units, $5,932.00** observed net sales. The live receipt adds **1 order, 3 units and $37.00** immediately after approval. The explicitly requested October 31–November 6 finished-date range remains **332 orders, 610 units, $7,400.00**.
 - Before the main live invoice: beef **$4.00/lb**, Classic Burger **$3.60** replacement ingredient cost.
 - After approving `2_invoice_RF-20261107-004.pdf`: beef **$4.72/lb**, Classic Burger **$3.96**.
 - If ready forecasts were saved before and after that invoice: December ingredient consumption cost **$9,413.63 → $10,143.80**. Supplier-price effect **$730.17**, usage/interaction **$0.00** in that controlled example.

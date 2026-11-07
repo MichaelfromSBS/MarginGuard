@@ -58,7 +58,7 @@ export default function Overview({ go, onSource }: { go: Go; onSource: (id: stri
   }, 5000);
   const capabilities = usePoll(() => api.capabilities(), 0);
   const worker = usePoll(() => api.worker(), 5000);
-  const dash = usePoll(() => api.dashboard(), 15000);
+  const dash = usePoll(() => api.dashboard(), 3000);
   const docs = usePoll(() => loadDocuments(false), 10000);
   const catalog = usePoll(() => api.catalog(), 0);
   const prices = usePoll(async () => {
@@ -114,10 +114,11 @@ export default function Overview({ go, onSource }: { go: Go; onSource: (id: stri
       </Card>
 
       <section>
-        <div className="section-head"><h3>Sales</h3>{sales[0].m?.period && <small className="muted">last 7 days</small>}</div>
+        <div className="section-head"><h3>Sales</h3>{sales[0].m?.period && <small className="muted">last 7 days, including today</small>}</div>
         <div className="metrics">
           {sales.map(({ id, m }) => m ? <MetricCard key={id} m={m} /> : <Ghost key={id} label={GHOST[id]} />)}
         </div>
+        <p className="hint">Updates as receipts are approved. Today’s sales are still in progress; amounts exclude tax and tips.</p>
         {dash.error ? (isNotYet(dash.error) ? <NotYet checkpoint={3} what="Sales figures" /> : <ErrorBox>{errorText(dash.error)}</ErrorBox>) : null}
       </section>
 

@@ -163,7 +163,7 @@ Money and quantities are decimal strings. List endpoints return `items`, `total`
 
 Owner chat requires a configured OpenRouter model with structured-output support; unconfigured/mock chat returns an explicit HTTP 503. AI selects tools and filters; Python queries approved records and renders all figures. Chat cannot alter records, recalculate forecasts or send messages. Other financial calculations run without a model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
 
-Approved inputs immediately affect observed sales and effective recipe costs. They invalidate saved forecasts; the worker automatically refreshes current projections. The explicit recalculation endpoint remains available. Forecasts distinguish ingredient consumption from purchases/actual profit and sensitivity scenarios from statistical prediction intervals.
+Approved inputs immediately affect observed sales and effective recipe costs. The default sales window includes today and its six previous local dates; Overview and daily-sales charts refresh every three seconds. Today’s observed receipts remain partial rather than being treated as a complete forecast-training day. They invalidate saved forecasts; the worker automatically refreshes current projections. The explicit recalculation endpoint remains available. Forecasts distinguish ingredient consumption from purchases/actual profit and sensitivity scenarios from statistical prediction intervals.
 
 Uploads return HTTP 202 with a durable pending job; the independent worker advances document status. Poll for `completed`, `needs_review` or `failed`. Exact-byte duplicates return the existing ID, while different bytes with an existing invoice/receipt business key enter review. Images are labeled as visual evidence, without claiming an independent OCR quote check. See [checkpoint 2](docs/checkpoint-2.md) for formats/review and [checkpoint 4](docs/checkpoint-4.md) for queue/restart behavior.
 
@@ -205,7 +205,7 @@ npm run build
 
 On macOS/Linux, replace the first command with `.venv/bin/python -m pytest -q`. Tests isolate their databases from the configured local ledger.
 
-Current checkpoint-5 verification: **349 backend tests**, **7 frontend tests**, TypeScript/production build and dependency consistency passed. Live configured-model and desktop/mobile browser checks verified grounded chat, follow-ups, document sources and the $730.17 forecast-cost attribution. Earlier checkpoint verification and detailed acceptance results are recorded in [the progress record](docs/progress.md). The test-client dependency emits one existing deprecation warning.
+Current checkpoint-5 verification: **353 backend tests**, **7 frontend tests**, TypeScript/production build and dependency consistency passed. Live configured-model and desktop/mobile browser checks verified immediate receipt sales updates, grounded chat, follow-ups, document sources and the $730.17 forecast-cost attribution. Earlier checkpoint verification and detailed acceptance results are recorded in [the progress record](docs/progress.md). The test-client dependency emits one existing deprecation warning.
 
 After an intentional contract change, regenerate the OpenAPI and seeded response artifacts:
 

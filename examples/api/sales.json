@@ -1,96 +1,84 @@
 {
   "period": {
-    "start": "2026-10-31",
-    "end": "2026-11-06"
+    "start": "2026-11-01",
+    "end": "2026-11-07"
   },
-  "as_of": "2026-11-07T20:52:54.839874Z",
+  "as_of": "2026-11-07T21:17:08.039184Z",
   "source_data_version": 1,
-  "units": "5",
-  "net_revenue": "60.00",
-  "orders": 2,
-  "average_order_revenue": "30.00",
+  "units": "6",
+  "net_revenue": "72.00",
+  "orders": 3,
+  "average_order_revenue": "24.00",
   "coverage": {
     "period": {
-      "start": "2026-10-31",
-      "end": "2026-11-06"
+      "start": "2026-11-01",
+      "end": "2026-11-07"
     },
     "complete": 2,
-    "partial": 0,
-    "unknown": 12,
+    "partial": 1,
+    "unknown": 11,
     "closed": 0,
     "status": "partial",
     "days": [
       {
-        "date": "2026-10-31",
-        "channel_id": "delivery",
-        "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
-      },
-      {
-        "date": "2026-10-31",
-        "channel_id": "in_store",
-        "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
-      },
-      {
         "date": "2026-11-01",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-01",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-02",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-02",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-03",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-03",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-04",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-04",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-05",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-05",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T20:52:54.839874Z"
+        "updated_at": "2026-11-07T21:17:08.039184Z"
       },
       {
         "date": "2026-11-06",
@@ -102,6 +90,18 @@
         "date": "2026-11-06",
         "channel_id": "in_store",
         "status": "complete",
+        "updated_at": "2026-11-07T19:00:00Z"
+      },
+      {
+        "date": "2026-11-07",
+        "channel_id": "delivery",
+        "status": "unknown",
+        "updated_at": "2026-11-07T19:00:00Z"
+      },
+      {
+        "date": "2026-11-07",
+        "channel_id": "in_store",
+        "status": "partial",
         "updated_at": "2026-11-07T19:00:00Z"
       }
     ]
@@ -114,6 +114,14 @@
       "units": "5",
       "net_revenue": "60.00",
       "orders": 2
+    },
+    {
+      "date": "2026-11-07",
+      "dish_id": null,
+      "channel_id": null,
+      "units": "1",
+      "net_revenue": "12.00",
+      "orders": 1
     }
   ],
   "by_dish": [
@@ -129,9 +137,9 @@
       "date": null,
       "dish_id": "classic_burger",
       "channel_id": null,
-      "units": "3",
-      "net_revenue": "36.00",
-      "orders": 2
+      "units": "4",
+      "net_revenue": "48.00",
+      "orders": 3
     },
     {
       "date": null,
@@ -155,9 +163,9 @@
       "date": null,
       "dish_id": null,
       "channel_id": "in_store",
-      "units": "3",
-      "net_revenue": "35.00",
-      "orders": 1
+      "units": "4",
+      "net_revenue": "47.00",
+      "orders": 2
     }
   ],
   "evidence": [
@@ -186,6 +194,13 @@
       "kind": "receipt_item",
       "record_id": "item_receipt_002_2",
       "document_id": "doc_receipt_002",
+      "source_page": 1,
+      "quote": "1 x Classic Burger @ $12.00 = $12.00"
+    },
+    {
+      "kind": "receipt_item",
+      "record_id": "item_receipt_003_1",
+      "document_id": "doc_receipt_003",
       "source_page": 1,
       "quote": "1 x Classic Burger @ $12.00 = $12.00"
     }

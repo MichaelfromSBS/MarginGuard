@@ -31,7 +31,7 @@ class DatedArgs(Args):
 
 
 class SalesArgs(DatedArgs):
-    period: Literal["last_7_days", "last_7_complete_days", "last_week", "this_week", "yesterday", "this_month", "last_month", "custom"] = "last_7_days"
+    period: Literal["last_7_days", "last_7_finished_days", "last_7_complete_days", "today", "last_week", "this_week", "yesterday", "this_month", "last_month", "custom"] = "last_7_days"
     start: date | None = None
     end: date | None = None
     dish_id: Identifier | None = None
@@ -110,7 +110,7 @@ TOOL_ARGUMENTS = {"get_sales_summary": SalesArgs, "get_ingredient_history": Ingr
     "get_dish_cost": DishArgs, "get_month_forecast": ForecastArgs,
     "get_alerts": AlertArgs, "explain_forecast_change": CompareArgs}
 TOOL_DESCRIPTIONS = {
-    "get_sales_summary": "Observed approved net sales, units, orders and optional dish/channel/day rankings. last_week is the previous Monday-Sunday calendar week; last_7_days is the seven finished dates. last_7_complete_days explicitly selects seven fully covered past dates and reports which dates.",
+    "get_sales_summary": "Live approved net sales, units, orders and optional dish/channel/day rankings. today includes approved receipts so far. last_week is the previous Monday-Sunday calendar week; last_7_days includes today and the six previous dates. last_7_finished_days excludes today. last_7_complete_days selects seven fully covered past dates and reports which dates.",
     "get_ingredient_history": "Approved supplier unit-price history and change for a known ingredient. Default window is the last eight weeks including the as-of date.",
     "get_dish_cost": "Modeled replacement ingredient cost per dish, with recipe/invoice evidence; optional channel contribution assumptions. Omit dish_id only when all configured dishes are requested.",
     "get_month_forecast": "Read an existing saved forecast for next calendar month (default) or month YYYY-MM. Never calculate or write a forecast. Optional dish/channel filtering.",
@@ -147,7 +147,7 @@ def money(value):
 
 def sales_period(conn, args, today):
     as_of = checked_as_of(args.as_of, today)
-    end = as_of - timedelta(days=1)
+    end = as_of
     selected = None
     if args.period == "custom":
         start, end, _ = analytics.period_dates(restaurant_record(conn), args.start, args.end, as_of)
@@ -156,8 +156,13 @@ def sales_period(conn, args, today):
         start = end - timedelta(days=6)
     elif args.period == "this_week":
         start, end = as_of - timedelta(days=as_of.weekday()), as_of
-    elif args.period == "yesterday":
+    elif args.period == "today":
         start = end
+    elif args.period == "yesterday":
+        start = end = as_of - timedelta(days=1)
+    elif args.period == "last_7_finished_days":
+        end = as_of - timedelta(days=1)
+        start = end - timedelta(days=6)
     elif args.period == "this_month":
         start, end = as_of.replace(day=1), as_of
     elif args.period == "last_month":
@@ -165,6 +170,7 @@ def sales_period(conn, args, today):
         start = end.replace(day=1)
     elif args.period == "last_7_complete_days":
         start = as_of - timedelta(days=56)
+        end = as_of - timedelta(days=1)
         channels = [args.channel_id] if args.channel_id else [r[0] for r in conn.execute("SELECT id FROM channels ORDER BY id")]
         summary = analytics.coverage_summary(conn, start, end, channels)
         states = {(r["date"], r["channel_id"]): r["status"] for r in summary["days"]}

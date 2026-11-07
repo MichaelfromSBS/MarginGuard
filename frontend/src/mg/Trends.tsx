@@ -8,7 +8,7 @@ export default function Trends() {
   const catalog = usePoll(() => api.catalog(), 0);
   const [ingredient, setIngredient] = useState('beef');
   const prices = usePoll(() => api.prices(ingredient), 5000, [ingredient]);
-  const dashboard = usePoll(() => api.dashboard(), 15000);
+  const dashboard = usePoll(() => api.dashboard(), 3000);
   const invoices = usePoll(() => api.invoices(), 10000);
   const lineToInvoice = new Map<string, string>();
   (invoices.data?.items ?? []).forEach((inv) => inv.items.forEach((line) => lineToInvoice.set(line.id, `${inv.invoice_number} · ${inv.vendor_name}`)));
@@ -74,7 +74,7 @@ export default function Trends() {
 
       {dashboard.data && !dashboard.error && (
         <Card title="Daily sales" action={<small className="muted">{dashboard.data.sales && `${shortDate(dashboard.data.sales.period.start)} – ${shortDate(dashboard.data.sales.period.end)}`}</small>}>
-          {dashboard.data.sales?.coverage.status !== 'complete' && <p className="issues">Receipt coverage is incomplete. These are observed totals only.</p>}
+          {dashboard.data.sales?.coverage.status !== 'complete' && <p className="issues">Includes today’s approved receipts as they arrive. Today is in progress; incomplete dates show observed totals only.</p>}
           {dashboard.data.sales?.by_day.length ? <div className="table-scroll"><table className="tbl"><thead><tr><th>Date</th><th className="r">Orders</th><th className="r">Dishes sold</th><th className="r">Net sales</th></tr></thead><tbody>{dashboard.data.sales.by_day.map((d) => <tr key={d.date}><td>{shortDate(d.date!)}</td><td className="r">{d.orders}</td><td className="r">{decimal(d.units, 0)}</td><td className="r">{money(d.net_revenue)}</td></tr>)}</tbody></table></div> : <Empty>No observed sales in this period.</Empty>}
         </Card>
       )}

@@ -66,9 +66,13 @@ def update_payload(ledger, forecast_id, change):
 
 def test_rolling_sales_and_calendar_week_are_distinct(ledger):
     rolling, _ = run(ledger, "get_sales_summary")
-    assert values(rolling)["sales.net_revenue"] == "7400.00"
-    assert values(rolling)["sales.orders"] == "332"
-    assert "2026-10-31 through 2026-11-06" in rolling.answer
+    assert values(rolling)["sales.net_revenue"] == "5932.00"
+    assert values(rolling)["sales.orders"] == "264"
+    assert "2026-11-01 through 2026-11-07" in rolling.answer
+    assert any("incomplete" in text for text in rolling.limitations)
+    finished, _ = run(ledger, "get_sales_summary", {"period": "last_7_finished_days"})
+    assert values(finished)["sales.net_revenue"] == "7400.00"
+    assert "2026-10-31 through 2026-11-06" in finished.answer
     week, args = run(ledger, "get_sales_summary", '{"period":"last_week"}')
     assert "2026-10-26 through 2026-11-01" in week.answer
     assert args["period"] == "last_week"
@@ -79,7 +83,7 @@ def test_dish_and_channel_filter_controls_totals_rankings_and_evidence(ledger):
     args = {"dish_id": "classic_burger", "channel_id": "delivery", "breakdown": "dish"}
     result, _ = run(ledger, "get_sales_summary", args)
     with connect(ledger) as conn:
-        expected = analytics.sales_summary(conn, date(2026, 10, 31), date(2026, 11, 6),
+        expected = analytics.sales_summary(conn, date(2026, 11, 1), date(2026, 11, 7),
                                            dish_id="classic_burger", channel_id="delivery")
         for ref in result.evidence:
             row = conn.execute("SELECT i.dish_id,r.channel_id FROM receipt_items i JOIN receipts r ON r.id=i.receipt_id WHERE i.id=?", (ref["record_id"],)).fetchone()

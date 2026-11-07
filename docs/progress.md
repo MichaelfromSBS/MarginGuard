@@ -240,6 +240,22 @@ Verification: **128 focused backend tests passed** (worker/alerts, API and chat)
 
 The test used a copied fictional database and an explicit local detector cycle, with optional AI alert suggestions disabled. Only chat used the configured model. Existing `.env`, business data and `.vscode/` were preserved; the temporary review server was stopped afterward.
 
+## Live receipt visibility fix
+
+Verified the teammate's report and reproduced it with a regression test: a PDF receipt was approved immediately, but default sales/dashboard requests ended yesterday and hid its current-day sales. Receipt persistence and data-version invalidation were already working. Supplier replacement costs already included the current as-of date.
+
+The receipt visibility fix includes:
+
+- Default `/api/sales` and `/api/dashboard` periods now include the restaurant-local as-of date plus six previous dates. Overview and daily-sales charts poll every three seconds and explain that today's receipts are still in progress. Explicit historical start/end queries retain their requested ranges.
+- Chat's default/last-seven-day sales use the same live period. A `today` tool period reports approved receipts so far; `last_7_finished_days` preserves an explicitly requested yesterday-ending range. Last calendar week and last seven complete days keep their distinct meanings.
+- Receipt approval still increments the data version and refreshes the saved forecast. Partial current-day receipts are not treated as full-day demand samples. Tomorrow's unusual-sales notification policy is unchanged. Queued, failed or review-held receipts do not change financial figures; byte duplicates cannot count twice.
+
+Validation: **353 backend tests passed**, **7 frontend tests passed**, TypeScript/production build, contract export and whitespace checks passed. New cases cover browser-style multipart upload → worker extraction/approval → default live metrics and daily breakdown, exact order/unit/net-sales deltas, live chat tools, forecast freshness without partial-day training leakage, duplicate idempotency, review-held exclusion and restaurant midnight versus UTC midnight.
+
+A live configured-model check approved the actual fictional `1_receipt_TB-20261107-001.pdf`. On November 7 the live November 1–7 totals increased from **$5,932.00 / 264 orders / 488 units** to **$5,969.00 / 265 orders / 491 units**. Today appeared in the daily chart; owner chat reported **$37.00 / 1 order / 3 units**, with partial coverage and source references. The forecast refreshed to the new source version while retaining its finished-day demand totals. Desktop/mobile browser checks passed without page errors or horizontal overflow.
+
+The browser used a separate localhost port and an isolated copied fixture database; test-only request forwarding preserved the production local-origin guard. Existing user server, `.env` and business data were preserved. Temporary API/worker processes were stopped. Restart the existing API and worker (or restart `npm.cmd run dev`) to load the fix: the running API on port 8000 still uses the older period behavior until restarted.
+
 ## Checkpoint review status
 
 | Checkpoint | Required outcome | State |

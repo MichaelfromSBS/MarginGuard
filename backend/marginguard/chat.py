@@ -27,8 +27,10 @@ Independent new questions reset earlier entity, channel and period filters. Carr
 context only for references/follow-ups such as 'it', 'same period', 'and for delivery'.
 Use only known catalog IDs. Never pick a convenient dish for an ambiguous 'burger'.
 Omit optional filters unless explicitly requested or unambiguously referenced.
-last week = previous Monday-Sunday calendar week; last seven days = seven finished
-local dates; last seven complete days requires explicit completion selection.
+last week = previous Monday-Sunday calendar week; last seven days = today plus the
+six previous local dates, matching the live dashboard. today = receipts so far.
+last seven finished days excludes today. last seven complete days requires
+explicit completion selection. Never treat today's partial receipts as a full day.
 Resolve dates using the supplied restaurant-local today. Never invent a date range.
 For unclear dates/entities return clarify with a matching reason and no calls.
 For unsupported tasks return unsupported with a reason and no calls. Actual profit,
@@ -174,7 +176,9 @@ def response(status, answer, version, **kwargs):
 def mentioned_periods(text):
     patterns = {
         "last_7_complete_days": r"\b(?:last|past)\s+(?:7|seven)\s+complete\s+days\b",
-        "last_7_days": r"\b(?:last|past)\s+(?:7|seven)\s+(?:finished\s+)?days\b",
+        "last_7_finished_days": r"\b(?:last|past)\s+(?:7|seven)\s+finished\s+days\b",
+        "last_7_days": r"\b(?:last|past)\s+(?:7|seven)\s+days\b",
+        "today": r"\btoday\b",
         "last_week": r"\blast\s+week\b", "this_week": r"\bthis\s+week\b",
         "last_month": r"\blast\s+month\b", "this_month": r"\bthis\s+month\b", "yesterday": r"\byesterday\b",
     }

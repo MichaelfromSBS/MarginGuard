@@ -44,7 +44,9 @@ def period_dates(owner, start=None, end=None, as_of=None):
     as_of = as_of or local_today(owner)
     if not 1900 <= as_of.year <= 9998:
         raise DomainError("invalid_period", "As-of year must be between 1900 and 9998.", 422)
-    end = end or as_of - timedelta(days=1)
+    # Live observed metrics include today's approved receipts. Forecast training
+    # and yesterday's anomaly checks select their finished-day ranges separately.
+    end = end or as_of
     start = start or end - timedelta(days=6)
     if end < start or (end - start).days >= 366:
         raise DomainError("invalid_period", "Choose an ordered period of at most 366 days.", 422)

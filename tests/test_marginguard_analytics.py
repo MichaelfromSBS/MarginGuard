@@ -1,6 +1,6 @@
 """Checkpoint 3 numeric, coverage, versioning and leakage acceptance tests."""
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import json
 import shutil
@@ -151,6 +151,23 @@ def test_new_partial_day_updates_actuals_without_inventing_a_forecast_training_d
     dashboard = client.get("/api/dashboard?start=2026-11-07&end=2026-11-07&as_of=2026-11-07").json()
     assert dashboard["sales"]["net_revenue"] == "37.00"
     assert dashboard["forecast"]["id"] == after["id"]
+
+
+@pytest.mark.parametrize("hour,minute,expected_start,expected_end", [
+    (4, 59, "2026-11-01", "2026-11-07"),
+    (5, 1, "2026-11-02", "2026-11-08"),
+])
+def test_live_default_window_rolls_at_restaurant_midnight_not_utc(client, monkeypatch, hour, minute, expected_start, expected_end):
+    instant = datetime(2026, 11, 8, hour, minute, tzinfo=timezone.utc)
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return instant.astimezone(tz)
+    monkeypatch.setattr(analytics, "datetime", Clock)
+    for path in ["/api/sales", "/api/dashboard"]:
+        data = client.get(path).json()
+        sales = data["sales"] if path.endswith("dashboard") else data
+        assert sales["period"] == {"start": expected_start, "end": expected_end}
 
 
 def test_confirmed_zero_is_distinct_from_missing_and_coverage_changes_are_audited(client, ledger):
