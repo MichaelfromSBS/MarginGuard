@@ -18,7 +18,9 @@ MARGINGUARD_EXTRACTION_MAX_OUTPUT_TOKENS=6000
 AI_TIMEOUT_SECONDS=60
 ```
 
-Use a model endpoint supporting structured output, and image input for PNG/JPEG. Restart after configuration changes. No live provider call was made during recorded verification because no key/model was configured.
+Use a model endpoint supporting structured output, and image input for PNG/JPEG. Restart after configuration or Python changes. The two main demo PDFs have passed live extraction with Gemini 3.8 Flash; image extraction has not yet been live-verified. `/api/health` reporting `configured: true` means that configuration is present, not that a provider request has succeeded.
+
+The provider schema omits the item array's `maxItems: 200` constraint because Gemini rejected that extraction request with HTTP 400. The original Pydantic schema still enforces the 200-item maximum, along with all financial and source-evidence checks, before persistence.
 
 For the full fictional history, explicitly initialize a **fresh** database first:
 
@@ -80,6 +82,8 @@ Correct a reviewable or failed document with `POST /api/documents/{id}/review`:
 Use the actual full schema from OpenAPI or the paired expected examples; the abbreviated object above is explanatory, not executable. Corrections pass the same arithmetic/catalog/source checks, are recorded in the review history, and cannot overwrite an already-approved ledger entry. Conflicting business keys must be resolved as distinct valid source records; clicking review does not bypass duplicate protection. No endpoint creates new catalog ingredients/dishes automatically.
 
 After a transient failure or server restart, use `POST /api/documents/{id}/process` to retry the saved file. Requests already active in this process cannot be retried or reviewed concurrently. Completed documents cannot be reprocessed into another entry. At this checkpoint pending/stale jobs are resumed manually; there is no independent restart-resuming worker yet.
+
+If a document failed before the Gemini schema fix, restart the server in its existing terminal to keep the same process environment/database selection, then retry its existing ID. Uploading identical bytes again only returns the existing failed document; it does not retry extraction. There is no need to reset or reimport the database.
 
 ## Offline demonstration without an API key
 

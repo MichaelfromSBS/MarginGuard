@@ -121,7 +121,7 @@ Checkpoint 1 works without a model key. For a live call through the existing gen
 
 Checkpoint-2 HTTP extraction uses that same live configuration. In mock mode, uploads never fabricate approved financial records: extraction fails visibly with `live_model_required`. Offline history and single-document expected-output imports are separately labeled `fixture_history` and `fixture_expected` and are restricted to explicit demo use.
 
-Live mode does not silently fall back to mock fixtures. The provider transport is tested with mocked responses; no actual paid provider call has been validated in this repository's recorded checkpoint results.
+Live mode does not silently fall back to mock fixtures. Live OpenRouter extraction with Gemini 3.8 Flash has now been verified for the main demo PDF invoice and receipt in an isolated v2-history database. Both completed validation and ledger approval; this small smoke check does not establish general extraction accuracy. See the [progress record](docs/progress.md).
 
 Environment variables override `.env`. Relative database paths resolve from the repository root. `.env`, local databases, uploads, caches and dependencies are excluded from Git. Keep keys server-side; do not put them in frontend code or `VITE_*` variables.
 

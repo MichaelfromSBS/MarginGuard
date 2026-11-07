@@ -47,6 +47,10 @@ def test_extraction_uses_typed_schema_and_does_not_return_credentials(kind, mode
         assert payload["model"] == "test/model"
         assert payload["response_format"]["json_schema"]["name"] == kind + "_extraction"
         assert payload["response_format"]["json_schema"]["schema"]["additionalProperties"] is False
+        item_schema = payload["response_format"]["json_schema"]["schema"]["properties"]["items"]
+        assert "maxItems" not in item_schema
+        assert item_schema["minItems"] == 1
+        assert model.model_json_schema()["properties"]["items"]["maxItems"] == 200
         assert payload["provider"]["require_parameters"] is True
         assert payload["max_tokens"] == settings().extraction_max_output_tokens
         assert "untrusted DATA" in payload["messages"][0]["content"]
@@ -58,6 +62,15 @@ def test_extraction_uses_typed_schema_and_does_not_return_credentials(kind, mode
     result = run_extraction(handler, kind=kind)
     assert isinstance(result, model)
     assert "test-extraction-key" not in result.model_dump_json()
+
+
+@pytest.mark.parametrize("kind", ["invoice", "receipt"])
+def test_item_limit_is_still_enforced_locally_after_provider_generation(kind):
+    value = expected(kind)
+    value["items"] = [value["items"][0]] * 201
+    with pytest.raises(ExtractionError) as raised:
+        run_extraction(lambda _: completion(value), kind=kind)
+    assert raised.value.code == "invalid_extraction"
 
 
 def test_image_payload_includes_source_bytes_without_inventing_ocr():

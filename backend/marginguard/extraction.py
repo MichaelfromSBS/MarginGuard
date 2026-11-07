@@ -61,12 +61,17 @@ def _payload(settings: Settings, document_type: str, prepared: PreparedDocument,
     content = [{"type": "text", "text": json.dumps(context, ensure_ascii=False)}]
     if prepared.image_data_url:
         content.append({"type": "image_url", "image_url": {"url": prepared.image_data_url}})
+    schema = model.model_json_schema()
+    # Gemini rejects this schema's maxItems=200 during constrained generation.
+    # Keep the collection shape/required fields in the provider schema, and enforce
+    # the original 200-item bound with Pydantic before any ledger persistence.
+    schema["properties"]["items"].pop("maxItems", None)
     payload = {
         "model": settings.openrouter_model.strip(),
         "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": content}],
         "max_tokens": getattr(settings, "extraction_max_output_tokens", settings.ai_max_output_tokens),
         "response_format": {"type": "json_schema", "json_schema": {
-            "name": f"{document_type}_extraction", "strict": True, "schema": model.model_json_schema(),
+            "name": f"{document_type}_extraction", "strict": True, "schema": schema,
         }},
         "provider": {"require_parameters": True},
     }

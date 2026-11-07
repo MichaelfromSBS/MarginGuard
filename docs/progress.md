@@ -69,7 +69,7 @@ Checkpoint 2 validates the v2 schemas, literal source quotes and normalized cata
 ## Checkpoint 2: completed implementation, pending team review
 
 - Upload endpoints persist supported PDF/PNG/JPEG bytes under generated names and start bounded in-process extraction tasks.
-- Structured OpenRouter extraction uses separate invoice/receipt schemas, known catalogs and a bounded output budget. No key/model is configured locally, so actual paid extraction remains unverified; provider success/failure paths are tested with mocked responses.
+- Structured OpenRouter extraction uses separate invoice/receipt schemas, known catalogs and a bounded output budget. Provider success/failure paths are tested with mocked responses; subsequent live verification is recorded below.
 - Decimal arithmetic, source-page quotes, catalog matching, quantities, pack units and document totals are checked before a whole-document ledger transaction.
 - Ambiguous input and business-key conflicts enter review without changing financial rows. Exact-byte duplicates reuse the document and do not call a model again.
 - Corrections are audited, retries preserve source integrity, approved records cannot be overwritten through review, and new receipt data marks its day/channel partial.
@@ -91,9 +91,20 @@ Recorded checkpoint-2 verification on November 7:
 | Ingestion edge cases | Exact duplicates, conflicting keys, ambiguity, correction, retry, source tampering, image evidence and late invoices tested |
 | Schema upgrade | Existing schema-1 business row preserved through migration 2 |
 | Live HTTP on an isolated demo copy | Upload 202, honest mock failure, explicit manual correction, duplicate same ID, one receipt added, original source bytes returned |
-| Real OpenRouter extraction | Not run: no API key/model configured |
+| Real OpenRouter extraction | Initially not run; subsequent live verification is recorded below |
 
 The baseline v2 history was loaded separately into local `data/demo-v2.db`. Existing `.env` database selection and credentials were preserved; select that database explicitly to serve the full history. Runtime databases and uploaded originals remain outside Git.
+
+## Checkpoint 2: Gemini compatibility fix and live verification
+
+November 7: the team's first live uploads failed with `provider_request_rejected`. A basic request with the configured model succeeded. Reproducing the extraction payload returned HTTP 400 with Gemini's `INVALID_ARGUMENT`; removing only the item array's `maxItems: 200` constraint made the request succeed. The provider request now omits that one constraint. The original Pydantic model still rejects more than 200 items before ledger persistence; required fields, types, Decimal checks and source-evidence validation remain enforced.
+
+- Focused extraction, ingestion and business-validation suites: **86 passed**, with the existing test-client deprecation warning. Regression cases cover both invoice and receipt item limits after provider generation.
+- Live OpenRouter calls using the configured Gemini 3.8 Flash model processed both main demo PDFs in an isolated temporary database loaded with the full v2 history. Both finished `completed`, with `extraction_method: openrouter` and no validation issues.
+- Approved counts changed from 8 to 9 invoices and 2,733 to 2,734 receipts. The new November 7 beef price was **$4.72/lb**. Reuploading both originals returned the same document IDs and added no records.
+- The user's running server/database and `.env` were preserved. Existing failed documents need a server restart followed by `POST /api/documents/{id}/process`; identical-byte reupload alone does not retry.
+
+This verifies these two PDF examples, not general extraction accuracy or live image extraction. `/api/health` checks configuration presence rather than making a paid provider probe.
 
 ## Upcoming checkpoints
 
