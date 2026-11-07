@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Alert } from './marginguard-api';
 import { api, usePoll } from './mg/client';
 import Overview from './mg/Overview';
@@ -40,6 +40,8 @@ export default function App() {
 
   const newCount = alerts.data?.total ?? 0;
   const online = health.data !== null && !health.error;
+  // Reset before paint, rather than briefly showing the new view at the old scroll offset.
+  useLayoutEffect(() => { window.scrollTo(0, 0); }, [tab]);
   const navigate = (next: Tab) => {
     if (next === tab) return;
     setDirection(TABS.findIndex(([id]) => id === next) > TABS.findIndex(([id]) => id === tab) ? 'forward' : 'backward');
@@ -67,9 +69,9 @@ export default function App() {
       </header>
 
       <main className="content" data-direction={direction}>
-        <div className={`tab-panel ${tab === 'overview' ? 'is-active' : ''}`} hidden={tab !== 'overview'}><Overview go={navigate} /></div>
-        {tab === 'documents' && <div className="tab-panel is-active"><Documents selectedId={docId} onSelect={setDocId} /></div>}
-        {tab === 'trends' && <div className="tab-panel is-active"><Trends /></div>}
+        <div key="overview" className={`tab-panel ${tab === 'overview' ? 'is-active' : ''}`} hidden={tab !== 'overview'}><Overview go={navigate} /></div>
+        <div key="trends" className={`tab-panel ${tab === 'trends' ? 'is-active' : ''}`} hidden={tab !== 'trends'}><Trends /></div>
+        {tab === 'documents' && <div key="documents" className="tab-panel is-active"><Documents selectedId={docId} onSelect={setDocId} /></div>}
       </main>
 
       <FloatingChat visible={tab === 'overview'} onSource={(id) => { setDocId(id); navigate('documents'); }} />

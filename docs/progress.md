@@ -285,6 +285,12 @@ Validation: **7 frontend tests passed** and TypeScript/production build passed. 
 
 Published the conversational explanations, floating assistant, original color palette and subtle motion in [`f34283c`](https://github.com/MichaelfromSBS/MarginGuard/commit/f34283c). Renamed the GitHub repository from `nova-hackathon` to **MarginGuard**, preserving its identity, history and visibility. The local `origin`, clone instructions and repository links now use [MichaelfromSBS/MarginGuard](https://github.com/MichaelfromSBS/MarginGuard). The local workspace directory name is unchanged.
 
+## Stable Trends tab switching
+
+Implemented and verified: Trends stays mounted and loads ahead of navigation, preserving the ingredient selection and avoiding repeated empty layouts. Cold loads show a Trends-specific loading state. Tab transitions use a visible directional slide and fade over 300ms, with horizontal clipping to prevent scrollbar flashes. Scroll resets before paint so the next view starts at its own top. Other animations and floating-chat behavior remain.
+
+Validation: production build and **7 frontend tests passed**; browser checks covered cold loading, repeated switches, correct first section, retained ingredient selection, scroll reset, mobile overflow and no page errors. A follow-up animation check sampled both directions mid-transition, verifying actual movement and opacity over 300ms without mobile overflow. The tested fix is included in the tab-switch update.
+
 ## Checkpoint review status
 
 | Checkpoint | Required outcome | State |

@@ -42,10 +42,10 @@ button:disabled { cursor: default; opacity: .45; }
 .bell-count { position: absolute; top: -6px; right: -6px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: grid; place-items: center; padding: 0 4px; }
 
 /* Layout */
-.content { max-width: 1240px; margin: 0 auto; padding: 24px 28px 112px; --tab-shift: 16px; }
-.content[data-direction="backward"] { --tab-shift: -16px; }
-.tab-panel.is-active { animation: tab-reveal .25s cubic-bezier(.2,.7,.2,1) both; }
-@keyframes tab-reveal { from { opacity: 0; transform: translate3d(var(--tab-shift), 5px, 0); } to { opacity: 1; transform: none; } }
+.content { max-width: 1240px; margin: 0 auto; padding: 24px 28px 112px; overflow-x: clip; --tab-offset: 20px; }
+.content[data-direction="backward"] { --tab-offset: -20px; }
+.tab-panel.is-active { animation: tab-reveal .3s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes tab-reveal { from { opacity: .2; transform: translateX(var(--tab-offset)); } to { opacity: 1; transform: none; } }
 .stack { display: flex; flex-direction: column; gap: 16px; }
 .grid2 { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .grid2 > * { min-width: 0; }

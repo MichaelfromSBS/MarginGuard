@@ -17,6 +17,12 @@ export default function Trends() {
   const unit = ing?.base_unit ?? 'unit';
   const names = Object.fromEntries((catalog.data?.ingredients ?? []).map((i) => [i.id, i.name]));
 
+  if (dashboard.loading || catalog.loading) return (
+    <div className="stack" aria-busy="true"><Card title="Trends & Outlook">
+      <p className="muted"><i className="pulse" /> Loading forecasts and sales…</p>
+    </Card></div>
+  );
+
   return (
     <div className="stack">
       {dashboard.error ? (isNotYet(dashboard.error) ? <NotYet checkpoint={3} what="Sales and next-month forecasts" /> : <ErrorBox>{errorText(dashboard.error)}</ErrorBox>) : null}
