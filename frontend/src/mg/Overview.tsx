@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import type { Alert } from '../marginguard-api';
-import { api, errorText, isNotYet, usePoll } from './client';
-import { localDate, money, pctChange, qty, shortDate, timeAgo } from './format';
-import { Card, Empty, ErrorBox, NotYet, Pill } from './ui';
+import type { Alert, Metric } from '../marginguard-api';
+import { api, errorText, isNotYet, loadDocuments, usePoll } from './client';
+import { localDate, money, pctChange, shortDate, timeAgo } from './format';
+import { Card, ErrorBox, NotYet } from './ui';
 import { MetricCard } from './Metrics';
-import Forecast from './Forecast';
+
+type Go = (tab: 'trends' | 'documents') => void;
 
 export function AlertItem({ a, onChanged }: { a: Alert; onChanged?: () => void }) {
   const [err, setErr] = useState('');
@@ -24,79 +25,102 @@ export function AlertItem({ a, onChanged }: { a: Alert; onChanged?: () => void }
   );
 }
 
-const PLACEHOLDER = ['Units sold', 'Orders', 'Net item revenue', 'Average order revenue'];
+/** A lightweight attention row that links to the page where it can be handled. */
+function Task({ tone, title, text, action, onClick }: { tone: 'warn' | 'info'; title: string; text: string; action: string; onClick: () => void }) {
+  return (
+    <div className={`alert task ${tone}`}>
+      <div className="alert-main"><b>{title}</b><p>{text}</p></div>
+      <button className="ghost" onClick={onClick}>{action} →</button>
+    </div>
+  );
+}
 
-export default function Overview() {
+const SALES = ['sales.net_revenue', 'sales.orders', 'sales.average_order_revenue', 'sales.units'];
+const OUTLOOK = ['forecast.revenue', 'forecast.ingredient_cost'];
+const GHOST: Record<string, string> = {
+  'sales.net_revenue': 'Net sales', 'sales.orders': 'Orders', 'sales.average_order_revenue': 'Average order value', 'sales.units': 'Dishes sold',
+  'forecast.revenue': 'Projected net sales', 'forecast.ingredient_cost': 'Projected ingredient cost',
+};
+const RECENT_DAYS = 14;
+
+export default function Overview({ go }: { go: Go }) {
   const alerts = usePoll(() => api.alerts(), 5000);
   const capabilities = usePoll(() => api.capabilities(), 0);
   const dash = usePoll(() => api.dashboard(), 15000);
+  const docs = usePoll(() => loadDocuments(false), 10000);
   const catalog = usePoll(() => api.catalog(), 0);
   const prices = usePoll(async () => {
     if (!catalog.data) return [];
     return Promise.all(catalog.data.ingredients.map(async (ing) => ({ ing, items: (await api.prices(ing.id)).items })));
-  }, 5000, [catalog.data]);
+  }, 10000, [catalog.data]);
+
   const open = (alerts.data?.items ?? []).filter((a) => a.status !== 'resolved').reverse();
   const monitoring = capabilities.data?.capabilities.some((c) => c.name === 'background_processing_and_alerts' && c.available);
+  const review = (docs.data ?? []).filter((d) => d.status === 'needs_review' || d.status === 'failed');
+  const forecast = dash.data?.forecast ?? null;
+  const forecastStale = forecast?.status === 'pending';
+  const attentionCount = open.length + (review.length ? 1 : 0) + (forecastStale ? 1 : 0);
+
+  const pick = (ids: string[], from: Metric[] | undefined) => ids.map((id) => ({ id, m: from?.find((x) => x.id === id) }));
+  const sales = pick(SALES, dash.data?.metrics);
+  const outlook = pick(OUTLOOK, forecast?.status === 'ready' ? forecast.metrics : undefined);
+
+  // Only supplier price changes from the last two weeks; full history lives in Trends & Outlook.
+  const cutoff = new Date(Date.now() - RECENT_DAYS * 86400000).toISOString().slice(0, 10);
+  const changes = (prices.data ?? []).flatMap(({ ing, items }) => {
+    const eff = items.filter((p) => p.effective_date <= localDate());
+    const cur = eff.at(-1);
+    // Compare with the latest price from an earlier date (several invoices can share a date).
+    const prev = cur ? eff.filter((p) => p.effective_date < cur.effective_date).at(-1) : undefined;
+    if (!cur || !prev || cur.effective_date < cutoff) return [];
+    const ch = pctChange(prev.unit_cost, cur.unit_cost);
+    return ch !== null && Math.abs(ch) >= 0.05 ? [{ ing, cur, prev, ch }] : [];
+  }).sort((a, b) => Math.abs(b.ch) - Math.abs(a.ch));
 
   return (
     <div className="stack">
-      <Card title={<>Needs attention {open.length > 0 && <span className="count">{open.length}</span>}</>}>
+      <Card title={<>Needs attention {attentionCount > 0 && <span className="count">{attentionCount}</span>}</>}>
         {alerts.error ? <ErrorBox>{errorText(alerts.error)}</ErrorBox> : null}
-        {alerts.data && open.length === 0 && (monitoring ? <Empty>No alerts recorded.</Empty> : <NotYet checkpoint={4} what="Automatic monitoring and alerts" />)}
         {open.map((a) => <AlertItem key={a.id} a={a} onChanged={alerts.refresh} />)}
+        {review.length > 0 && <Task tone="warn" title={`${review.length} document${review.length > 1 ? 's' : ''} need${review.length > 1 ? '' : 's'} review`}
+          text="Held out of the books until checked." action="Open Inbox" onClick={() => go('documents')} />}
+        {forecastStale && <Task tone="info" title="Next-month forecast is out of date" text="New records arrived since it was calculated." action="Recalculate" onClick={() => go('trends')} />}
+        {attentionCount === 0 && (monitoring || !alerts.data ? <p className="allclear">All clear.</p>
+          : <NotYet checkpoint={4} what="Automatic alerts (price spikes, cost increases, unusual sales days)" />)}
       </Card>
 
-      <div className="metrics">
-        {dash.data ? dash.data.metrics.slice(0, 8).map((m) => <MetricCard key={m.id} m={m} />)
-          : PLACEHOLDER.map((p) => <div key={p} className="metric ghost"><div className="metric-top"><span>{p}</span></div><div className="metric-value">—</div></div>)}
-      </div>
-      {dash.error ? (isNotYet(dash.error) ? <NotYet checkpoint={3} what="Sales, dish costs and next-month projections" /> : <ErrorBox>{errorText(dash.error)}</ErrorBox>) : null}
-      {dash.data && !dash.error && <Forecast snapshot={dash.data.forecast} onChanged={dash.refresh} />}
+      <section>
+        <div className="section-head"><h3>Sales</h3>{sales[0].m?.period && <small className="muted">last 7 complete days</small>}</div>
+        <div className="metrics">
+          {sales.map(({ id, m }) => m ? <MetricCard key={id} m={m} /> : <Ghost key={id} label={GHOST[id]} />)}
+        </div>
+        {dash.error ? (isNotYet(dash.error) ? <NotYet checkpoint={3} what="Sales figures" /> : <ErrorBox>{errorText(dash.error)}</ErrorBox>) : null}
+      </section>
 
-      <Card title="Ingredient costs" action={<small className="muted">from supplier invoices</small>}>
-          {prices.data && prices.data.length > 0 ? (
-            <div className="table-scroll"><table className="tbl">
-              <thead><tr><th>Ingredient</th><th className="r">Current</th><th className="r">Previous</th><th className="r">Change</th><th className="r">Since</th></tr></thead>
-              <tbody>{prices.data.map(({ ing, items }) => {
-                const effective = items.filter((p) => p.effective_date <= localDate());
-                const selected = dash.data?.dish_costs.flatMap((d) => d.ingredients).find((i) => i.ingredient_id === ing.id)?.evidence?.record_id;
-                const cur = effective.find((p) => p.invoice_line_id === selected) ?? effective[effective.length - 1];
-                const prev = effective.filter((p) => p.id !== cur?.id && p.effective_date <= (cur?.effective_date ?? '')).at(-1);
-                const ch = cur && prev ? pctChange(prev.unit_cost, cur.unit_cost) : null;
-                return (
-                  <tr key={ing.id} className={ch !== null && ch > 0.05 ? 'up' : ''}>
-                    <td>{ing.name}</td>
-                    <td className="r strong">{cur ? `${money(cur.unit_cost)}/${ing.base_unit}` : '—'}</td>
-                    <td className="r muted">{prev ? money(prev.unit_cost) : '—'}</td>
-                    <td className="r">{ch === null ? '—' : Math.abs(ch) < 0.05 ? <span className="muted">no change</span> : <span className={ch > 0 ? 'upval' : 'downval'}>{ch > 0 ? '▲' : '▼'} {Math.abs(ch).toFixed(1)}%</span>}</td>
-                    <td className="r muted">{cur ? shortDate(cur.effective_date) : '—'}</td>
-                  </tr>
-                );
-              })}</tbody>
-            </table></div>
-          ) : <Empty>{prices.error ? errorText(prices.error) : 'Loading…'}</Empty>}
-        </Card>
-
-
-      {catalog.data && (
-        <Card title="Menu" action={<small className="muted">recipes used for dish costs</small>}>
-          <div className="menu">
-            {catalog.data.dishes.map((dish) => {
-              const cost = dash.data?.dish_costs.find((d) => d.dish_id === dish.id);
-              const price = dish.prices.filter((p) => p.channel_id === 'in_store' && p.effective_date <= localDate()).at(-1);
-              const recipe = dish.recipes.filter((r) => r.effective_date <= localDate()).at(-1);
-              const names = Object.fromEntries(catalog.data!.ingredients.map((i) => [i.id, i.name]));
-              return (
-                <div key={dish.id} className="dish">
-                  <div className="dish-head"><b>{dish.name}</b><span>{money(price?.price)}</span></div>
-                  <small>{recipe?.items.map((it) => `${qty(it.quantity)} ${it.unit === 'each' ? '×' : it.unit} ${(names[it.ingredient_id] ?? it.ingredient_id).toLowerCase()}`).join(' · ')}</small>
-                  {cost && <p className="hint">Replacement ingredient cost: <b>{money(cost.ingredient_cost)}</b>{cost.limitations.length ? ` · ${cost.limitations.join(' ')}` : ''}</p>}
-                </div>
-              );
-            })}
+      <div className="grid2 even">
+        <section>
+          <div className="section-head"><h3>Next month</h3><button className="link" onClick={() => go('trends')}>Full outlook →</button></div>
+          <div className="metrics two">
+            {outlook.map(({ id, m }) => m ? <MetricCard key={id} m={m} /> : <Ghost key={id} label={GHOST[id]} note={forecast ? 'Recalculate in Trends & Outlook' : 'Calculate in Trends & Outlook'} />)}
           </div>
-        </Card>
-      )}
+        </section>
+        <section>
+          <div className="section-head"><h3>Supplier price changes</h3><button className="link" onClick={() => go('trends')}>Price history →</button></div>
+          <Card className="changes">
+            {changes.length === 0 ? <p className="allclear">No price changes in the last {RECENT_DAYS} days.</p> : changes.map(({ ing, cur, prev, ch }) => (
+              <div key={ing.id} className="change">
+                <span><b>{ing.name}</b><small>{shortDate(cur.effective_date)}</small></span>
+                <span className="r">{money(prev.unit_cost)} → <b>{money(cur.unit_cost)}</b>/{ing.base_unit}</span>
+                <span className={ch > 0 ? 'upval' : 'downval'}>{ch > 0 ? '▲' : '▼'} {Math.abs(ch).toFixed(1)}%</span>
+              </div>
+            ))}
+          </Card>
+        </section>
+      </div>
     </div>
   );
+}
+
+function Ghost({ label, note }: { label: string; note?: string }) {
+  return <div className="metric ghost"><div className="metric-top"><span>{label}</span></div><div className="metric-value">—</div>{note && <div className="metric-foot">{note}</div>}</div>;
 }

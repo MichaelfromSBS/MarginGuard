@@ -55,7 +55,7 @@ export default function App() {
       </header>
 
       <main className="content">
-        {tab === 'overview' && <Overview />}
+        {tab === 'overview' && <Overview go={setTab} />}
         {tab === 'documents' && <Documents selectedId={docId} onSelect={setDocId} />}
         {tab === 'trends' && <Trends />}
         {tab === 'ask' && <Ask />}

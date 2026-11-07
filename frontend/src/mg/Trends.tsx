@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api, errorText, isNotYet, usePoll } from './client';
 import Forecast from './Forecast';
-import { decimal, money, pctChange, shortDate } from './format';
+import { decimal, localDate, money, pctChange, qty, shortDate } from './format';
 import { Card, Empty, ErrorBox, NotYet, PriceChart } from './ui';
 
 export default function Trends() {
@@ -15,9 +15,36 @@ export default function Trends() {
   const ing = catalog.data?.ingredients.find((i) => i.id === ingredient);
   const items = prices.data?.items ?? [];
   const unit = ing?.base_unit ?? 'unit';
+  const names = Object.fromEntries((catalog.data?.ingredients ?? []).map((i) => [i.id, i.name]));
 
   return (
     <div className="stack">
+      {dashboard.error ? (isNotYet(dashboard.error) ? <NotYet checkpoint={3} what="Sales and next-month forecasts" /> : <ErrorBox>{errorText(dashboard.error)}</ErrorBox>) : null}
+      {dashboard.data && !dashboard.error && <Forecast snapshot={dashboard.data.forecast} onChanged={dashboard.refresh} />}
+
+      {catalog.data && (
+        <Card title="Dish costs" action={<small className="muted">restock cost per dish = ingredients for one dish at today’s supplier prices</small>}>
+          <div className="table-scroll"><table className="tbl">
+            <thead><tr><th>Dish</th><th>Recipe</th><th className="r">Menu price</th><th className="r">Restock cost per dish</th><th className="r">Ingredient share</th></tr></thead>
+            <tbody>{catalog.data.dishes.map((dish) => {
+              const cost = dashboard.data?.dish_costs.find((d) => d.dish_id === dish.id);
+              const price = dish.prices.filter((p) => p.channel_id === 'in_store' && p.effective_date <= localDate()).at(-1);
+              const recipe = dish.recipes.filter((r) => r.effective_date <= localDate()).at(-1);
+              const share = cost?.ingredient_cost && price ? (Number(cost.ingredient_cost) / Number(price.price)) * 100 : null;
+              return (
+                <tr key={dish.id}>
+                  <td className="strong">{dish.name}</td>
+                  <td className="muted small">{recipe?.items.map((it) => `${qty(it.quantity)} ${it.unit === 'each' ? '×' : it.unit} ${(names[it.ingredient_id] ?? it.ingredient_id).toLowerCase()}`).join(' · ')}</td>
+                  <td className="r">{money(price?.price)}</td>
+                  <td className="r strong">{cost ? money(cost.ingredient_cost) : '—'}</td>
+                  <td className="r muted">{share === null ? '—' : `${share.toFixed(1)}%`}</td>
+                </tr>
+              );
+            })}</tbody>
+          </table></div>
+        </Card>
+      )}
+
       <Card title="Ingredient price history" action={<small className="muted">step = price holds until the next invoice</small>}>
         <div className="chips">
           {(catalog.data?.ingredients ?? []).map((i) => (
@@ -45,14 +72,12 @@ export default function Trends() {
         )}
       </Card>
 
-      {dashboard.error ? (isNotYet(dashboard.error) ? <NotYet checkpoint={3} what="Sales and next-month forecasts" /> : <ErrorBox>{errorText(dashboard.error)}</ErrorBox>) : null}
-      {dashboard.data && !dashboard.error && <>
-        <Card title="Observed daily sales" action={<small className="muted">{dashboard.data.sales && `${shortDate(dashboard.data.sales.period.start)} – ${shortDate(dashboard.data.sales.period.end)}`}</small>}>
+      {dashboard.data && !dashboard.error && (
+        <Card title="Daily sales" action={<small className="muted">{dashboard.data.sales && `${shortDate(dashboard.data.sales.period.start)} – ${shortDate(dashboard.data.sales.period.end)}`}</small>}>
           {dashboard.data.sales?.coverage.status !== 'complete' && <p className="issues">Receipt coverage is incomplete. These are observed totals only.</p>}
-          {dashboard.data.sales?.by_day.length ? <div className="table-scroll"><table className="tbl"><thead><tr><th>Date</th><th className="r">Orders</th><th className="r">Units</th><th className="r">Net item revenue</th></tr></thead><tbody>{dashboard.data.sales.by_day.map((d) => <tr key={d.date}><td>{shortDate(d.date!)}</td><td className="r">{d.orders}</td><td className="r">{decimal(d.units, 0)}</td><td className="r">{money(d.net_revenue)}</td></tr>)}</tbody></table></div> : <Empty>No observed sales in this period.</Empty>}
+          {dashboard.data.sales?.by_day.length ? <div className="table-scroll"><table className="tbl"><thead><tr><th>Date</th><th className="r">Orders</th><th className="r">Dishes sold</th><th className="r">Net sales</th></tr></thead><tbody>{dashboard.data.sales.by_day.map((d) => <tr key={d.date}><td>{shortDate(d.date!)}</td><td className="r">{d.orders}</td><td className="r">{decimal(d.units, 0)}</td><td className="r">{money(d.net_revenue)}</td></tr>)}</tbody></table></div> : <Empty>No observed sales in this period.</Empty>}
         </Card>
-        <Forecast snapshot={dashboard.data.forecast} onChanged={dashboard.refresh} />
-      </>}
+      )}
     </div>
   );
 }
