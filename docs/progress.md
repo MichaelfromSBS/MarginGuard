@@ -43,11 +43,11 @@ Recorded verification on November 7:
 
 These results cover the checkpoint implementation and canonical examples. They do not establish model extraction accuracy, forecast quality or correctness of every record in the contributed dataset.
 
-Review instructions: [checkpoint-1.md](checkpoint-1.md). No checkpoint 2 product functionality has been implemented.
+Review instructions: [checkpoint-1.md](checkpoint-1.md). The following checkpoint-2 section records the newer implementation.
 
 ## Demo dataset integration notes
 
-The team's [demo corpus](../demo_data/README.md) was merged without rewriting it. It is an input package for upcoming development, not an already imported restaurant ledger. The built-in seed and canonical examples still use the checkpoint-1 catalog.
+The team replaced the original corpus with [contract-compatible v2 data](../demo_data/demo_data_v2/README.md) in commit `0ed21bd`. The differences below describe the original corpus and are resolved by v2. The small built-in seed and full historical importer remain deliberately separate.
 
 Resolve these differences explicitly during checkpoint 2 and update shared contracts together if needed:
 
@@ -62,13 +62,42 @@ Resolve these differences explicitly during checkpoint 2 and update shared contr
 | Coverage | Date-level rows, including `missing` | Current coverage is date-and-channel based with `complete`, `partial`, `unknown`, `closed`. Confirm scope before expanding date rows across channels; missing data is not zero sales. |
 | Financial expectations | Dataset-specific recipes, discounts, forecast values and answer key | Recalculate from approved mapped records. Do not force original illustrative burger amounts or forecasts onto different recipes. |
 
-This reconciliation is pending; no adapter, document parser or historical bulk loader was added as part of the documentation update.
+Checkpoint 2 validates the v2 schemas, literal source quotes and normalized catalog IDs. The explicit bulk importer approves all eight historical invoices and 2,733 receipts atomically through the same business validator used for uploads. It records fixture provenance, makes no model calls and refuses a nonempty mixed ledger. The original corpus's answer key is not used for v2 calculations.
+
+## Checkpoint 2: completed implementation, pending team review
+
+- Upload endpoints persist supported PDF/PNG/JPEG bytes under generated names and start bounded in-process extraction tasks.
+- Structured OpenRouter extraction uses separate invoice/receipt schemas, known catalogs and a bounded output budget. No key/model is configured locally, so actual paid extraction remains unverified; provider success/failure paths are tested with mocked responses.
+- Decimal arithmetic, source-page quotes, catalog matching, quantities, pack units and document totals are checked before a whole-document ledger transaction.
+- Ambiguous input and business-key conflicts enter review without changing financial rows. Exact-byte duplicates reuse the document and do not call a model again.
+- Corrections are audited, retries preserve source integrity, approved records cannot be overwritten through review, and new receipt data marks its day/channel partial.
+- Schema migration 2 adds extraction/review provenance, durable data changes, pending jobs, vendors and the business calendar while preserving schema-1 records.
+- Explicit `fixture_history` and `fixture_expected` paths support offline review without pretending expected JSON is an AI result.
+- The PDF parser issue was traced to Git Windows LF-to-CRLF checkout conversion. Committed PDFs are valid. Binary attributes now protect their offsets and local copies were restored byte-for-byte; business content was unchanged.
+
+Review guide: [checkpoint-2.md](checkpoint-2.md). Forecasting, folder watching, anomaly alerts, webhook sending and database-backed business chat remain unimplemented. Request-process tasks are not the independent checkpoint-4 worker; pending jobs need explicit retry after interruption.
+
+Recorded checkpoint-2 verification on November 7:
+
+| Check | Result |
+| --- | --- |
+| Full backend suite | 180 passed; one existing test-client deprecation warning |
+| Frontend build and parser tests | Build passed; 3 parser tests passed |
+| Dependency consistency | Passed |
+| Full v2 history import | 8 invoices, 2,733 receipts, 2,741 approved documents; repeated import is a no-op |
+| Import rejection/rollback | Mixed database refused; invalid late fixture rolls back whole import |
+| Ingestion edge cases | Exact duplicates, conflicting keys, ambiguity, correction, retry, source tampering, image evidence and late invoices tested |
+| Schema upgrade | Existing schema-1 business row preserved through migration 2 |
+| Live HTTP on an isolated demo copy | Upload 202, honest mock failure, explicit manual correction, duplicate same ID, one receipt added, original source bytes returned |
+| Real OpenRouter extraction | Not run: no API key/model configured |
+
+The baseline v2 history was loaded separately into local `data/demo-v2.db`. Existing `.env` database selection and credentials were preserved; select that database explicitly to serve the full history. Runtime databases and uploaded originals remain outside Git.
 
 ## Upcoming checkpoints
 
 | Checkpoint | Required outcome | State |
 | --- | --- | --- |
-| 2 | Invoice and receipt ingestion, schema/business validation, mapping, persistence and deduplication | Not started |
+| 2 | Invoice and receipt ingestion, schema/business validation, mapping, persistence and deduplication | Implemented; pending review |
 | 3 | Actual sales metrics, recipe economics, completeness-aware forecasts and evaluation | Not started |
 | 4 | Independent worker, automatic recomputation, measured alerts and notification delivery state | Not started |
 | 5 | Read-only database tools, grounded owner chat and evidence-linked answers | Not started |

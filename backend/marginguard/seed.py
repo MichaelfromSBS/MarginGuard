@@ -15,7 +15,8 @@ BUSINESS_TABLES = (
     "recipe_versions", "recipe_items", "documents", "processing_jobs",
     "invoices", "invoice_lines", "ingredient_prices", "receipts",
     "receipt_items", "daily_coverage", "forecast_runs", "forecast_values",
-    "alerts", "notification_outbox",
+    "alerts", "notification_outbox", "vendors", "restaurant_calendar",
+    "document_pages", "review_events", "data_changes", "import_batches",
 )
 
 
@@ -57,6 +58,7 @@ def seed_demo(path: str | Path) -> dict:
 
         _insert(connection, "restaurant", id=RESTAURANT_ID, name="Tartan Burger Co.", currency="USD",
                 timezone="America/New_York", data_version=1, is_demo=1)
+        _insert(connection, "vendors", id="ridgeline_foodservice", name="Ridgeline Foodservice (fictional)", aliases_json='["Ridgeline Foodservice"]')
         ingredients = [
             ("beef", "Ground beef 80/20", "lb", ["ground chuck", "ground beef"]),
             ("bun", "Burger bun", "each", ["brioche bun"]),

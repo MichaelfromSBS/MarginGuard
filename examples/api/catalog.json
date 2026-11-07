@@ -197,5 +197,14 @@
       "fee_rate": "0.00",
       "packaging_cost": "0.00"
     }
+  ],
+  "vendors": [
+    {
+      "id": "ridgeline_foodservice",
+      "name": "Ridgeline Foodservice (fictional)",
+      "aliases": [
+        "Ridgeline Foodservice"
+      ]
+    }
   ]
 }

@@ -16,8 +16,10 @@ class Settings(BaseSettings):
     ai_timeout_seconds: float = Field(default=60, ge=1, le=180)
     ai_max_output_tokens: int = Field(default=1800, ge=128, le=8192)
     database_path: Path = Field(default=ROOT / "data" / "marginguard.db", validation_alias="MARGINGUARD_DATABASE_PATH")
+    upload_directory: Path = Field(default=ROOT / "data" / "uploads", validation_alias="MARGINGUARD_UPLOAD_DIRECTORY")
+    extraction_max_output_tokens: int = Field(default=6000, ge=512, le=8192, validation_alias="MARGINGUARD_EXTRACTION_MAX_OUTPUT_TOKENS")
 
-    @field_validator("database_path")
+    @field_validator("database_path", "upload_directory")
     @classmethod
     def resolve_database_path(cls, value: Path) -> Path:
         return (ROOT / value).resolve() if not value.is_absolute() else value.resolve()

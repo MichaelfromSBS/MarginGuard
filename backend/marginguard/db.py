@@ -8,7 +8,7 @@ from pathlib import Path
 import sqlite3
 
 MIGRATIONS_DIR = Path(__file__).with_name("migrations")
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 class MigrationError(RuntimeError):

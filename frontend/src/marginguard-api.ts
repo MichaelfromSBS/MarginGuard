@@ -94,6 +94,7 @@ export interface CatalogResponse {
   ingredients: Ingredient[];
   dishes: Dish[];
   channels: Channel[];
+  vendors: { id: string; name: string; aliases: string[] }[];
 }
 
 export interface IngredientPrice {
@@ -122,6 +123,13 @@ export interface Document {
 /** The detail route includes persisted text; paginated document lists omit it. */
 export interface DocumentDetail extends Document {
   source_text: string | null;
+  page_count: number | null;
+  evidence_mode: 'text' | 'visual' | 'unavailable';
+  extraction_method: string | null;
+  extraction: InvoiceExtraction | ReceiptExtraction | null;
+  validation_issues: { code: string; message: string; item_index: number | null; existing_document_id?: string }[];
+  reviewed_at: ISODateTime | null;
+  review_note: string | null;
 }
 
 export interface InvoiceExtractionItem {
@@ -311,6 +319,6 @@ export interface Capability {
 
 export interface CapabilitiesResponse {
   api_version: ApiVersion;
-  checkpoint: 1;
+  checkpoint: 2;
   capabilities: Capability[];
 }

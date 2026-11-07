@@ -30,7 +30,7 @@ def test_startup_migrates_but_never_automatically_seeds(tmp_path):
     with TestClient(create_app(Settings(_env_file=None, database_path=path))) as client:
         assert path.exists()
         assert client.get("/api/catalog").json() == {
-            "source_data_version": 0, "is_demo": False, "ingredients": [], "dishes": [], "channels": [],
+            "source_data_version": 0, "is_demo": False, "ingredients": [], "dishes": [], "channels": [], "vendors": [],
         }
         response = client.get("/api/restaurant")
         assert response.status_code == 404
@@ -112,16 +112,16 @@ def test_unimplemented_metrics_never_masquerade_as_live_results(seeded_client, p
     assert error.details["checkpoint"] == checkpoint
 
 
-def test_future_write_routes_do_not_persist_records(seeded_client):
+def test_invalid_upload_and_future_write_routes_do_not_persist_records(seeded_client):
     count = seeded_client.get("/api/documents").json()["total"]
     response = seeded_client.post("/api/documents", data={"document_type": "invoice"}, files={"file": ("test.pdf", b"example", "application/pdf")})
-    assert response.status_code == 501
+    assert response.status_code == 415
     assert seeded_client.get("/api/documents").json()["total"] == count
     assert seeded_client.post("/api/chat", json={"question": "What were sales?"}).status_code == 501
     assert seeded_client.post("/api/coverage/complete", json={"date": "2026-11-07", "channel_id": "in_store"}).status_code == 501
     assert seeded_client.post("/api/alerts/test/acknowledge").status_code == 501
     data = json.loads((ROOT / "examples/invoice.expected.json").read_text())
-    assert seeded_client.post("/api/documents/test/review", json={"document_type": "invoice", "extraction": data}).status_code == 501
+    assert seeded_client.post("/api/documents/test/review", json={"document_type": "invoice", "extraction": data}).status_code == 404
 
 
 def test_coverage_keeps_partial_and_unknown_days_distinct(seeded_client):
@@ -159,6 +159,6 @@ def test_contract_openapi_covers_multipart_and_future_success_shapes(seeded_clie
 def test_checkpoint_features_and_configuration_do_not_expose_credentials(tmp_path):
     with TestClient(create_app(Settings(_env_file=None, database_path=tmp_path / "key.db", openrouter_api_key="private-test-value"))) as client:
         features = client.get("/api/capabilities").json()
-        assert [f["name"] for f in features["capabilities"] if f["available"]] == ["catalog_and_seed_ledger"]
+        assert [f["name"] for f in features["capabilities"] if f["available"]] == ["catalog_and_seed_ledger", "document_ingestion"]
         assert "private-test-value" not in client.get("/api/health").text
         assert client.get("/api/health").json()["database"] == "ready"

@@ -12,14 +12,14 @@ from backend.marginguard.seed import main, seed_demo
 
 def test_schema_initializes_without_business_records_and_is_idempotent(tmp_path):
     path = tmp_path / "nested" / "restaurant.db"
-    assert db.initialize_database(path) == 1
-    assert db.initialize_database(path) == 1
+    assert db.initialize_database(path) == db.SCHEMA_VERSION
+    assert db.initialize_database(path) == db.SCHEMA_VERSION
     with db.connect(path) as connection:
         assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
-        assert connection.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == 1
+        assert connection.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == db.SCHEMA_VERSION
         assert connection.execute("SELECT COUNT(*) FROM restaurant").fetchone()[0] == 0
         assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
-    assert db.get_schema_version(path) == 1
+    assert db.get_schema_version(path) == db.SCHEMA_VERSION
 
 
 def test_data_survives_reinitialization(tmp_path):

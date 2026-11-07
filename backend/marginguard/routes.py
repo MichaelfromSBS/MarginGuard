@@ -1,11 +1,16 @@
 """Live checkpoint-1 read endpoints and explicit contracts for later checkpoints."""
 import json
+import hashlib
 from datetime import date
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, File, Form, Query, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, Form, Query, Request, Response, UploadFile
+from fastapi.responses import FileResponse
+from pathlib import Path
 
 from .db import connect
+from .errors import DomainError
+from . import ingestion
 from .schemas import (
     API_VERSION, Alert, CapabilitiesResponse, CatalogResponse, ChatRequest,
     ChatResponse, Coverage, CoverageRequest, DashboardResponse, Document, DocumentDetail,
@@ -14,15 +19,10 @@ from .schemas import (
 )
 
 
-class DomainError(Exception):
-    def __init__(self, code: str, message: str, status: int = 400, **details):
-        super().__init__(message)
-        self.code, self.message, self.status, self.details = code, message, status, details
-
-
 router = APIRouter(prefix="/api", tags=["MarginGuard v1"], responses={
     403: {"model": ErrorResponse}, 413: {"model": ErrorResponse},
     404: {"model": ErrorResponse}, 422: {"model": ErrorResponse},
+    409: {"model": ErrorResponse}, 415: {"model": ErrorResponse},
     501: {"model": ErrorResponse},
 })
 Limit = Annotated[int, Query(ge=1, le=100)]
@@ -47,8 +47,8 @@ def unavailable(checkpoint: int, feature: str):
 
 @router.get("/capabilities", response_model=CapabilitiesResponse)
 def capabilities():
-    return {"api_version": API_VERSION, "checkpoint": 1, "capabilities": [
-        {"name": name, "available": checkpoint == 1, "checkpoint": checkpoint}
+    return {"api_version": API_VERSION, "checkpoint": 2, "capabilities": [
+        {"name": name, "available": checkpoint <= 2, "checkpoint": checkpoint}
         for name, checkpoint in [
             ("catalog_and_seed_ledger", 1), ("document_ingestion", 2),
             ("metrics_and_forecasting", 3), ("background_processing_and_alerts", 4),
@@ -91,6 +91,7 @@ def catalog(request: Request):
             "is_demo": bool(owner["is_demo"]) if owner else False,
             "ingredients": ingredients, "dishes": dishes,
             "channels": [dict(row) for row in conn.execute("SELECT * FROM channels ORDER BY id")],
+            "vendors": [{"id": r["id"], "name": r["name"], "aliases": json.loads(r["aliases_json"])} for r in conn.execute("SELECT * FROM vendors ORDER BY id")],
         }
 
 
@@ -113,18 +114,29 @@ def documents(request: Request, limit: Limit = 50, offset: Offset = 0, document_
         params.append(status.value)
     with connection(request) as conn:
         page = page_query(conn, "documents", limit, offset, " AND ".join(clauses), tuple(params), "created_at,id")
-        for item in page["items"]:
-            item.pop("source_text", None)
+        page["items"] = [ingestion.document_payload(item) for item in page["items"]]
         return page
 
 
 @router.get("/documents/{document_id}", response_model=DocumentDetail)
 def document(document_id: str, request: Request):
+    return ingestion.get_document(request.app.state.database_path, document_id, detail=True)
+
+
+@router.get("/documents/{document_id}/source", response_class=FileResponse)
+def document_source(document_id: str, request: Request):
     with connection(request) as conn:
         row = conn.execute("SELECT * FROM documents WHERE id=?", (document_id,)).fetchone()
         if row is None:
-            raise DomainError("document_not_found", "Document does not exist.", 404, document_id=document_id)
-        return dict(row)
+            raise DomainError("document_not_found", "Document does not exist.", 404)
+        if not row["storage_path"]:
+            raise DomainError("source_unavailable", "This fixture has persisted source text but no uploaded binary file.", 404)
+        path = Path(row["storage_path"]).resolve()
+        if not path.is_relative_to(request.app.state.settings.upload_directory.resolve()) or not path.is_file():
+            raise DomainError("source_unavailable", "The stored source file is unavailable.", 404)
+        if hashlib.sha256(path.read_bytes()).hexdigest() != row["sha256"]:
+            raise DomainError("source_integrity_failed", "The stored source no longer matches the uploaded document hash.", 409)
+        return FileResponse(path, media_type=row["media_type"], filename=row["filename"], content_disposition_type="inline", headers={"X-Content-Type-Options": "nosniff"})
 
 
 @router.get("/invoices", response_model=Page[Invoice])
@@ -160,16 +172,31 @@ def alerts(request: Request, limit: Limit = 50, offset: Offset = 0, status: Lite
         return page
 
 
-# Contract-first routes below deliberately do not accept/persist uploads, change
-# business records, or fabricate metrics until their implementation checkpoint.
 @router.post("/documents", response_model=Document, status_code=202)
-def upload_document(document_type: Annotated[DocumentType, Form()], file: Annotated[UploadFile, File()]):
-    unavailable(2, "Document ingestion")
+async def upload_document(request: Request, background_tasks: BackgroundTasks, response: Response,
+                          document_type: Annotated[DocumentType, Form()], file: Annotated[UploadFile, File()]):
+    try:
+        data = await file.read(4 * 1024 * 1024 + 1)
+        doc, duplicate = ingestion.register_upload(request.app.state.settings, document_type.value,
+                                                   file.filename or "document", file.content_type, data)
+    finally:
+        await file.close()
+    response.headers["X-MarginGuard-Duplicate"] = "true" if duplicate else "false"
+    if not duplicate:
+        background_tasks.add_task(ingestion.process_document, request.app, doc["id"])
+    return doc
 
 
-@router.post("/documents/{document_id}/review", response_model=Document)
-def review_document(document_id: str, body: ReviewRequest):
-    unavailable(2, "Document review")
+@router.post("/documents/{document_id}/review", response_model=DocumentDetail)
+def review_document(document_id: str, body: ReviewRequest, request: Request):
+    return ingestion.review_document(request.app, document_id, body.extraction, body.note)
+
+
+@router.post("/documents/{document_id}/process", response_model=Document, status_code=202)
+def process_document(document_id: str, request: Request, background_tasks: BackgroundTasks):
+    result = ingestion.queue_retry(request.app, document_id)
+    background_tasks.add_task(ingestion.process_document, request.app, document_id)
+    return result
 
 
 @router.post("/coverage/complete", response_model=Coverage)

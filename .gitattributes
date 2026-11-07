@@ -1,0 +1,5 @@
+# PDFs can contain mostly text but their byte offsets must never be rewritten.
+*.pdf -text
+*.png -text
+*.jpg -text
+*.jpeg -text

@@ -10,5 +10,12 @@
   "is_demo": true,
   "error_code": null,
   "error_message": null,
-  "source_text": "SYNTHETIC FIXTURE | Ridgeline Foodservice | DEMO-1002 | 2026-11-07\nGROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40\nSubtotal $94.40\nTax $0.00\nFreight $0.00\nTotal $94.40"
+  "source_text": "SYNTHETIC FIXTURE | Ridgeline Foodservice | DEMO-1002 | 2026-11-07\nGROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40\nSubtotal $94.40\nTax $0.00\nFreight $0.00\nTotal $94.40",
+  "page_count": null,
+  "evidence_mode": "text",
+  "extraction_method": null,
+  "extraction": null,
+  "validation_issues": [],
+  "reviewed_at": null,
+  "review_note": null
 }

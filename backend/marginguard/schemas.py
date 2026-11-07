@@ -79,6 +79,12 @@ class IngredientPrice(ContractModel):
     base_unit: Unit
 
 
+class Vendor(ContractModel):
+    id: Identifier
+    name: str
+    aliases: list[str]
+
+
 class Channel(ContractModel):
     id: ChannelId
     name: str
@@ -119,6 +125,7 @@ class CatalogResponse(ContractModel):
     ingredients: list[Ingredient]
     dishes: list[Dish]
     channels: list[Channel]
+    vendors: list[Vendor] = Field(default_factory=list)
 
 
 class Document(ContractModel):
@@ -137,6 +144,13 @@ class Document(ContractModel):
 
 class DocumentDetail(Document):
     source_text: str | None
+    page_count: int | None = None
+    evidence_mode: Literal["text", "visual", "unavailable"] = "text"
+    extraction_method: str | None = None
+    extraction: dict | None = None
+    validation_issues: list[dict] = Field(default_factory=list)
+    reviewed_at: datetime | None = None
+    review_note: str | None = None
 
 
 class InvoiceItemInput(ContractModel):
@@ -379,5 +393,5 @@ class Capability(ContractModel):
 
 class CapabilitiesResponse(ContractModel):
     api_version: Literal["1.0.0"] = API_VERSION
-    checkpoint: Literal[1] = 1
+    checkpoint: Literal[2] = 2
     capabilities: list[Capability]

@@ -15,15 +15,19 @@ from .schemas import RunRequest, RunResponse
 from .marginguard.db import initialize_database
 from .marginguard.routes import DomainError, router as marginguard_router
 from .marginguard.schemas import API_VERSION, ErrorDetail, ErrorResponse
+from .marginguard.extraction import extract_document
 
 
-def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
+def create_app(settings: Settings | None = None, transport=None, document_extractor=None) -> FastAPI:
     settings = settings or Settings()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         initialize_database(settings.database_path)
         app.state.database_path = settings.database_path
+        app.state.settings = settings
+        app.state.active_documents = set()
+        app.state.document_extractor = document_extractor or extract_document
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(settings.ai_timeout_seconds, connect=10), transport=transport,
         ) as client:
@@ -33,7 +37,7 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
             yield
 
     app = FastAPI(title="MarginGuard API", version=API_VERSION, lifespan=lifespan,
-                  description="Checkpoint 1: SQLite foundation and read endpoints. Future capabilities return explicit HTTP 501 responses. Monetary values and quantities are decimal strings.")
+                  description="Checkpoint 2: validated document ingestion, review and read APIs. Forecasts, the independent worker, alerts and business chat remain later checkpoints. Monetary values and quantities are decimal strings.")
 
     @app.exception_handler(DomainError)
     async def domain_error_handler(request: Request, exc: DomainError):
@@ -74,7 +78,7 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
     async def health():
         return {
             "status": "ok", "mode": settings.ai_mode,
-            "api_version": API_VERSION, "checkpoint": 1, "database": "ready",
+            "api_version": API_VERSION, "checkpoint": 2, "database": "ready",
             "model": settings.openrouter_model if settings.ai_mode == "openrouter" else "mock-fixture",
             "configured": settings.ai_mode == "mock" or bool(settings.openrouter_api_key.get_secret_value().strip() and settings.openrouter_model.strip()),
         }
