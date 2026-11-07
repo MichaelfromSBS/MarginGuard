@@ -17,6 +17,12 @@ export default function App() {
   const health = usePoll(() => api.health(), 10000);
   const alerts = usePoll(() => api.alerts('new'), 5000);
   const seen = useRef<Set<string> | null>(null);
+  // Refresh the bell immediately when an alert is acknowledged or resolved elsewhere on the page.
+  useEffect(() => {
+    const onChange = () => alerts.refresh();
+    window.addEventListener('mg:alerts-changed', onChange);
+    return () => window.removeEventListener('mg:alerts-changed', onChange);
+  }, [alerts]);
 
   // Pop a toast for every alert that appears after the page loaded.
   useEffect(() => {

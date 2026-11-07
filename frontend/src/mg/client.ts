@@ -47,6 +47,7 @@ export const api = {
   invoices: () => get<Page<Invoice>>('/api/invoices?limit=100'),
   alerts: (status?: Alert['status']) => get<Page<Alert>>(`/api/alerts?${qs({ status, limit: 100 })}`),
   acknowledge: (id: string) => request<Alert>(`/api/alerts/${id}/acknowledge`, { method: 'POST' }).then((r) => r.data),
+  resolve: (id: string) => request<Alert>(`/api/alerts/${id}/resolve`, { method: 'POST' }).then((r) => r.data),
   dashboard: () => get<DashboardResponse>('/api/dashboard'),
   forecasts: () => get<Page<ForecastResponse>>('/api/forecasts?limit=5'),
   recalculate: (policy: ForecastRequest = {}) => request<ForecastResponse>('/api/forecasts/recalculate', {
