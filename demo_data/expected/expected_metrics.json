@@ -1,0 +1,49 @@
+{
+  "prices_before": {
+    "beef": 4.0,
+    "chicken": 3.0,
+    "bun": 0.5,
+    "cheddar": 0.2,
+    "lettuce": 2.4,
+    "tomato": 2.0,
+    "fries": 2.0,
+    "fryer_oil": 1.2857142857142858,
+    "takeout_bag": 0.06
+  },
+  "prices_after": {
+    "beef": 4.720000000000001,
+    "chicken": 3.0,
+    "bun": 0.5,
+    "cheddar": 0.2,
+    "lettuce": 2.4,
+    "tomato": 2.0,
+    "fries": 2.0,
+    "fryer_oil": 1.2857142857142858,
+    "takeout_bag": 0.06
+  },
+  "dish_cost_before": {
+    "classic_burger": 3.6,
+    "chicken_sandwich": 2.6,
+    "side_fries": 0.8
+  },
+  "dish_cost_after": {
+    "classic_burger": 3.96,
+    "chicken_sandwich": 2.6,
+    "side_fries": 0.8
+  },
+  "december_open_days": 30,
+  "projected_units": {
+    "classic_burger": 1189.16,
+    "chicken_sandwich": 855.7,
+    "side_fries": 549.8
+  },
+  "projected_revenue": 26156.71,
+  "projected_ingredient_cost_before": 6945.63,
+  "projected_ingredient_cost_after": 7373.73,
+  "price_only_increase": 428.1,
+  "unusual_day": {
+    "date": "2026-11-05",
+    "revenue": 378.0,
+    "baseline": 861.38
+  }
+}

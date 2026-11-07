@@ -1,0 +1,7 @@
+dish_id,dish_name,channel,selling_price,effective_from
+classic_burger,Classic Burger,in_store,12.00,2026-09-01
+classic_burger,Classic Burger,delivery,12.00,2026-09-01
+chicken_sandwich,Crispy Chicken Sandwich,in_store,11.00,2026-09-01
+chicken_sandwich,Crispy Chicken Sandwich,delivery,11.00,2026-09-01
+side_fries,Side of Fries,in_store,4.50,2026-09-01
+side_fries,Side of Fries,delivery,4.50,2026-09-01
