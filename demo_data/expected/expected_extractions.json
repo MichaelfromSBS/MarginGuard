@@ -1,0 +1,187 @@
+{
+  "1_receipt": {
+    "file": "1_receipt_R-20261107-0006.pdf",
+    "expected_outcome": "approved; sales update",
+    "extraction": {
+      "receipt_id": "R-20261107-0006",
+      "datetime": "2026-11-07 11:42",
+      "channel": "in_store",
+      "items": [
+        {
+          "dish": "Classic Burger",
+          "dish_id": "classic_burger",
+          "qty": 2,
+          "unit_price": 12.0,
+          "line_amount": 24.0
+        },
+        {
+          "dish": "Side of Fries",
+          "dish_id": "side_fries",
+          "qty": 1,
+          "unit_price": 4.5,
+          "line_amount": 4.5
+        }
+      ],
+      "items_subtotal": 28.5,
+      "discount": 0.0,
+      "tax": 2.0,
+      "tip": 5.0,
+      "total": 35.5,
+      "status": "completed"
+    }
+  },
+  "2_invoice": {
+    "file": "2_invoice_INV-30440_beef_increase.pdf",
+    "expected_outcome": "approved; beef $4.00 -> $4.72/lb; alerts",
+    "extraction": {
+      "supplier": "Ridgeline Foodservice (fictional)",
+      "invoice_no": "INV-30440",
+      "date": "2026-11-07",
+      "currency": "USD",
+      "items": [
+        {
+          "item_code": "BF-CHK-10",
+          "description": "GROUND CHUCK 80/20 \u2014 2 CASES, 10 LB EACH",
+          "pack": "10 LB CASE",
+          "ingredient_id": "beef",
+          "pack_qty": 10,
+          "base_unit": "lb",
+          "qty": 2,
+          "unit_price": 47.2,
+          "line_amount": 94.4
+        },
+        {
+          "item_code": "BUN-BRI-48",
+          "description": "BRIOCHE BURGER BUN 4.5\"",
+          "pack": "48 CT",
+          "ingredient_id": "bun",
+          "pack_qty": 48,
+          "base_unit": "each",
+          "qty": 2,
+          "unit_price": 24.0,
+          "line_amount": 48.0
+        }
+      ],
+      "subtotal": 142.4,
+      "fuel_surcharge": 12.5,
+      "total": 154.9
+    }
+  },
+  "3_receipt_photo": {
+    "file": "3_receipt_R-20261107-0007_photo.png",
+    "expected_outcome": "approved (image input); sales update",
+    "extraction": {
+      "receipt_id": "R-20261107-0007",
+      "datetime": "2026-11-07 11:48",
+      "channel": "delivery",
+      "items": [
+        {
+          "dish": "Crispy Chicken Sandwich",
+          "dish_id": "chicken_sandwich",
+          "qty": 1,
+          "unit_price": 11.0,
+          "line_amount": 11.0
+        },
+        {
+          "dish": "Classic Burger",
+          "dish_id": "classic_burger",
+          "qty": 1,
+          "unit_price": 12.0,
+          "line_amount": 12.0
+        }
+      ],
+      "items_subtotal": 23.0,
+      "discount": 2.0,
+      "tax": 1.47,
+      "tip": 0.0,
+      "total": 22.47,
+      "status": "completed"
+    }
+  },
+  "4_reimport": {
+    "file": "4_receipt_R-20261107-0006_REIMPORT.pdf",
+    "expected_outcome": "duplicate of receipt 1 (same receipt_id, identical content) -> not counted again, no new alert"
+  },
+  "5_problem_invoice": {
+    "file": "5_invoice_APC-7781_needs_review.pdf",
+    "expected_outcome": "needs review: 3 issues; data-quality alert; excluded from costs",
+    "extraction": {
+      "supplier": "Allegheny Produce Co. (fictional)",
+      "invoice_no": "APC-7781",
+      "date": "2026-11-07",
+      "currency": "USD",
+      "items": [
+        {
+          "item_code": "TOM-ROMA",
+          "description": "ROMA TOMATOES",
+          "pack": "1 CASE",
+          "ingredient_id": "tomato",
+          "pack_qty": null,
+          "base_unit": "lb",
+          "qty": 1,
+          "unit_price": 48.0,
+          "line_amount": 48.0,
+          "review_reason": "missing package weight"
+        },
+        {
+          "item_code": "MGR-MIX",
+          "description": "MICROGREENS MIX",
+          "pack": "1 LB",
+          "ingredient_id": null,
+          "pack_qty": 1,
+          "base_unit": null,
+          "qty": 2,
+          "unit_price": 18.0,
+          "line_amount": 36.0,
+          "review_reason": "unknown ingredient (not in catalog)"
+        },
+        {
+          "item_code": "LET-SHR-5",
+          "description": "SHREDDED LETTUCE",
+          "pack": "5 LB BAG",
+          "ingredient_id": "lettuce",
+          "pack_qty": 5,
+          "base_unit": "lb",
+          "qty": 3,
+          "unit_price": 12.0,
+          "line_amount": 39.0,
+          "review_reason": "arithmetic: 3 x 12.00 = 36.00, printed 39.00"
+        }
+      ],
+      "subtotal": 123.0,
+      "fuel_surcharge": 0.0,
+      "total": 123.0
+    }
+  },
+  "6_receipt_unknown": {
+    "file": "6_receipt_R-20261107-0008_unknown_item.pdf",
+    "expected_outcome": "needs review: unknown dish 'Mushroom Swiss Burger'; excluded from sales",
+    "extraction": {
+      "receipt_id": "R-20261107-0008",
+      "datetime": "2026-11-07 11:55",
+      "channel": "in_store",
+      "items": [
+        {
+          "dish": "Classic Burger",
+          "dish_id": "classic_burger",
+          "qty": 1,
+          "unit_price": 12.0,
+          "line_amount": 12.0
+        },
+        {
+          "dish": "Mushroom Swiss Burger",
+          "dish_id": null,
+          "qty": 1,
+          "unit_price": 13.5,
+          "line_amount": 13.5
+        }
+      ],
+      "items_subtotal": 25.5,
+      "discount": 0.0,
+      "tax": 1.79,
+      "tip": 0.0,
+      "total": 27.29,
+      "status": "completed"
+    }
+  }
+}

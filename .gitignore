@@ -11,6 +11,7 @@ frontend/dist/
 *.log
 .DS_Store
 # Local business records and uploaded documents are runtime data.
+*.db
 data/*.db
 data/*.db-*
 data/*.sqlite*
