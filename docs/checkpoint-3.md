@@ -2,7 +2,7 @@
 
 Backend implementation and the teammate's restaurant frontend are integrated. No model calls or new dependencies are required for the calculations. Extraction continues to use the existing `.env` configuration. [Checkpoint 4](checkpoint-4.md) now adds automatic recalculation and in-app notifications; the manual calculation endpoints in this guide remain available.
 
-For the integrated app, start API, worker and frontend with `npm.cmd run dev` and open http://127.0.0.1:5173. Overview shows current observed sales and dish costs; Trends & Outlook adds daily sales and supplier-price history. The worker now calculates forecasts automatically; Calculate/Recalculate remains available. Approved inputs make a saved forecast temporarily **Out of date** until refresh; old totals stay hidden. Inbox supports uploads, status, originals and retries. Ask MarginGuard reports that database chat arrives at checkpoint 5.
+For the integrated app, start API, worker and frontend with `npm.cmd run dev` and open http://127.0.0.1:5173. Overview shows current observed sales and dish costs; Trends & Outlook adds daily sales and supplier-price history. The worker now calculates forecasts automatically; Calculate/Recalculate remains available. Approved inputs make a saved forecast temporarily **Out of date** until refresh; old totals stay hidden. Inbox supports uploads, status, originals and retries. Ask MarginGuard now provides [checkpoint-5 read-only database chat](checkpoint-5.md).
 
 ## Start against your existing checkpoint-2 database
 
@@ -124,7 +124,7 @@ Identical confirmation is a no-op. A change is audited in `coverage_events`, inc
 - The final seven past local days are withheld for evaluation. The weekday mean fits only earlier days and is compared with the same weekday one week earlier. MAE is per dish/channel/day on matched complete observations. Partial evaluation samples are labeled; synthetic results do not establish real-world accuracy.
 - Persisted runs retain their exact calculation payload, price/source references, source version, assumptions and training dates. `forecast_runs.status` is the authoritative freshness state; old calculation JSON is immutable. A `pending` run's values describe an older snapshot and must not be rendered as a current forecast.
 
-Forecast calculation does not make model calls. A key is required for actual document extraction and optional AI alert suggestions. The independent worker, automatic recalculation and in-app alerts are now checkpoint 4; read-only business chat remains checkpoint 5.
+Forecast calculation does not make model calls. A key is required for actual document extraction and optional AI alert suggestions. The independent worker, automatic recalculation and in-app alerts are now checkpoint 4; read-only business chat is covered in [checkpoint 5](checkpoint-5.md).
 
 ## Automated verification
 

@@ -39,7 +39,7 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
             yield
 
     app = FastAPI(title="MarginGuard API", version=API_VERSION, lifespan=lifespan,
-                  description="Checkpoint 4: durable document worker, metrics, automatic forecasts and evidence-based in-app alerts. No external owner notifications. Business chat remains checkpoint 5. Monetary values and quantities are decimal strings.")
+                  description="Checkpoint 5: durable ingestion, automatic forecasts, in-app alerts and read-only database-grounded owner chat. No external owner notifications or chat-driven writes. Monetary values and quantities are decimal strings.")
 
     @app.exception_handler(DomainError)
     async def domain_error_handler(request: Request, exc: DomainError):
@@ -82,7 +82,7 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
             worker = worker_status(conn, settings)
         return {
             "status": "ok", "mode": settings.ai_mode,
-            "api_version": API_VERSION, "checkpoint": 4, "database": "ready", "worker": worker["status"],
+            "api_version": API_VERSION, "checkpoint": 5, "database": "ready", "worker": worker["status"],
             "processing_mode": settings.processing_mode,
             "model": settings.openrouter_model if settings.ai_mode == "openrouter" else "mock-fixture",
             "configured": settings.ai_mode == "mock" or bool(settings.openrouter_api_key.get_secret_value().strip() and settings.openrouter_model.strip()),

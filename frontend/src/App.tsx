@@ -58,7 +58,7 @@ export default function App() {
         {tab === 'overview' && <Overview go={setTab} />}
         {tab === 'documents' && <Documents selectedId={docId} onSelect={setDocId} />}
         {tab === 'trends' && <Trends />}
-        {tab === 'ask' && <Ask />}
+        <div hidden={tab !== 'ask'}><Ask onSource={(id) => { setDocId(id); setTab('documents'); }} /></div>
       </main>
 
       <div className="toasts">

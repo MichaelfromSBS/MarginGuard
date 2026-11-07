@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from fastapi.testclient import TestClient
+import httpx
 
 from backend.config import Settings
 from backend.main import create_app
@@ -45,6 +46,17 @@ def main():
                 response = client.get(path)
                 response.raise_for_status()
                 (examples / f"{name}.json").write_text(json.dumps(response.json(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        # Transparent canned planner output: no real model/key or user's ledger.
+        def planner(request):
+            value = {"status": "answer", "reason": None, "calls": [{"name": "get_sales_summary",
+                "arguments": json.dumps({"period": "last_7_days", "as_of": "2026-11-07"})}]}
+            return httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(value)}}]})
+        chat_app = create_app(Settings(_env_file=None, ai_mode="openrouter", openrouter_api_key="fixture-only-not-a-real-key",
+            openrouter_model="fixture/structured-planner", database_path=database), transport=httpx.MockTransport(planner))
+        with TestClient(chat_app) as client:
+            response = client.post("/api/chat", json={"question": "As of 2026-11-07, what were sales in the last seven days?"})
+            response.raise_for_status()
+            (examples / "chat.json").write_text(json.dumps(response.json(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print("Updated docs/openapi.json and examples/api/*.json from the running contract.")
 
 

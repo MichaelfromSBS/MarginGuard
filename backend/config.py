@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     file_stable_seconds: float = Field(default=2, ge=0, le=60, validation_alias="MARGINGUARD_FILE_STABLE_SECONDS")
     extraction_max_attempts: int = Field(default=3, ge=1, le=5, validation_alias="MARGINGUARD_EXTRACTION_MAX_ATTEMPTS")
     alert_ai_explanations: bool = Field(default=True, validation_alias="MARGINGUARD_ALERT_AI_EXPLANATIONS")
+    chat_timeout_seconds: float = Field(default=30, ge=1, le=60, validation_alias="MARGINGUARD_CHAT_TIMEOUT_SECONDS")
+    chat_max_output_tokens: int = Field(default=3000, ge=512, le=8192, validation_alias="MARGINGUARD_CHAT_MAX_OUTPUT_TOKENS")
+    chat_reasoning_effort: Literal["auto", "provider", "minimal", "low", "medium", "high"] = Field(default="auto", validation_alias="MARGINGUARD_CHAT_REASONING_EFFORT")
     sales_drop_pct: float = Field(default=30, ge=0, le=100, validation_alias="MARGINGUARD_SALES_DROP_PCT")
     sales_drop_min_units: float = Field(default=10, ge=0, validation_alias="MARGINGUARD_SALES_DROP_MIN_UNITS")
 

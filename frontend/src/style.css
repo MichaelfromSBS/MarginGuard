@@ -186,6 +186,13 @@ button:disabled { cursor: default; opacity: .45; }
 .bubble.assistant { align-self: flex-start; background: var(--bg); border-bottom-left-radius: 4px; }
 .bubble.notice { background: var(--info-bg); color: var(--info); }
 .sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.bubble { min-width: 0; overflow-wrap: anywhere; }
+.bubble details { margin-top: 8px; }
+.bubble details.sources { display: block; }
+.bubble summary { cursor: pointer; }
+.bubble .sources small { display: block; margin: 3px 0 8px; }
+.bubble .sources .chip { max-width: 100%; white-space: normal; text-align: left; overflow-wrap: anywhere; }
+.ask-row input { min-width: 0; }
 .ask-row { display: flex; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 .ask-row input { flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
 .ask-row input:focus { outline: 2px solid #c7cdd6; outline-offset: 0; }

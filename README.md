@@ -6,7 +6,7 @@ NOVA 2026 · Carnegie Mellon University · DoorDash Back of House track
 
 MarginGuard is being developed to maintain restaurant records automatically, connect ingredient-price changes to dish costs, project next month's sales and ingredient consumption, and explain significant changes through database-backed chat and evidence-linked alerts.
 
-**Current status:** checkpoint 4 and the teammate's latest frontend are integrated. The independent worker processes documents, refreshes forecasts and creates two in-app notification types: one combined ingredient/overall projected-cost increase, and a next-day report about yesterday's unusual sales. Document issues remain Inbox review tasks. The bell and toasts use persistent acknowledgement state. Database-backed owner chat remains checkpoint 5. See [checkpoint 4](docs/checkpoint-4.md) for run instructions and the exact alert policy.
+**Current status:** checkpoints 1–5 and the teammate's frontend are integrated. Invoices and receipts feed approved records, deterministic metrics and forecasts, and two website-only alert types. Ask MarginGuard now uses an AI-selected, validated read-only query plan and returns database-calculated answers with source links. See [checkpoint 5](docs/checkpoint-5.md) to test chat and [checkpoint 4](docs/checkpoint-4.md) for the worker and alert policy.
 
 ## Development progress
 
@@ -20,15 +20,15 @@ Last updated: **November 7, 2026**. API contract version: **1.0.0**.
 | Team demo dataset v2 | Contract-validated; explicit bulk importer available | [History and demo documents](demo_data/README.md); eight invoices and 2,733 receipts |
 | Checkpoint 2: document ingestion | Implemented; pending team review | PDF/image upload, structured extraction, validation, review/retry, duplicate-safe persistence and explicit fixture import |
 | Checkpoint 3: metrics and forecasting | Implemented; pending team review | Sales/day/dish/channel summaries, effective recipe costs, completeness-aware next-month forecasts, sensitivity scenarios and held-out evaluation |
-| Restaurant frontend integration | Merged and verified | Overview, Trends & Outlook, Inbox and explicit future-chat notice; forecast calculation/freshness and mobile navigation checked |
+| Restaurant frontend integration | Merged and verified | Overview, Trends & Outlook, Inbox and grounded owner chat; forecast freshness and mobile navigation checked |
 | Checkpoint 4: background processing and alerts | Implemented and integrated | Durable queue, automatic recalculation, combined cost alert, yesterday-only sales report and in-app acknowledgement |
-| Checkpoint 5: database-backed chat | Planned | Read-only metric tools, grounded answers and evidence references |
+| Checkpoint 5: database-backed chat | Implemented; pending team review | Six read-only tools, bounded conversation context, saved-forecast attribution, evidence links and explicit unavailable states |
 
 See [the progress record](docs/progress.md) for commits, verification evidence and integration notes. Each checkpoint ends with a focused review before the next begins.
 
 ## Product workflow
 
-The planned workflow is:
+The application workflow is:
 
 ```text
 Supplier invoices + customer sales receipts
@@ -42,7 +42,7 @@ Supplier invoices + customer sales receipts
      Dashboard + owner chat + proactive alerts
 ```
 
-AI interprets document language and explains retrieved results. Python owns financial calculations, unit conversions, forecast methods and measurable anomaly rules. Reported figures distinguish observed results, modeled costs and future projections.
+AI extracts document language and maps owner questions to validated read-only tools. Python renders chat answers from retrieved facts. Python owns financial calculations, unit conversions, forecast methods and measurable anomaly rules. Reported figures distinguish observed results, modeled costs and future projections.
 
 ## Technology
 
@@ -157,10 +157,11 @@ Environment variables override `.env`. Relative database paths resolve from the 
 | POST | `/api/alerts/{alert_id}/acknowledge` | Persist owner acknowledgement without changing financial facts |
 | POST | `/api/alerts/{alert_id}/resolve` | Mark a reviewed finding resolved, preserving evidence |
 | GET | `/api/worker` | Worker heartbeat, queue counts, new-alert count and safe processing errors |
+| POST | `/api/chat` | AI-planned, read-only financial questions with grounded metrics, sources and query traces |
 
 Money and quantities are decimal strings. List endpoints return `items`, `total`, `limit` and `offset`. Product errors use a versioned `error` object. A fresh database returns empty catalogs/lists and a typed restaurant-not-configured response until configured or explicitly seeded.
 
-Well-formed requests to the reserved business-chat route return **HTTP 501** until checkpoint 5. Calculations use Python and approved records, with no model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
+Owner chat requires a configured OpenRouter model with structured-output support; unconfigured/mock chat returns an explicit HTTP 503. AI selects tools and filters; Python queries approved records and renders all figures. Chat cannot alter records, recalculate forecasts or send messages. Other financial calculations run without a model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
 
 Approved inputs immediately affect observed sales and effective recipe costs. They invalidate saved forecasts; the worker automatically refreshes current projections. The explicit recalculation endpoint remains available. Forecasts distinguish ingredient consumption from purchases/actual profit and sensitivity scenarios from statistical prediction intervals.
 
@@ -175,6 +176,7 @@ Authoritative handoff artifacts:
 - [Checkpoint 2 upload/review checklist](docs/checkpoint-2.md)
 - [Checkpoint 3 calculation definitions and copyable test commands](docs/checkpoint-3.md)
 - [Checkpoint 4 worker, anomaly policies and in-app notification review](docs/checkpoint-4.md)
+- [Checkpoint 5 grounded chat, tools and copyable test commands](docs/checkpoint-5.md)
 
 ## Demo data and document generation
 
@@ -203,7 +205,7 @@ npm run build
 
 On macOS/Linux, replace the first command with `.venv/bin/python -m pytest -q`. Tests isolate their databases from the configured local ledger.
 
-Recorded checkpoint-2 verification: **180 backend tests passed**, **3 frontend parser tests passed**, production build and dependency consistency passed. Live HTTP checks verified upload, explicit mock failure, manual review approval, byte-identical deduplication and source retrieval. Subsequent Gemini compatibility verification passed **86 focused tests** plus real model extraction of the two main PDFs. Checkpoint-3 verification and numeric acceptance results are recorded in [the progress record](docs/progress.md). The test-client dependency emits one existing deprecation warning.
+Current checkpoint-5 verification: **349 backend tests**, **7 frontend tests**, TypeScript/production build and dependency consistency passed. Live configured-model and desktop/mobile browser checks verified grounded chat, follow-ups, document sources and the $730.17 forecast-cost attribution. Earlier checkpoint verification and detailed acceptance results are recorded in [the progress record](docs/progress.md). The test-client dependency emits one existing deprecation warning.
 
 After an intentional contract change, regenerate the OpenAPI and seeded response artifacts:
 

@@ -1,6 +1,6 @@
 {
   "api_version": "1.0.0",
-  "checkpoint": 4,
+  "checkpoint": 5,
   "capabilities": [
     {
       "name": "catalog_and_seed_ledger",
@@ -24,7 +24,7 @@
     },
     {
       "name": "database_backed_chat",
-      "available": false,
+      "available": true,
       "checkpoint": 5
     }
   ]

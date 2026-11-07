@@ -513,8 +513,14 @@ class DashboardResponse(ContractModel):
     dish_costs: list[DishCost] = Field(default_factory=list)
 
 
+class ChatMessage(ContractModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=2000)
+
+
 class ChatRequest(ContractModel):
     question: str = Field(min_length=1, max_length=4000)
+    history: list[ChatMessage] = Field(default_factory=list, max_length=6)
 
     @field_validator("question")
     @classmethod
@@ -524,12 +530,23 @@ class ChatRequest(ContractModel):
         return value.strip()
 
 
+class ChatToolTrace(ContractModel):
+    name: str
+    arguments: dict
+    metric_ids: list[str]
+    status: Literal["ok", "unavailable"]
+
+
 class ChatResponse(ContractModel):
     answer: str
     as_of: datetime
     metrics: list[Metric]
     evidence: list[EvidenceReference]
     limitations: list[str]
+    status: Literal["answered", "clarification", "unsupported", "unavailable"] = "answered"
+    source_data_version: int = 0
+    answer_method: Literal["grounded_tools"] = "grounded_tools"
+    tools: list[ChatToolTrace] = Field(default_factory=list)
 
 
 class InvoiceReview(ContractModel):
@@ -561,5 +578,5 @@ class Capability(ContractModel):
 
 class CapabilitiesResponse(ContractModel):
     api_version: Literal["1.0.0"] = API_VERSION
-    checkpoint: Literal[4] = 4
+    checkpoint: Literal[5] = 5
     capabilities: list[Capability]

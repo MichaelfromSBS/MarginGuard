@@ -1,0 +1,264 @@
+{
+  "answer": "From 2026-10-31 through 2026-11-06, approved receipts show 2 orders, 5 units and $60.00 net item revenue. Tax and tips are excluded.",
+  "as_of": "2026-11-07T20:52:54.948468Z",
+  "metrics": [
+    {
+      "id": "chat.c1.sales.units",
+      "label": "Observed units sold",
+      "value": "5",
+      "unit": "units",
+      "kind": "actual",
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "as_of": "2026-11-07T20:52:54.946598Z",
+      "coverage": "partial",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_1",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "2 x Classic Burger @ $12.00 = $24.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_2",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_1",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_2",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Classic Burger @ $12.00 = $12.00"
+        }
+      ],
+      "assumptions": [
+        "Observed approved completed receipts only; missing receipts are not estimated.",
+        "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+        "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+        "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+      ]
+    },
+    {
+      "id": "chat.c1.sales.orders",
+      "label": "Observed completed orders",
+      "value": "2",
+      "unit": "orders",
+      "kind": "actual",
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "as_of": "2026-11-07T20:52:54.946598Z",
+      "coverage": "partial",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_1",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "2 x Classic Burger @ $12.00 = $24.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_2",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_1",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_2",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Classic Burger @ $12.00 = $12.00"
+        }
+      ],
+      "assumptions": [
+        "Observed approved completed receipts only; missing receipts are not estimated.",
+        "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+        "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+        "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+      ]
+    },
+    {
+      "id": "chat.c1.sales.net_revenue",
+      "label": "Observed net item revenue",
+      "value": "60.00",
+      "unit": "USD",
+      "kind": "actual",
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "as_of": "2026-11-07T20:52:54.946598Z",
+      "coverage": "partial",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_1",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "2 x Classic Burger @ $12.00 = $24.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_2",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_1",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_2",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Classic Burger @ $12.00 = $12.00"
+        }
+      ],
+      "assumptions": [
+        "Observed approved completed receipts only; missing receipts are not estimated.",
+        "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+        "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+        "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+      ]
+    },
+    {
+      "id": "chat.c1.sales.average_order_revenue",
+      "label": "Average net item revenue per order",
+      "value": "30.00",
+      "unit": "USD",
+      "kind": "actual",
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "as_of": "2026-11-07T20:52:54.946598Z",
+      "coverage": "partial",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_1",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "2 x Classic Burger @ $12.00 = $24.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_2",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_1",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_2",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Classic Burger @ $12.00 = $12.00"
+        }
+      ],
+      "assumptions": [
+        "Observed approved completed receipts only; missing receipts are not estimated.",
+        "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+        "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+        "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "receipt_item",
+      "record_id": "item_receipt_001_1",
+      "document_id": "doc_receipt_001",
+      "source_page": 1,
+      "quote": "2 x Classic Burger @ $12.00 = $24.00"
+    },
+    {
+      "kind": "receipt_item",
+      "record_id": "item_receipt_001_2",
+      "document_id": "doc_receipt_001",
+      "source_page": 1,
+      "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+    },
+    {
+      "kind": "receipt_item",
+      "record_id": "item_receipt_002_1",
+      "document_id": "doc_receipt_002",
+      "source_page": 1,
+      "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+    },
+    {
+      "kind": "receipt_item",
+      "record_id": "item_receipt_002_2",
+      "document_id": "doc_receipt_002",
+      "source_page": 1,
+      "quote": "1 x Classic Burger @ $12.00 = $12.00"
+    }
+  ],
+  "limitations": [
+    "Receipt coverage is incomplete; these are observed totals, not full-period business sales."
+  ],
+  "status": "answered",
+  "source_data_version": 1,
+  "answer_method": "grounded_tools",
+  "tools": [
+    {
+      "name": "get_sales_summary",
+      "arguments": {
+        "as_of": "2026-11-07",
+        "period": "last_7_days",
+        "start": null,
+        "end": null,
+        "dish_id": null,
+        "channel_id": null,
+        "breakdown": "none",
+        "rank_by": "units"
+      },
+      "metric_ids": [
+        "chat.c1.sales.units",
+        "chat.c1.sales.orders",
+        "chat.c1.sales.net_revenue",
+        "chat.c1.sales.average_order_revenue"
+      ],
+      "status": "ok"
+    }
+  ]
+}

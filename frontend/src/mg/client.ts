@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type {
-  Alert, CatalogResponse, ChatResponse, DashboardResponse, Document, DocumentDetail, DocumentType,
+  Alert, CatalogResponse, ChatMessage, ChatResponse, DashboardResponse, Document, DocumentDetail, DocumentType,
   ForecastResponse, ForecastRequest, IngredientPrice, Invoice, Page, Restaurant, CapabilitiesResponse, WorkerStatus,
 } from '../marginguard-api';
 
@@ -52,8 +52,8 @@ export const api = {
   recalculate: (policy: ForecastRequest = {}) => request<ForecastResponse>('/api/forecasts/recalculate', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(policy),
   }).then((r) => r.data),
-  chat: (question: string) => request<ChatResponse>('/api/chat', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question }),
+  chat: (question: string, history: ChatMessage[] = []) => request<ChatResponse>('/api/chat', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, history }),
   }).then((r) => r.data),
 };
 

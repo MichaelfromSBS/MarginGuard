@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChatResponse } from '../marginguard-api';
-import { api, errorText, isNotYet } from './client';
+import { api, errorText } from './client';
 import { MetricCard } from './Metrics';
 import { Card } from './ui';
 
@@ -13,7 +13,7 @@ const SUGGESTED = [
   'Which alerts need my attention?',
 ];
 
-export default function Ask() {
+export default function Ask({ onSource }: { onSource: (id: string) => void }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState(false);
@@ -25,12 +25,11 @@ export default function Ask() {
     if (!text || busy) return;
     setMsgs((m) => [...m, { role: 'user', text }]); setQ(''); setBusy(true);
     try {
-      const data = await api.chat(text);
+      const history = msgs.filter((m) => !m.notice).slice(-6).map((m) => ({ role: m.role, content: m.text.slice(0, 2000) }));
+      const data = await api.chat(text, history);
       setMsgs((m) => [...m, { role: 'assistant', text: data.answer, data }]);
     } catch (e) {
-      setMsgs((m) => [...m, { role: 'assistant', notice: true, text: isNotYet(e)
-        ? 'Chat isn’t switched on yet. It arrives with checkpoint 5 and will answer from the restaurant’s own records, with sources.'
-        : `Something went wrong: ${errorText(e)}` }]);
+      setMsgs((m) => [...m, { role: 'assistant', notice: true, text: errorText(e) }]);
     } finally { setBusy(false); }
   };
 
@@ -44,12 +43,18 @@ export default function Ask() {
           </div>
         )}
         {msgs.map((m, i) => (
-          <div key={i} className={`bubble ${m.role} ${m.notice ? 'notice' : ''}`}>
-            <p>{m.text}</p>
+          <div key={i} className={`bubble ${m.role} ${m.notice || (m.data && m.data.status !== 'answered') ? 'notice' : ''}`}>
+            <p style={{ whiteSpace: 'pre-line' }}>{m.text}</p>
+            {m.data && <small className="muted">{m.data.status === 'answered' ? 'Database answer' : m.data.status.replace('_', ' ')} · ledger v{m.data.source_data_version} · checked {new Date(m.data.as_of).toLocaleString()}</small>}
             {m.data && m.data.metrics.length > 0 && <div className="metrics small">{m.data.metrics.map((x) => <MetricCard key={x.id} m={x} />)}</div>}
             {m.data && m.data.evidence.length > 0 && (
-              <div className="sources">{m.data.evidence.map((e, j) => <span key={j} className="chip static" title={e.quote ?? ''}>{e.kind.replace('_', ' ')} · {e.record_id}</span>)}</div>
+              <details className="sources"><summary>Sources ({m.data.evidence.length})</summary>{m.data.evidence.map((e, j) => <div key={j}>
+                {e.document_id ? <button className="chip" onClick={() => onSource(e.document_id!)}>{e.kind.replaceAll('_', ' ')} · {e.record_id}{e.source_page ? ` · p${e.source_page}` : ''}</button>
+                  : <span className="chip static">{e.kind.replaceAll('_', ' ')} · {e.record_id}</span>}
+                {e.quote && <small>{e.quote}</small>}
+              </div>)}</details>
             )}
+            {m.data && m.data.tools.length > 0 && <details><summary>Queries used</summary>{m.data.tools.map((t, j) => <div key={j}><small>{t.name.replaceAll('_', ' ')} · {t.status}</small><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{JSON.stringify(t.arguments)}</pre></div>)}</details>}
             {m.data && m.data.limitations.length > 0 && <small className="muted">{m.data.limitations.join(' ')}</small>}
           </div>
         ))}
@@ -57,7 +62,7 @@ export default function Ask() {
         <div ref={end} />
       </div>
       <form className="ask-row" onSubmit={(e) => { e.preventDefault(); send(q); }}>
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. Why did burger costs go up?" />
+        <input aria-label="Question about restaurant records" maxLength={4000} value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. What does the Classic Burger cost now?" />
         <button className="primary" disabled={!q.trim() || busy}>Ask</button>
       </form>
     </Card>

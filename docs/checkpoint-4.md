@@ -42,7 +42,7 @@ Invoke-RestMethod "$base/api/health"
 Invoke-RestMethod "$base/api/worker"
 ```
 
-Health should show `checkpoint: 4`, `processing_mode: worker`, `worker: running`. `/api/worker` exposes heartbeat, queue/processing counts, new-alert count, watched-file errors and a safe error code. A successful API health response alone does not establish that the worker is running or the model is usable.
+Health should show `checkpoint: 5`, `processing_mode: worker`, `worker: running`. `/api/worker` exposes heartbeat, queue/processing counts, new-alert count, watched-file errors and a safe error code. A successful API health response alone does not establish that the worker is running or the model is usable.
 
 With the default inbox configuration:
 
@@ -147,4 +147,4 @@ npm.cmd run test:frontend
 
 The automated worker tests use isolated databases and mocked extraction/wording, and exercise durable queues, bounded retries, claims, restart recovery, anomaly evidence, acknowledgement, correction and no external outbox activity. Existing schema versions 1–4 upgrade to version 5 while preserving records and retiring old notification-policy events. Detailed final verification is in [progress.md](progress.md).
 
-Database-grounded owner chat remains checkpoint 5.
+Database-grounded owner chat is implemented in [checkpoint 5](checkpoint-5.md).

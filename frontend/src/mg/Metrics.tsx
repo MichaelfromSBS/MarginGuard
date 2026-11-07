@@ -22,9 +22,10 @@ const NAMES: Record<string, [string, string?]> = {
 };
 
 export function displayName(m: Metric): [string, string | undefined] {
-  const known = NAMES[m.id];
+  const id = m.id.replace(/^chat\.c\d+\./, '');
+  const known = NAMES[id];
   if (known) return [known[0], known[1]];
-  const dish = /^dish\.(.+)\.ingredient_cost$/.exec(m.id);
+  const dish = /^dish\.(.+)\.ingredient_cost$/.exec(id);
   if (dish) {
     const name = m.label.replace(/\s*replacement ingredient cost\s*$/i, '');
     return [`${name}: restock cost per dish`, 'Ingredients for one dish at today’s supplier prices'];

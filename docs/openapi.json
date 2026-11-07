@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MarginGuard API",
-    "description": "Checkpoint 4: durable document worker, metrics, automatic forecasts and evidence-based in-app alerts. No external owner notifications. Business chat remains checkpoint 5. Monetary values and quantities are decimal strings.",
+    "description": "Checkpoint 5: durable ingestion, automatic forecasts, in-app alerts and read-only database-grounded owner chat. No external owner notifications or chat-driven writes. Monetary values and quantities are decimal strings.",
     "version": "1.0.0"
   },
   "paths": {
@@ -2927,6 +2927,46 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -3113,9 +3153,9 @@
           },
           "checkpoint": {
             "type": "integer",
-            "const": 4,
+            "const": 5,
             "title": "Checkpoint",
-            "default": 4
+            "default": 5
           },
           "capabilities": {
             "items": {
@@ -3329,6 +3369,31 @@
         ],
         "title": "ChannelContribution"
       },
+      "ChatMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ChatMessage"
+      },
       "ChatRequest": {
         "properties": {
           "question": {
@@ -3336,6 +3401,14 @@
             "maxLength": 4000,
             "minLength": 1,
             "title": "Question"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "History"
           }
         },
         "additionalProperties": false,
@@ -3376,6 +3449,35 @@
             },
             "type": "array",
             "title": "Limitations"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "answered",
+              "clarification",
+              "unsupported",
+              "unavailable"
+            ],
+            "title": "Status",
+            "default": "answered"
+          },
+          "source_data_version": {
+            "type": "integer",
+            "title": "Source Data Version",
+            "default": 0
+          },
+          "answer_method": {
+            "type": "string",
+            "const": "grounded_tools",
+            "title": "Answer Method",
+            "default": "grounded_tools"
+          },
+          "tools": {
+            "items": {
+              "$ref": "#/components/schemas/ChatToolTrace"
+            },
+            "type": "array",
+            "title": "Tools"
           }
         },
         "additionalProperties": false,
@@ -3388,6 +3490,43 @@
           "limitations"
         ],
         "title": "ChatResponse"
+      },
+      "ChatToolTrace": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Arguments"
+          },
+          "metric_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Metric Ids"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "unavailable"
+            ],
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "arguments",
+          "metric_ids",
+          "status"
+        ],
+        "title": "ChatToolTrace"
       },
       "Coverage": {
         "properties": {

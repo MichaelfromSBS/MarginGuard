@@ -201,13 +201,40 @@ An isolated browser check verified the latest Overview/Trends navigation, one co
 
 The November 5 fixture anomaly is reported on November 6 only; a new November 7 run produces no historical sales alert. The main beef invoice produces one combined notification linking $4.00 → $4.72/lb to the $730.17 monthly projected ingredient-cost increase. See [checkpoint 4](checkpoint-4.md) for the current review sequence.
 
-## Upcoming checkpoints
+## Checkpoint 5: database-grounded owner chat
+
+Implemented November 7, 2026; pending team review. The existing `.env`, business databases and teammate files were preserved. This checkpoint is not yet committed or pushed.
+
+- `POST /api/chat` now makes one structured OpenRouter planning request, validates at most four allowlisted calls, and returns Python-rendered answers with exact decimal metrics, periods, coverage, source versions, evidence and executed query traces. The model does not generate financial figures or SQL.
+- Six tools cover approved sales and rankings, normalized ingredient-price history, recipe replacement costs, existing monthly forecasts, existing alerts and compatible saved-forecast attribution. Forecast comparison separates usage/dish mix, supplier-price, interaction and rounding effects and names the main changed ingredients.
+- All tools share one query-only SQLite snapshot with a query budget. History is bounded to six messages of 2,000 characters; independent questions clear earlier filters while explicit follow-ups can refer back. Known period/channel/entity mismatches produce clarification. Unknown tools, extra arguments, mutations, unsupported business claims and malformed/incomplete model output do not produce invented answers.
+- Stale/missing forecasts are unavailable without triggering calculation. Historical comparisons retain immutable originally-ready values and report historical versions honestly. No schema migration, ledger write, chat acknowledgement or external owner notification was added.
+- Ask MarginGuard displays real metric cards, readable answers, expandable source excerpts, document links into Inbox, and query traces. Chat remains in memory across tab/source navigation. Provider/configuration/credit/timeout errors remain visible. Mock chat explicitly requires a real configured model rather than pretending to understand questions.
+- Health/capabilities report checkpoint 5; TypeScript/OpenAPI contracts and a transparent canned-planner chat example are exported. [Checkpoint 5](checkpoint-5.md) provides copyable PowerShell checks, configuration and support boundaries.
+
+Verification on an isolated fictional full-history database:
+
+| Check | Result |
+| --- | --- |
+| Backend regression suite | **349 tests passed**; one existing Starlette/httpx deprecation warning |
+| Focused chat/API, read tools and saved-comparison tests | 74 + 26 + 19 cases, including provider errors, incomplete plans, read-only transaction enforcement, date/filter mismatches, stale forecasts, evidence and attribution |
+| Frontend checks | **7 tests passed**, TypeScript/production build passed |
+| Dependencies and contract | `pip check`, contract exporter and diff whitespace checks passed |
+| Actual configured OpenRouter model | Returned $7,400.00/332 orders/610 units, Classic Burger $3.96, beef $4.00 → $4.72/lb, calendar-week delivery totals and the $730.17 saved-forecast price effect |
+| Live browser | Desktop and 390px mobile, delivery follow-up, invoice/receipt source navigation, retained chat and named beef-cost attribution passed; no page errors or horizontal overflow |
+| Read-only boundary | Ledger dumps unchanged before/after live API questions; automated tests also prove SQLite rejects an attempted write inside a tool |
+
+The first complex Gemini plan was truncated under the original 1,800-token output budget. The final defaults use 3,000 tokens and automatic low reasoning for Gemini; other model families preserve provider defaults. The same forecast-change question then passed live API and browser checks. Reasoning/provider bodies are never exposed in owner answers. No real model correctness guarantee is implied by these smoke checks; routing remains bounded and visible for review.
+
+The browser test used a temporary imported history, explicitly approved fictional invoice fixture and saved before/after projections. The local test server was stopped afterward. Existing user runtime data, `.env` values and `.vscode/` were not changed. The full-history forecast and alerts are not fabricated when inputs are missing.
+
+## Checkpoint review status
 
 | Checkpoint | Required outcome | State |
 | --- | --- | --- |
 | 2 | Invoice and receipt ingestion, schema/business validation, mapping, persistence and deduplication | Implemented; pending review |
 | 3 | Actual sales metrics, recipe economics, completeness-aware forecasts and evaluation | Implemented; frontend integrated and verified |
 | 4 | Independent worker, automatic recomputation, two focused in-app notification types | Implemented; latest frontend integrated and verified |
-| 5 | Read-only database tools, grounded owner chat and evidence-linked answers | Not started |
+| 5 | Read-only database tools, grounded owner chat and evidence-linked answers | Implemented; frontend integrated and verified; pending team review |
 
 For each checkpoint, record the implementation commit, validation commands/results, contract changes, known limitations and team review decision. Do not move a planned feature to complete based only on a schema or fixture.

@@ -1,4 +1,4 @@
-"""Checkpoint 4 APIs: durable ingestion, analytics, worker and alert delivery state."""
+"""Checkpoint 5 APIs: ingestion, analytics, in-app alerts and read-only owner chat."""
 import json
 import hashlib
 from datetime import date
@@ -12,6 +12,7 @@ from .db import connect
 from .errors import DomainError
 from . import ingestion
 from . import analytics, forecasting
+from .chat import answer_question
 from .detectors import alert_payload
 from backend.worker import worker_status
 from .schemas import (
@@ -50,8 +51,8 @@ def unavailable(checkpoint: int, feature: str):
 
 @router.get("/capabilities", response_model=CapabilitiesResponse)
 def capabilities():
-    return {"api_version": API_VERSION, "checkpoint": 4, "capabilities": [
-        {"name": name, "available": checkpoint <= 4, "checkpoint": checkpoint}
+    return {"api_version": API_VERSION, "checkpoint": 5, "capabilities": [
+        {"name": name, "available": checkpoint <= 5, "checkpoint": checkpoint}
         for name, checkpoint in [
             ("catalog_and_seed_ledger", 1), ("document_ingestion", 2),
             ("metrics_and_forecasting", 3), ("background_processing_and_alerts", 4),
@@ -306,6 +307,11 @@ def change_alert_status(request, alert_id, status):
         return alert_payload(conn.execute("SELECT * FROM alerts WHERE id=?", (alert_id,)).fetchone())
 
 
-@router.post("/chat", response_model=ChatResponse)
-def chat(body: ChatRequest):
-    unavailable(5, "Database-backed chat")
+@router.post("/chat", response_model=ChatResponse, responses={
+    code: {"model": ErrorResponse} for code in (429, 502, 503, 504)
+})
+async def chat(body: ChatRequest, request: Request):
+    if request.app.state.ai_lock.locked():
+        raise DomainError("chat_busy", "Another model request is running. Wait briefly before asking again.", 429)
+    async with request.app.state.ai_lock:
+        return await answer_question(request.app.state.client, request.app.state.settings, body)

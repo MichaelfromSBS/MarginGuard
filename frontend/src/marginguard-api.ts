@@ -1,6 +1,6 @@
 /**
  * Checkpoint 4 contracts mirrored from backend/marginguard/schemas.py.
- * Runtime authority: GET /openapi.json. Business chat still returns 501.
+ * Runtime authority: GET /openapi.json. Owner chat uses bounded read-only tools.
  * Decimal strings are unsigned fixed decimals with up to eight fractional digits.
  */
 export type ApiVersion = '1.0.0';
@@ -438,6 +438,15 @@ export interface DashboardResponse {
 
 export interface ChatRequest {
   question: string;
+  history?: ChatMessage[];
+}
+
+export interface ChatMessage { role: 'user' | 'assistant'; content: string }
+export interface ChatToolTrace {
+  name: string;
+  arguments: Record<string, unknown>;
+  metric_ids: string[];
+  status: 'ok' | 'unavailable';
 }
 
 export interface ChatResponse {
@@ -446,6 +455,10 @@ export interface ChatResponse {
   metrics: Metric[];
   evidence: EvidenceReference[];
   limitations: string[];
+  status: 'answered' | 'clarification' | 'unsupported' | 'unavailable';
+  source_data_version: number;
+  answer_method: 'grounded_tools';
+  tools: ChatToolTrace[];
 }
 
 export interface InvoiceReview {
@@ -476,6 +489,6 @@ export interface Capability {
 
 export interface CapabilitiesResponse {
   api_version: ApiVersion;
-  checkpoint: 4;
+  checkpoint: 5;
   capabilities: Capability[];
 }
