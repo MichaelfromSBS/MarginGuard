@@ -1,5 +1,7 @@
 # MarginGuard — revised hackathon plan
 
+Superseded by [MarginGuard v2](marginguard-plan-v2.md), which incorporates invoice and sales-receipt ingestion, next-month forecasts, database-backed chat and proactive alerts. This document preserves the earlier invoice-only scope.
+
 NOVA 2026 · DoorDash Back of House fallback · November 7, 2026
 
 This is an implementation plan. The existing workspace is a generic AI starter; the restaurant workflow described here has not yet been built.

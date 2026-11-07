@@ -10,3 +10,9 @@ node_modules/
 frontend/dist/
 *.log
 .DS_Store
+# Local business records and uploaded documents are runtime data.
+data/*.db
+data/*.db-*
+data/*.sqlite*
+data/uploads/
+inbox/

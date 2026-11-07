@@ -1,0 +1,72 @@
+{
+  "items": [
+    {
+      "id": "doc_invoice_baseline",
+      "type": "invoice",
+      "filename": "synthetic_doc_invoice_baseline.txt",
+      "sha256": "cb6627d12bba5af4bfee2930a868e8fa33cb557d0a646abff4646f165d8c50bd",
+      "media_type": "text/plain",
+      "status": "completed",
+      "created_at": "2026-11-07T19:00:00Z",
+      "updated_at": "2026-11-07T19:00:00Z",
+      "is_demo": true,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "id": "doc_invoice_beef_increase",
+      "type": "invoice",
+      "filename": "synthetic_doc_invoice_beef_increase.txt",
+      "sha256": "43589fa2a5b69e6e6fe8efd978815e7ec601fd9140804f46c23df34f87c7c820",
+      "media_type": "text/plain",
+      "status": "completed",
+      "created_at": "2026-11-07T19:00:00Z",
+      "updated_at": "2026-11-07T19:00:00Z",
+      "is_demo": true,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "id": "doc_receipt_001",
+      "type": "receipt",
+      "filename": "synthetic_doc_receipt_001.txt",
+      "sha256": "defdbc47fd14c26f72704a9c30b935157102970eeb8e75e19a7bb6386da479c5",
+      "media_type": "text/plain",
+      "status": "completed",
+      "created_at": "2026-11-07T19:00:00Z",
+      "updated_at": "2026-11-07T19:00:00Z",
+      "is_demo": true,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "id": "doc_receipt_002",
+      "type": "receipt",
+      "filename": "synthetic_doc_receipt_002.txt",
+      "sha256": "12f71b8e51c381c337ce97c8925846998d23afff05f5c88935fbe6760eaf894d",
+      "media_type": "text/plain",
+      "status": "completed",
+      "created_at": "2026-11-07T19:00:00Z",
+      "updated_at": "2026-11-07T19:00:00Z",
+      "is_demo": true,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "id": "doc_receipt_003",
+      "type": "receipt",
+      "filename": "synthetic_doc_receipt_003.txt",
+      "sha256": "bd015829f8c98648a030037a37c740263a3efee8577b4c9f86231b87ceea46be",
+      "media_type": "text/plain",
+      "status": "completed",
+      "created_at": "2026-11-07T19:00:00Z",
+      "updated_at": "2026-11-07T19:00:00Z",
+      "is_demo": true,
+      "error_code": null,
+      "error_message": null
+    }
+  ],
+  "total": 5,
+  "limit": 50,
+  "offset": 0
+}

@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "date": "2026-11-06",
+      "channel_id": "delivery",
+      "status": "complete",
+      "updated_at": "2026-11-07T19:00:00Z"
+    },
+    {
+      "date": "2026-11-06",
+      "channel_id": "in_store",
+      "status": "complete",
+      "updated_at": "2026-11-07T19:00:00Z"
+    },
+    {
+      "date": "2026-11-07",
+      "channel_id": "delivery",
+      "status": "unknown",
+      "updated_at": "2026-11-07T19:00:00Z"
+    },
+    {
+      "date": "2026-11-07",
+      "channel_id": "in_store",
+      "status": "partial",
+      "updated_at": "2026-11-07T19:00:00Z"
+    }
+  ],
+  "total": 4,
+  "limit": 50,
+  "offset": 0
+}

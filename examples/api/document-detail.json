@@ -1,0 +1,14 @@
+{
+  "id": "doc_invoice_beef_increase",
+  "type": "invoice",
+  "filename": "synthetic_doc_invoice_beef_increase.txt",
+  "sha256": "43589fa2a5b69e6e6fe8efd978815e7ec601fd9140804f46c23df34f87c7c820",
+  "media_type": "text/plain",
+  "status": "completed",
+  "created_at": "2026-11-07T19:00:00Z",
+  "updated_at": "2026-11-07T19:00:00Z",
+  "is_demo": true,
+  "error_code": null,
+  "error_message": null,
+  "source_text": "SYNTHETIC FIXTURE | Ridgeline Foodservice | DEMO-1002 | 2026-11-07\nGROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40\nSubtotal $94.40\nTax $0.00\nFreight $0.00\nTotal $94.40"
+}

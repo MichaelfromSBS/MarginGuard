@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -11,6 +12,9 @@ from .config import ROOT, Settings
 from .pipeline import run_pipeline
 from .provider import AIError, stream_text
 from .schemas import RunRequest, RunResponse
+from .marginguard.db import initialize_database
+from .marginguard.routes import DomainError, router as marginguard_router
+from .marginguard.schemas import API_VERSION, ErrorDetail, ErrorResponse
 
 
 def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
@@ -18,6 +22,8 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        initialize_database(settings.database_path)
+        app.state.database_path = settings.database_path
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(settings.ai_timeout_seconds, connect=10), transport=transport,
         ) as client:
@@ -26,19 +32,38 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
             app.state.ai_lock = asyncio.Lock()
             yield
 
-    app = FastAPI(title="NOVA AI Starter", lifespan=lifespan)
+    app = FastAPI(title="MarginGuard API", version=API_VERSION, lifespan=lifespan,
+                  description="Checkpoint 1: SQLite foundation and read endpoints. Future capabilities return explicit HTTP 501 responses. Monetary values and quantities are decimal strings.")
+
+    @app.exception_handler(DomainError)
+    async def domain_error_handler(request: Request, exc: DomainError):
+        error = ErrorResponse(error=ErrorDetail(code=exc.code, message=exc.message, details=exc.details))
+        return JSONResponse(error.model_dump(), status_code=exc.status)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error_handler(request: Request, exc: RequestValidationError):
+        # Avoid reflecting raw uploaded/business data into an error response.
+        issues = [{"location": list(e["loc"]), "message": e["msg"], "type": e["type"]} for e in exc.errors()]
+        error = ErrorResponse(error=ErrorDetail(code="validation_error", message="The request does not match the API contract.", details={"issues": issues}))
+        return JSONResponse(error.model_dump(), status_code=422)
 
     @app.middleware("http")
     async def local_api_guard(request: Request, call_next):
+        def reject(code: str, message: str, status: int):
+            if request.url.path in {"/api/run", "/api/stream", "/api/health"}:
+                return JSONResponse({"detail": message}, status_code=status)
+            error = ErrorResponse(error=ErrorDetail(code=code, message=message))
+            return JSONResponse(error.model_dump(), status_code=status)
+
         # Block cross-site browser requests to the local paid API. CLI calls have no Origin.
         if request.url.path.startswith("/api/"):
             origin = request.headers.get("origin")
             allowed = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8000", "http://127.0.0.1:8000"}
             if origin and origin not in allowed:
-                return JSONResponse({"detail": "Origin is not allowed for this local development API."}, status_code=403)
+                return reject("origin_not_allowed", "Origin is not allowed for this local development API.", 403)
             length = request.headers.get("content-length")
             if length and (not length.isdigit() or int(length) > 5_000_000):
-                return JSONResponse({"detail": "Request too large (5 MB limit)."}, status_code=413)
+                return reject("request_too_large", "Request too large (5 MB limit).", 413)
         return await call_next(request)
 
     @app.exception_handler(AIError)
@@ -49,6 +74,7 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
     async def health():
         return {
             "status": "ok", "mode": settings.ai_mode,
+            "api_version": API_VERSION, "checkpoint": 1, "database": "ready",
             "model": settings.openrouter_model if settings.ai_mode == "openrouter" else "mock-fixture",
             "configured": settings.ai_mode == "mock" or bool(settings.openrouter_api_key.get_secret_value().strip() and settings.openrouter_model.strip()),
         }
@@ -85,6 +111,8 @@ def create_app(settings: Settings | None = None, transport=None) -> FastAPI:
                     yield json.dumps({"type": "error", "message": "The stream exceeded the total time limit."}) + "\n"
 
         return StreamingResponse(events(), media_type="application/x-ndjson", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+    app.include_router(marginguard_router)
 
     # After npm run build, the backend can serve the built UI from port 8000.
     if (ROOT / "frontend" / "dist").is_dir():

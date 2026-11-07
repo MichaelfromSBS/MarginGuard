@@ -2,6 +2,12 @@
 
 A project-neutral React + TypeScript + FastAPI workspace. Prepared November 6, 2026, before NOVA. **Disclose this starter as pre-existing code when presenting.** See [PREEXISTING.md](PREEXISTING.md) for the preparation inventory and [docs/hackathon-plan.md](docs/hackathon-plan.md) for track advice and ideas.
 
+The current restaurant project proposal is [MarginGuard v2](docs/marginguard-plan-v2.md). **Checkpoint 1 is implemented:** SQLite foundation, explicit fictional seed data, catalog/ledger read APIs and the versioned frontend contract. Invoice ingestion, analytics/forecasts, the worker/alerts and business-data chat are reserved for checkpoints 2–5. See [checkpoint review instructions](docs/checkpoint-1.md).
+
+To inspect the fictional restaurant, run `.\.venv\Scripts\python.exe -m backend.marginguard.seed` once, then start the API with `npm run dev` and open http://127.0.0.1:8000/docs. Seeding is explicit and refuses to mix fixtures into an existing business database. The starter frontend remains the generic workbench until the product UI is connected.
+
+**For your teammate generating invoice PDFs and receipt images:** share [the sample-data contract and copyable Claude prompt](docs/sample-data-contract.md), [paired source/expected examples](examples), [TypeScript contracts](frontend/src/marginguard-api.ts) and the exported [OpenAPI schema](docs/openapi.json). The sample `.txt` files are source text for generating documents, not supported uploads in checkpoint 1.
+
 ## Start on this computer
 
 Dependencies are installed in `.venv` and `node_modules`. From this folder:
@@ -53,8 +59,9 @@ Choose a model endpoint that supports `structured_outputs`; for the optional ima
 - Browser cancellation, visible errors, export, responsive UI, no automatic retries or unbounded tool loops.
 - One model request at a time and a configurable output cap/total timeout. These reduce accidental usage; they are **not a dollar budget**. Set spending controls on the team key.
 - A local-only development API; it has no login or deployment configuration. Add authentication/rate limits before exposing it publicly.
+- MarginGuard checkpoint-1 catalog, invoice, receipt, document, coverage and price-history read APIs, with versioned schemas and explicit 501 responses for later features.
 
-Source quotes are checked for literal membership in the supplied text. Warnings flag mismatches, unknown source IDs and missing citations; this does **not** verify whether a quote logically supports a conclusion. Streaming text has no citation validation. Text is rendered as text, not executable HTML. Inputs stay in browser memory until refresh; this app does not persist them. In live mode, inputs go to OpenRouter and its selected provider.
+The generic workbench checks source quotes for literal membership in supplied text. Warnings flag mismatches, unknown source IDs and missing citations; this does **not** verify whether a quote logically supports a conclusion. Streaming text has no citation validation. Text is rendered as text, not executable HTML. Workbench inputs stay in browser memory until refresh and are not persisted. MarginGuard's explicit seed records are persisted separately in the configured SQLite database. In live mode, workbench inputs go to OpenRouter and its selected provider.
 
 ## Make it your project
 
@@ -69,7 +76,7 @@ Start with these four files:
 
 `backend/provider.py` contains the transport layer. `frontend/src/api.ts` defines matching frontend types; update them when changing the schema. Change fixtures and tests to match your product contract too. The provided fictional note-comparison sample exercises the template; it is not an implemented contradiction detector.
 
-For six hours, begin with one model call and deterministic code around it. Add a database, vector search, MCP, audio, OCR, or agents only if the chosen user journey requires them. PDF/audio input, image generation, search and external actions are not implemented. Pasting extracted text is the supported document path.
+The generic workbench supports pasted text and one image. MarginGuard checkpoint 1 reserves document upload/extraction routes but does not process PDFs or receipts yet. Analytics, forecasting, autonomous processing and business-data chat are later checkpoints; use `/api/capabilities` to distinguish implemented features.
 
 ## Verify
 

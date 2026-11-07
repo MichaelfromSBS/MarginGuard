@@ -1,0 +1,31 @@
+{
+  "api_version": "1.0.0",
+  "checkpoint": 1,
+  "capabilities": [
+    {
+      "name": "catalog_and_seed_ledger",
+      "available": true,
+      "checkpoint": 1
+    },
+    {
+      "name": "document_ingestion",
+      "available": false,
+      "checkpoint": 2
+    },
+    {
+      "name": "metrics_and_forecasting",
+      "available": false,
+      "checkpoint": 3
+    },
+    {
+      "name": "background_processing_and_alerts",
+      "available": false,
+      "checkpoint": 4
+    },
+    {
+      "name": "database_backed_chat",
+      "available": false,
+      "checkpoint": 5
+    }
+  ]
+}

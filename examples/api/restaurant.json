@@ -1,0 +1,8 @@
+{
+  "id": "tartan_burger_co",
+  "name": "Tartan Burger Co.",
+  "currency": "USD",
+  "timezone": "America/New_York",
+  "data_version": 1,
+  "is_demo": true
+}

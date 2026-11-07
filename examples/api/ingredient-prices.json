@@ -1,0 +1,23 @@
+{
+  "items": [
+    {
+      "id": "price_invoice_baseline_beef",
+      "ingredient_id": "beef",
+      "invoice_line_id": "line_invoice_baseline_beef",
+      "effective_date": "2026-11-01",
+      "unit_cost": "4.00",
+      "base_unit": "lb"
+    },
+    {
+      "id": "price_invoice_beef_increase_beef",
+      "ingredient_id": "beef",
+      "invoice_line_id": "line_invoice_beef_increase_beef",
+      "effective_date": "2026-11-07",
+      "unit_cost": "4.72",
+      "base_unit": "lb"
+    }
+  ],
+  "total": 2,
+  "limit": 50,
+  "offset": 0
+}

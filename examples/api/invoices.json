@@ -1,0 +1,115 @@
+{
+  "items": [
+    {
+      "id": "invoice_baseline",
+      "document_id": "doc_invoice_baseline",
+      "vendor_id": "ridgeline_foodservice",
+      "vendor_name": "Ridgeline Foodservice (fictional)",
+      "invoice_number": "DEMO-1001",
+      "invoice_date": "2026-11-01",
+      "currency": "USD",
+      "subtotal": "440.00",
+      "tax": "0.00",
+      "freight": "0.00",
+      "total": "440.00",
+      "items": [
+        {
+          "description": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH",
+          "ingredient_id": "beef",
+          "quantity": "2",
+          "purchase_unit": "case",
+          "pack_size": "10",
+          "pack_unit": "lb",
+          "unit_price": "40.00",
+          "line_total": "80.00",
+          "source_page": 1,
+          "source_text": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $40.00 | line total $80.00",
+          "id": "line_invoice_baseline_beef"
+        },
+        {
+          "description": "Burger buns - 100 each",
+          "ingredient_id": "bun",
+          "quantity": "100",
+          "purchase_unit": "each",
+          "pack_size": null,
+          "pack_unit": null,
+          "unit_price": "0.60",
+          "line_total": "60.00",
+          "source_page": 1,
+          "source_text": "Burger buns - 100 each | quantity 100 each | unit price $0.60 | line total $60.00",
+          "id": "line_invoice_baseline_bun"
+        },
+        {
+          "description": "American cheese slices - 100 each",
+          "ingredient_id": "cheese",
+          "quantity": "100",
+          "purchase_unit": "each",
+          "pack_size": null,
+          "pack_unit": null,
+          "unit_price": "0.40",
+          "line_total": "40.00",
+          "source_page": 1,
+          "source_text": "American cheese slices - 100 each | quantity 100 each | unit price $0.40 | line total $40.00",
+          "id": "line_invoice_baseline_cheese"
+        },
+        {
+          "description": "Lettuce tomato portions - 100 each",
+          "ingredient_id": "produce",
+          "quantity": "100",
+          "purchase_unit": "each",
+          "pack_size": null,
+          "pack_unit": null,
+          "unit_price": "1.00",
+          "line_total": "100.00",
+          "source_page": 1,
+          "source_text": "Lettuce tomato portions - 100 each | quantity 100 each | unit price $1.00 | line total $100.00",
+          "id": "line_invoice_baseline_produce"
+        },
+        {
+          "description": "Plant patties - 100 each",
+          "ingredient_id": "veggie_patty",
+          "quantity": "100",
+          "purchase_unit": "each",
+          "pack_size": null,
+          "pack_unit": null,
+          "unit_price": "1.60",
+          "line_total": "160.00",
+          "source_page": 1,
+          "source_text": "Plant patties - 100 each | quantity 100 each | unit price $1.60 | line total $160.00",
+          "id": "line_invoice_baseline_veggie_patty"
+        }
+      ]
+    },
+    {
+      "id": "invoice_beef_increase",
+      "document_id": "doc_invoice_beef_increase",
+      "vendor_id": "ridgeline_foodservice",
+      "vendor_name": "Ridgeline Foodservice (fictional)",
+      "invoice_number": "DEMO-1002",
+      "invoice_date": "2026-11-07",
+      "currency": "USD",
+      "subtotal": "94.40",
+      "tax": "0.00",
+      "freight": "0.00",
+      "total": "94.40",
+      "items": [
+        {
+          "description": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH",
+          "ingredient_id": "beef",
+          "quantity": "2",
+          "purchase_unit": "case",
+          "pack_size": "10",
+          "pack_unit": "lb",
+          "unit_price": "47.20",
+          "line_total": "94.40",
+          "source_page": 1,
+          "source_text": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40",
+          "id": "line_invoice_beef_increase_beef"
+        }
+      ]
+    }
+  ],
+  "total": 2,
+  "limit": 50,
+  "offset": 0
+}

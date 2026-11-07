@@ -1,0 +1,118 @@
+{
+  "items": [
+    {
+      "id": "receipt_001",
+      "document_id": "doc_receipt_001",
+      "receipt_number": "DEMO-R001",
+      "sold_at": "2026-11-06T12:00:00-05:00",
+      "local_date": "2026-11-06",
+      "channel_id": "in_store",
+      "status": "completed",
+      "currency": "USD",
+      "subtotal": "35.00",
+      "discount": "0.00",
+      "tax": "2.80",
+      "tip": "0.00",
+      "total": "37.80",
+      "items": [
+        {
+          "description": "Classic Burger",
+          "dish_id": "classic_burger",
+          "quantity": "2",
+          "unit_price": "12.00",
+          "gross_amount": "24.00",
+          "discount_amount": "0.00",
+          "net_amount": "24.00",
+          "source_page": 1,
+          "source_text": "2 x Classic Burger @ $12.00 = $24.00",
+          "id": "item_receipt_001_1"
+        },
+        {
+          "description": "Veggie Burger",
+          "dish_id": "veggie_burger",
+          "quantity": "1",
+          "unit_price": "11.00",
+          "gross_amount": "11.00",
+          "discount_amount": "0.00",
+          "net_amount": "11.00",
+          "source_page": 1,
+          "source_text": "1 x Veggie Burger @ $11.00 = $11.00",
+          "id": "item_receipt_001_2"
+        }
+      ]
+    },
+    {
+      "id": "receipt_002",
+      "document_id": "doc_receipt_002",
+      "receipt_number": "DEMO-R002",
+      "sold_at": "2026-11-06T12:30:00-05:00",
+      "local_date": "2026-11-06",
+      "channel_id": "delivery",
+      "status": "completed",
+      "currency": "USD",
+      "subtotal": "25.00",
+      "discount": "0.00",
+      "tax": "2.00",
+      "tip": "0.00",
+      "total": "27.00",
+      "items": [
+        {
+          "description": "Cheeseburger",
+          "dish_id": "cheeseburger",
+          "quantity": "1",
+          "unit_price": "13.00",
+          "gross_amount": "13.00",
+          "discount_amount": "0.00",
+          "net_amount": "13.00",
+          "source_page": 1,
+          "source_text": "1 x Cheeseburger @ $13.00 = $13.00",
+          "id": "item_receipt_002_1"
+        },
+        {
+          "description": "Classic Burger",
+          "dish_id": "classic_burger",
+          "quantity": "1",
+          "unit_price": "12.00",
+          "gross_amount": "12.00",
+          "discount_amount": "0.00",
+          "net_amount": "12.00",
+          "source_page": 1,
+          "source_text": "1 x Classic Burger @ $12.00 = $12.00",
+          "id": "item_receipt_002_2"
+        }
+      ]
+    },
+    {
+      "id": "receipt_003",
+      "document_id": "doc_receipt_003",
+      "receipt_number": "DEMO-R003",
+      "sold_at": "2026-11-07T13:00:00-05:00",
+      "local_date": "2026-11-07",
+      "channel_id": "in_store",
+      "status": "completed",
+      "currency": "USD",
+      "subtotal": "12.00",
+      "discount": "0.00",
+      "tax": "0.96",
+      "tip": "0.00",
+      "total": "12.96",
+      "items": [
+        {
+          "description": "Classic Burger",
+          "dish_id": "classic_burger",
+          "quantity": "1",
+          "unit_price": "12.00",
+          "gross_amount": "12.00",
+          "discount_amount": "0.00",
+          "net_amount": "12.00",
+          "source_page": 1,
+          "source_text": "1 x Classic Burger @ $12.00 = $12.00",
+          "id": "item_receipt_003_1"
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "limit": 50,
+  "offset": 0
+}

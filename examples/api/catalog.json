@@ -1,0 +1,201 @@
+{
+  "source_data_version": 1,
+  "is_demo": true,
+  "ingredients": [
+    {
+      "id": "beef",
+      "name": "Ground beef 80/20",
+      "base_unit": "lb",
+      "aliases": [
+        "ground chuck",
+        "ground beef"
+      ]
+    },
+    {
+      "id": "bun",
+      "name": "Burger bun",
+      "base_unit": "each",
+      "aliases": [
+        "brioche bun"
+      ]
+    },
+    {
+      "id": "cheese",
+      "name": "Cheese slice",
+      "base_unit": "each",
+      "aliases": [
+        "american cheese"
+      ]
+    },
+    {
+      "id": "produce",
+      "name": "Burger produce portion",
+      "base_unit": "each",
+      "aliases": [
+        "lettuce tomato portion"
+      ]
+    },
+    {
+      "id": "veggie_patty",
+      "name": "Veggie patty",
+      "base_unit": "each",
+      "aliases": [
+        "plant patty"
+      ]
+    }
+  ],
+  "dishes": [
+    {
+      "id": "cheeseburger",
+      "name": "Cheeseburger",
+      "prices": [
+        {
+          "id": "menu_cheeseburger_delivery_v1",
+          "channel_id": "delivery",
+          "price": "13.00",
+          "effective_date": "2026-11-01"
+        },
+        {
+          "id": "menu_cheeseburger_in_store_v1",
+          "channel_id": "in_store",
+          "price": "13.00",
+          "effective_date": "2026-11-01"
+        }
+      ],
+      "recipes": [
+        {
+          "id": "recipe_cheeseburger_v1",
+          "effective_date": "2026-11-01",
+          "items": [
+            {
+              "id": "recipe_cheeseburger_v1_beef",
+              "ingredient_id": "beef",
+              "quantity": "0.50",
+              "unit": "lb"
+            },
+            {
+              "id": "recipe_cheeseburger_v1_bun",
+              "ingredient_id": "bun",
+              "quantity": "1",
+              "unit": "each"
+            },
+            {
+              "id": "recipe_cheeseburger_v1_cheese",
+              "ingredient_id": "cheese",
+              "quantity": "1",
+              "unit": "each"
+            },
+            {
+              "id": "recipe_cheeseburger_v1_produce",
+              "ingredient_id": "produce",
+              "quantity": "1",
+              "unit": "each"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "classic_burger",
+      "name": "Classic Burger",
+      "prices": [
+        {
+          "id": "menu_classic_burger_delivery_v1",
+          "channel_id": "delivery",
+          "price": "12.00",
+          "effective_date": "2026-11-01"
+        },
+        {
+          "id": "menu_classic_burger_in_store_v1",
+          "channel_id": "in_store",
+          "price": "12.00",
+          "effective_date": "2026-11-01"
+        }
+      ],
+      "recipes": [
+        {
+          "id": "recipe_classic_burger_v1",
+          "effective_date": "2026-11-01",
+          "items": [
+            {
+              "id": "recipe_classic_burger_v1_beef",
+              "ingredient_id": "beef",
+              "quantity": "0.50",
+              "unit": "lb"
+            },
+            {
+              "id": "recipe_classic_burger_v1_bun",
+              "ingredient_id": "bun",
+              "quantity": "1",
+              "unit": "each"
+            },
+            {
+              "id": "recipe_classic_burger_v1_produce",
+              "ingredient_id": "produce",
+              "quantity": "1",
+              "unit": "each"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "veggie_burger",
+      "name": "Veggie Burger",
+      "prices": [
+        {
+          "id": "menu_veggie_burger_delivery_v1",
+          "channel_id": "delivery",
+          "price": "11.00",
+          "effective_date": "2026-11-01"
+        },
+        {
+          "id": "menu_veggie_burger_in_store_v1",
+          "channel_id": "in_store",
+          "price": "11.00",
+          "effective_date": "2026-11-01"
+        }
+      ],
+      "recipes": [
+        {
+          "id": "recipe_veggie_burger_v1",
+          "effective_date": "2026-11-01",
+          "items": [
+            {
+              "id": "recipe_veggie_burger_v1_bun",
+              "ingredient_id": "bun",
+              "quantity": "1",
+              "unit": "each"
+            },
+            {
+              "id": "recipe_veggie_burger_v1_produce",
+              "ingredient_id": "produce",
+              "quantity": "1",
+              "unit": "each"
+            },
+            {
+              "id": "recipe_veggie_burger_v1_veggie_patty",
+              "ingredient_id": "veggie_patty",
+              "quantity": "1",
+              "unit": "each"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "channels": [
+    {
+      "id": "delivery",
+      "name": "Delivery (fictional fee assumption)",
+      "fee_rate": "0.30",
+      "packaging_cost": "0.60"
+    },
+    {
+      "id": "in_store",
+      "name": "In-store",
+      "fee_rate": "0.00",
+      "packaging_cost": "0.00"
+    }
+  ]
+}
