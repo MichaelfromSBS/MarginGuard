@@ -3,7 +3,7 @@
     "start": "2026-10-31",
     "end": "2026-11-06"
   },
-  "as_of": "2026-11-07T19:49:38.621672Z",
+  "as_of": "2026-11-07T20:21:13.850830Z",
   "source_data_version": 1,
   "units": "5",
   "net_revenue": "60.00",
@@ -24,73 +24,73 @@
         "date": "2026-10-31",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-10-31",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-01",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-01",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-02",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-02",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-03",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-03",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-04",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-04",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-05",
         "channel_id": "delivery",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-05",
         "channel_id": "in_store",
         "status": "unknown",
-        "updated_at": "2026-11-07T19:49:38.621672Z"
+        "updated_at": "2026-11-07T20:21:13.850830Z"
       },
       {
         "date": "2026-11-06",

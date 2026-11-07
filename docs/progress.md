@@ -17,7 +17,8 @@ Last updated: November 7, 2026. This record distinguishes implemented functional
 | 2026-11-07 | Gemini compatibility fix published | [`376042a`](https://github.com/MichaelfromSBS/nova-hackathon/commit/376042a): provider schema compatibility, preserved local item bounds and live extraction verification. |
 | 2026-11-07 | Checkpoint 3 implemented | [`8767d3c`](https://github.com/MichaelfromSBS/nova-hackathon/commit/8767d3c): observed sales, evidence-linked replacement recipe costs, audited coverage confirmation and versioned weekday-average forecasts. |
 | 2026-11-07 | Restaurant frontend integrated | Teammate frontend [`e89557b`](https://github.com/MichaelfromSBS/nova-hackathon/commit/e89557b) merged with checkpoint 3 in `0a5ee2b`, followed by integration fixes and verification below. |
-| 2026-11-07 | Checkpoint 4 implemented locally | Persistent worker, automatic forecasts, measured anomaly evidence and website-only notifications; pending team review/publication. |
+| 2026-11-07 | Checkpoint 4 implemented | [`d858525`](https://github.com/MichaelfromSBS/nova-hackathon/commit/d858525): persistent worker, automatic forecasts and website-only notifications. Refined two-event policy is recorded below. |
+| 2026-11-07 | Readability frontend merged | Teammate [`0bec869`](https://github.com/MichaelfromSBS/nova-hackathon/commit/0bec869), integrated in `75c22a1`, preserves simpler sales labels, compact Overview, supplier changes and dish-cost detail in Trends. |
 
 ## Checkpoint 1: completed implementation, pending team review
 
@@ -155,7 +156,7 @@ Verification: **202 backend tests**, **7 frontend tests**, TypeScript and produc
 
 ## Checkpoint 4: persistent worker and website-only notifications
 
-Implemented locally for team review:
+The initial checkpoint-4 implementation delivered the following foundation; the current two-event policy below supersedes its original four detector categories:
 
 - `backend.worker` runs independently of browser/API requests. The development launcher starts API, worker and frontend together. `GET /api/worker` separates worker runtime health from API availability.
 - Uploads enqueue durable extraction jobs by default. The inbox scanner watches separate invoice/receipt folders, waits for stable files, shares the upload hash/validation path and preserves originals. The old explicit inline mode remains available for compatibility tests.
@@ -183,13 +184,30 @@ Policy clarification: the agreed unusual-sales rule uses **units**: November 5 h
 
 The worker remains a local single-database service, with explicit leases and bounded serial provider work. Chat tools and grounded owner answers remain checkpoint 5. Existing user databases were not reset; test processes/databases were isolated.
 
+## Current alert policy and latest frontend integration
+
+The updated frontend is integrated with the worker. Overview retains the teammate's simpler labels and layout, links to Trends/Inbox and shows current supplier changes. Integration fixes preserve accurate seven-day coverage wording, select same-day ingredient prices from the backend's chosen invoice evidence, avoid division by a zero menu price, and show a monitoring-unavailable warning instead of a false all-clear state. Combined alert text uses the full mobile width above its acknowledgement button.
+
+The system now generates only:
+
+1. **One combined ingredient/overall cost increase notification per source invoice.** At least one consumed ingredient must get more expensive and the net fixed-demand monthly ingredient consumption cost must increase after cent rounding. The message names the ingredient causes and before/after total cost. There are no separate ingredient-price popups and no former 10%/$50 gates. Offsetting decreases, zero demand and insufficient forecast inputs suppress a positive total-cost notification. Contributions reconcile to the displayed total. Duplicate scans, repacks, late older invoices and month rollover do not re-announce a known supplier change.
+2. **A report about yesterday's unusual sales, issued the next restaurant-local day.** Only yesterday's fully complete channels qualify against the existing four-weekday, >30% and >=10-unit drop policy. The report includes orders, units, net revenue, comparison dates and absolute report/sale dates. It can wait for coverage completion later the next day, but does not catch up older days or alert intraday.
+
+Document failures remain Inbox review tasks without new business alerts/toasts/bell counts. Migration 5 resolves earlier notification-policy events before the API serves them, preserving their evidence and facts as archived history. Existing v2 reports retain acknowledgement state. API alert lists return newest first so old archives cannot displace current findings.
+
+Validation: **230 backend tests passed**, **7 frontend tests passed**, production build/type checking passed. New acceptance cases cover the next-day boundary, incomplete-yesterday completion, no historical catch-up, a small 0.25% ingredient increase with a $10.14 total effect, net offsets/zero demand/missing inputs, cost attribution, month-rollover deduplication and migration from schema 4 with preserved legacy evidence. Follow-up API/migration checks exercise current-first alert pagination.
+
+An isolated browser check verified the latest Overview/Trends navigation, one combined cost toast and one bell item, automatic $10,143.80 forecast cost, $3.96 Classic Burger cost, acknowledgement clearing the bell, and an unavailable-monitoring warning when the worker lease becomes stale. Desktop/mobile layouts were inspected; no JavaScript errors or page overflow occurred. The fixture insertion was explicit and fictional; no extra model calls or external owner notifications were used. User `.env` values, runtime data and `.vscode/` were preserved.
+
+The November 5 fixture anomaly is reported on November 6 only; a new November 7 run produces no historical sales alert. The main beef invoice produces one combined notification linking $4.00 → $4.72/lb to the $730.17 monthly projected ingredient-cost increase. See [checkpoint 4](checkpoint-4.md) for the current review sequence.
+
 ## Upcoming checkpoints
 
 | Checkpoint | Required outcome | State |
 | --- | --- | --- |
 | 2 | Invoice and receipt ingestion, schema/business validation, mapping, persistence and deduplication | Implemented; pending review |
 | 3 | Actual sales metrics, recipe economics, completeness-aware forecasts and evaluation | Implemented; frontend integrated and verified |
-| 4 | Independent worker, automatic recomputation, measured alerts and in-app notification state | Implemented locally; pending review/publication |
+| 4 | Independent worker, automatic recomputation, two focused in-app notification types | Implemented; latest frontend integrated and verified |
 | 5 | Read-only database tools, grounded owner chat and evidence-linked answers | Not started |
 
 For each checkpoint, record the implementation commit, validation commands/results, contract changes, known limitations and team review decision. Do not move a planned feature to complete based only on a schema or fixture.

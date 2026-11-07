@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import shutil
 
 import pytest
@@ -45,7 +46,7 @@ def test_fixture_cannot_approve_expected_json_into_non_demo_restaurant(tmp_path)
     assert not settings.upload_directory.exists()
 
 
-@pytest.mark.parametrize("old_version", [1, 2, 3])
+@pytest.mark.parametrize("old_version", [1, 2, 3, 4])
 def test_current_schema_upgrades_previous_versions_without_reset(tmp_path, monkeypatch, old_version):
     migrations = tmp_path / "previous_schema"
     migrations.mkdir()
@@ -64,3 +65,35 @@ def test_current_schema_upgrades_previous_versions_without_reset(tmp_path, monke
         assert conn.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == db.SCHEMA_VERSION
         assert conn.execute("SELECT COUNT(*) FROM forecast_snapshots").fetchone()[0] == 0
         assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
+def test_policy_upgrade_archives_legacy_notifications_before_the_api_serves_them(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from backend.main import create_app
+
+    migrations = tmp_path / "schema_four"
+    migrations.mkdir()
+    original = db.MIGRATIONS_DIR
+    for source in sorted(original.glob("*.sql"))[:4]:
+        shutil.copyfile(source, migrations / source.name)
+    database = tmp_path / "legacy-alerts.db"
+    monkeypatch.setattr(db, "MIGRATIONS_DIR", migrations)
+    assert db.initialize_database(database) == 4
+    evidence = json.dumps([{"kind": "document", "record_id": "original_source"}])
+    with db.connect(database) as conn:
+        for kind in ["ingredient_price_spike", "projected_cost_increase", "data_quality", "unusual_sales"]:
+            conn.execute("""INSERT INTO alerts(id,event_key,type,severity,status,title,message,evidence_json,created_at,updated_at)
+                VALUES (?,? ,?,'warning','new','Original finding','Original measured facts',?,'2026-11-07T00:00:00+00:00','2026-11-07T00:00:00+00:00')""",
+                (kind, "legacy:" + kind, kind, evidence))
+    monkeypatch.setattr(db, "MIGRATIONS_DIR", original)
+    with TestClient(create_app(Settings(_env_file=None, database_path=database))) as client:
+        assert client.get("/api/alerts?status=new").json()["total"] == 0
+        archive = client.get("/api/alerts?status=resolved").json()
+        assert archive["total"] == 4
+        with db.connect(database) as conn:
+            conn.execute("""INSERT INTO alerts(id,event_key,type,severity,status,title,message,evidence_json,created_at,updated_at,calculation_version)
+                VALUES ('current','current','projected_cost_increase','warning','new','Current combined alert','New measured facts',?,
+                        '2026-11-07T01:00:00+00:00','2026-11-07T01:00:00+00:00','detectors_v2')""", (evidence,))
+        assert client.get("/api/alerts?limit=1").json()["items"][0]["id"] == "current"
+    with db.connect(database) as conn:
+        assert all(row[0] == evidence and row[1] == "Original measured facts" for row in conn.execute("SELECT evidence_json,message FROM alerts WHERE calculation_version='detectors_v1'"))

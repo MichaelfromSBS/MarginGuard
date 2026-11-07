@@ -17,9 +17,10 @@
 - Oct 14 is excluded, not treated as zero.
 
 **4. Worker and alerts**
-- Startup: only the Nov 5 unusual-day alert (−51.3%).
-- Invoice 2 adds the beef +18.00% and projected-cost +$730.17 alerts, once each.
-- No alert for E3, E5, produce drift or Nov 7.
+- Current policy: see `docs/checkpoint-4.md`; the generator's `config/demo_policy.json` is historical fixture metadata, not runtime alert configuration.
+- On Nov 7 startup, no historical sales alert is newly sent. The Nov 5 unusual day is reported only on Nov 6 (39 units, 24 orders, $476.00 net sales; 51.55% fewer units than the comparable-weekday mean).
+- Invoice 2 creates **one combined alert**: beef $4.00 → $4.72/lb (+18%) raises projected December ingredient cost by $730.17 ($9,413.63 → $10,143.80), at unchanged demand.
+- No duplicate for E3/E5 or month rollover. Partial/unknown days do not alert. Failed/held documents stay in Inbox without a business notification.
 
 **5. Chat**
 - "Sales last 7 complete days?" → $7,400.00, 332 orders.

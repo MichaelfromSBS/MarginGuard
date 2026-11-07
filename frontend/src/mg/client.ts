@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type {
   Alert, CatalogResponse, ChatResponse, DashboardResponse, Document, DocumentDetail, DocumentType,
-  ForecastResponse, ForecastRequest, IngredientPrice, Invoice, Page, Restaurant, CapabilitiesResponse,
+  ForecastResponse, ForecastRequest, IngredientPrice, Invoice, Page, Restaurant, CapabilitiesResponse, WorkerStatus,
 } from '../marginguard-api';
 
 export class ApiError extends Error {
@@ -31,6 +31,7 @@ export const api = {
   restaurant: () => get<Restaurant>('/api/restaurant'),
   catalog: () => get<CatalogResponse>('/api/catalog'),
   capabilities: () => get<CapabilitiesResponse>('/api/capabilities'),
+  worker: () => get<WorkerStatus>('/api/worker'),
   prices: (ingredientId: string) => get<Page<IngredientPrice>>(`/api/ingredients/${encodeURIComponent(ingredientId)}/prices?limit=100`),
   documents: (p: { document_type?: DocumentType; limit?: number; offset?: number }) => get<Page<Document>>(`/api/documents?${qs(p)}`),
   document: (id: string) => get<DocumentDetail>(`/api/documents/${id}`),

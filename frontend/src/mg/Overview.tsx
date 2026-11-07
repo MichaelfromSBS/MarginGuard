@@ -46,6 +46,7 @@ const RECENT_DAYS = 14;
 export default function Overview({ go }: { go: Go }) {
   const alerts = usePoll(() => api.alerts(), 5000);
   const capabilities = usePoll(() => api.capabilities(), 0);
+  const worker = usePoll(() => api.worker(), 5000);
   const dash = usePoll(() => api.dashboard(), 15000);
   const docs = usePoll(() => loadDocuments(false), 10000);
   const catalog = usePoll(() => api.catalog(), 0);
@@ -54,8 +55,9 @@ export default function Overview({ go }: { go: Go }) {
     return Promise.all(catalog.data.ingredients.map(async (ing) => ({ ing, items: (await api.prices(ing.id)).items })));
   }, 10000, [catalog.data]);
 
-  const open = (alerts.data?.items ?? []).filter((a) => a.status !== 'resolved').reverse();
-  const monitoring = capabilities.data?.capabilities.some((c) => c.name === 'background_processing_and_alerts' && c.available);
+  const open = (alerts.data?.items ?? []).filter((a) => a.status !== 'resolved');
+  const monitoringAvailable = capabilities.data?.capabilities.some((c) => c.name === 'background_processing_and_alerts' && c.available);
+  const monitoring = monitoringAvailable && worker.data?.status === 'running' && !worker.error && !worker.data.error_code;
   const review = (docs.data ?? []).filter((d) => d.status === 'needs_review' || d.status === 'failed');
   const forecast = dash.data?.forecast ?? null;
   const forecastStale = forecast?.status === 'pending';
@@ -63,13 +65,14 @@ export default function Overview({ go }: { go: Go }) {
 
   const pick = (ids: string[], from: Metric[] | undefined) => ids.map((id) => ({ id, m: from?.find((x) => x.id === id) }));
   const sales = pick(SALES, dash.data?.metrics);
-  const outlook = pick(OUTLOOK, forecast?.status === 'ready' ? forecast.metrics : undefined);
+  const outlook = pick(OUTLOOK, forecast?.status === 'ready' && !dash.error ? forecast.metrics : undefined);
 
   // Only supplier price changes from the last two weeks; full history lives in Trends & Outlook.
   const cutoff = new Date(Date.now() - RECENT_DAYS * 86400000).toISOString().slice(0, 10);
   const changes = (prices.data ?? []).flatMap(({ ing, items }) => {
     const eff = items.filter((p) => p.effective_date <= localDate());
-    const cur = eff.at(-1);
+    const selected = dash.data?.dish_costs.flatMap((d) => d.ingredients).find((i) => i.ingredient_id === ing.id)?.evidence?.record_id;
+    const cur = eff.find((p) => p.invoice_line_id === selected) ?? eff.at(-1);
     // Compare with the latest price from an earlier date (several invoices can share a date).
     const prev = cur ? eff.filter((p) => p.effective_date < cur.effective_date).at(-1) : undefined;
     if (!cur || !prev || cur.effective_date < cutoff) return [];
@@ -85,12 +88,15 @@ export default function Overview({ go }: { go: Go }) {
         {review.length > 0 && <Task tone="warn" title={`${review.length} document${review.length > 1 ? 's' : ''} need${review.length > 1 ? '' : 's'} review`}
           text="Held out of the books until checked." action="Open Inbox" onClick={() => go('documents')} />}
         {forecastStale && <Task tone="info" title="Next-month forecast is out of date" text="New records arrived since it was calculated." action="Recalculate" onClick={() => go('trends')} />}
-        {attentionCount === 0 && (monitoring || !alerts.data ? <p className="allclear">All clear.</p>
-          : <NotYet checkpoint={4} what="Automatic alerts (price spikes, cost increases, unusual sales days)" />)}
+        {attentionCount === 0 && (alerts.loading || worker.loading ? <p className="muted">Checking for alerts…</p>
+          : alerts.error ? null
+          : monitoring ? <p className="allclear">All clear.</p>
+          : monitoringAvailable ? <p className="issues">Automatic monitoring is unavailable. Alerts and forecasts may be out of date.</p>
+          : <NotYet checkpoint={4} what="Cost increases and yesterday’s unusual sales" />)}
       </Card>
 
       <section>
-        <div className="section-head"><h3>Sales</h3>{sales[0].m?.period && <small className="muted">last 7 complete days</small>}</div>
+        <div className="section-head"><h3>Sales</h3>{sales[0].m?.period && <small className="muted">last 7 days</small>}</div>
         <div className="metrics">
           {sales.map(({ id, m }) => m ? <MetricCard key={id} m={m} /> : <Ghost key={id} label={GHOST[id]} />)}
         </div>
@@ -107,7 +113,9 @@ export default function Overview({ go }: { go: Go }) {
         <section>
           <div className="section-head"><h3>Supplier price changes</h3><button className="link" onClick={() => go('trends')}>Price history →</button></div>
           <Card className="changes">
-            {changes.length === 0 ? <p className="allclear">No price changes in the last {RECENT_DAYS} days.</p> : changes.map(({ ing, cur, prev, ch }) => (
+            {catalog.error || prices.error ? <ErrorBox>{errorText(catalog.error || prices.error)}</ErrorBox>
+              : catalog.loading || prices.loading ? <p className="muted">Loading supplier prices…</p>
+              : changes.length === 0 ? <p className="allclear">No price changes in the last {RECENT_DAYS} days.</p> : changes.map(({ ing, cur, prev, ch }) => (
               <div key={ing.id} className="change">
                 <span><b>{ing.name}</b><small>{shortDate(cur.effective_date)}</small></span>
                 <span className="r">{money(prev.unit_cost)} → <b>{money(cur.unit_cost)}</b>/{ing.base_unit}</span>

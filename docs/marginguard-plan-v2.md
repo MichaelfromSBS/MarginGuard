@@ -27,7 +27,7 @@ All five capabilities above are in scope. Keep each narrow:
 - One reliable extraction schema per document type, with suggested known catalog IDs.
 - One transparent sales forecasting method, not an LLM prediction or a large ML system.
 - A few database-backed chat intents rather than arbitrary SQL or arbitrary business tasks.
-- Four initial alert types rather than unrestricted anomaly claims.
+- Two notification types: combined ingredient-driven cost increases and a next-day unusual-sales report.
 - In-app notifications only: persistent findings, a bell count and toasts. No external owner-message delivery is in scope.
 
 Defer payout reconciliation, live POS/platform/email integrations, actual inventory accounting, staffing, automatic repricing, outgoing supplier messages and a general-purpose autonomous agent. Supplier drafts and the previous price what-if screen become optional after the team's five requirements work.
@@ -161,12 +161,10 @@ Initial rules below are configurable **demo policies**, not universal restaurant
 
 | Alert | Example trigger | Required evidence and gate |
 | --- | --- | --- |
-| Ingredient price spike | Comparable normalized price rises >10% | Old/new invoice lines, dates, pack conversion and computed percent |
-| Material cost projection increase | Repricing the same demand snapshot raises monthly ingredient cost by >$50 | Fixed demand version, changed ingredients, affected dishes and exact cost difference |
-| Unusual sales day | Complete-day units are >30% below the prior comparable-weekday mean and the difference is at least 10 units | Complete-day status, observed units, previous comparable days; require four earlier complete observations |
-| Data-quality exception | Conflicting duplicate, unresolved unit/mapping or totals mismatch | Document IDs and specific failed validation; label as data quality, not a proven financial loss |
+| Combined ingredient-driven cost increase | At least one ingredient price rises and net projected ingredient cost increases | One message with ingredient causes, old/new prices, reconciled net dollar effect and a fixed-demand forecast/source reference. No separate price popup or materiality minimum. |
+| Yesterday's unusual sales | Yesterday's fully complete units are >30% below the prior four comparable-weekday mean, with at least 10 units difference | Report on the next restaurant-local day only, including yesterday's orders/units/net revenue and source evidence. No intraday or older-day catch-up alerts. |
 
-Run price checks immediately on approved invoices. Evaluate complete-day sales alerts only once coverage is complete, not at lunch against full-day totals. Do not silently delete unusual days from forecasts; flag them and show any explicit owner-approved exclusion with a reason.
+Document validation issues remain review tasks in Inbox, outside the business notification feed. Cost alerts are deduplicated per source invoice, including across month changes. Increases offset by lower other ingredient costs, zero demand or insufficient forecast inputs do not generate a positive total-cost alert. Sales reports require completed coverage in every channel and can wait for completion later the next day, but cannot be newly emitted after that day has passed. Recorded unusual days remain in the forecasting data.
 
 Each alert contains type, severity, event time, period, measured change, comparison basis, source references, calculation version and a suggested investigation. AI may explain plausible causes but must distinguish a hypothesis from a measured fact. A sales drop is not proof of why customers bought less; a supplier price rise is not proof of an invoice error.
 
@@ -274,7 +272,7 @@ Keep a labeled recording of a real successful run as a backup. Fixture/mock mode
 | 3:00–4:00 | Error handling, restart/deduplication and notification checks | Forecast holdout, coverage/assumption labels and negative controls | Acceptance cases pass; no invented empty-data predictions |
 | 4:00–5:00 | Rehearse, capture backup and prepare submission together | Fix demo-critical issues and polish together | Working demo preserved before deadline |
 
-This is more ambitious than v1. Save time by keeping the five capabilities simple: fixed catalog, basic statistical forecast, six chat tools, four alert types and one notification channel. Cut decorative charts, free-form chat expansion, supplier drafting, what-if pricing, complex models and live integrations before dropping a required capability. If the integrated loop is late, stop adding variants and focus on one invoice, one receipt, one forecast question and one valid alert.
+This is more ambitious than v1. Save time by keeping the five capabilities simple: fixed catalog, basic statistical forecast, six chat tools, two alert types and one in-app notification channel. Cut decorative charts, free-form chat expansion, supplier drafting, what-if pricing, complex models and live integrations before dropping a required capability. If the integrated loop is late, stop adding variants and focus on one invoice, one receipt, one forecast question and one valid alert.
 
 ## Acceptance criteria
 

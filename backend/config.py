@@ -24,11 +24,8 @@ class Settings(BaseSettings):
     file_stable_seconds: float = Field(default=2, ge=0, le=60, validation_alias="MARGINGUARD_FILE_STABLE_SECONDS")
     extraction_max_attempts: int = Field(default=3, ge=1, le=5, validation_alias="MARGINGUARD_EXTRACTION_MAX_ATTEMPTS")
     alert_ai_explanations: bool = Field(default=True, validation_alias="MARGINGUARD_ALERT_AI_EXPLANATIONS")
-    price_spike_pct: float = Field(default=10, ge=0, le=1000, validation_alias="MARGINGUARD_PRICE_SPIKE_PCT")
-    projected_cost_increase_usd: float = Field(default=50, ge=0, validation_alias="MARGINGUARD_PROJECTED_COST_INCREASE_USD")
     sales_drop_pct: float = Field(default=30, ge=0, le=100, validation_alias="MARGINGUARD_SALES_DROP_PCT")
     sales_drop_min_units: float = Field(default=10, ge=0, validation_alias="MARGINGUARD_SALES_DROP_MIN_UNITS")
-    sales_alert_recent_days: int = Field(default=7, ge=1, le=56, validation_alias="MARGINGUARD_SALES_ALERT_RECENT_DAYS")
 
     @field_validator("database_path", "upload_directory", "inbox_directory")
     @classmethod

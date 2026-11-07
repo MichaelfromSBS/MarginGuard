@@ -169,7 +169,7 @@ def coverage(request: Request, limit: Limit = 50, offset: Offset = 0):
 @router.get("/alerts", response_model=Page[Alert])
 def alerts(request: Request, limit: Limit = 50, offset: Offset = 0, status: Literal["new", "acknowledged", "resolved"] | None = None):
     with connection(request) as conn:
-        page = page_query(conn, "alerts", limit, offset, "status=?" if status else "", (status,) if status else (), "created_at,id")
+        page = page_query(conn, "alerts", limit, offset, "status=?" if status else "", (status,) if status else (), "created_at DESC,id DESC")
         page["items"] = [alert_payload(item) for item in page["items"]]
         return page
 

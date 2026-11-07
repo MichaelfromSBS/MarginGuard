@@ -30,7 +30,7 @@ export default function Trends() {
               const cost = dashboard.data?.dish_costs.find((d) => d.dish_id === dish.id);
               const price = dish.prices.filter((p) => p.channel_id === 'in_store' && p.effective_date <= localDate()).at(-1);
               const recipe = dish.recipes.filter((r) => r.effective_date <= localDate()).at(-1);
-              const share = cost?.ingredient_cost && price ? (Number(cost.ingredient_cost) / Number(price.price)) * 100 : null;
+              const share = cost?.ingredient_cost && price && Number(price.price) > 0 ? (Number(cost.ingredient_cost) / Number(price.price)) * 100 : null;
               return (
                 <tr key={dish.id}>
                   <td className="strong">{dish.name}</td>

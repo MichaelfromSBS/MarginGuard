@@ -1,6 +1,8 @@
 """Persistent worker, restart, anomaly evidence and in-app notification boundaries."""
 import asyncio
 from datetime import date
+from decimal import Decimal
+import hashlib
 import json
 import shutil
 
@@ -16,7 +18,7 @@ from backend.marginguard.errors import DomainError
 from backend.marginguard.extraction import ExtractionError
 from backend.marginguard.fixture import ingest_fixture
 from backend.marginguard.import_demo import import_demo
-from backend.marginguard.ingestion import mark_problem
+from backend.marginguard.ingestion import mark_problem, approve_extraction, identifier, insert, now
 from backend.marginguard.jobs import claim_document
 from backend.marginguard.schemas import InvoiceExtraction, ReceiptExtraction, WorkerStatus, Page, Alert
 
@@ -71,6 +73,31 @@ def fixture(settings, relative):
     return ingest_fixture(settings, path, path.with_suffix(".expected.json"), "invoice")
 
 
+def supplier_change(settings, prices):
+    """Explicit fictional ledger fixture, approved through the business validator."""
+    with connect(settings.database_path) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        number = identifier("TEST")
+        lines = []
+        for ingredient_id, price in prices.items():
+            item = conn.execute("SELECT name,base_unit FROM ingredients WHERE id=?", (ingredient_id,)).fetchone()
+            total = format(Decimal(price) * 100, ".2f")
+            quote = f"{item['name']}: 100 {item['base_unit']} at {price}, total {total}"
+            lines.append({"description": item["name"], "ingredient_id": ingredient_id, "quantity": "100",
+                "purchase_unit": item["base_unit"], "pack_size": None, "pack_unit": None,
+                "unit_price": price, "line_total": total, "source_page": 1, "source_text": quote})
+        total = format(sum((Decimal(line["line_total"]) for line in lines), Decimal(0)), ".2f")
+        value = InvoiceExtraction(vendor_id="ridgeline_foodservice", vendor_name="Ridgeline Foodservice",
+            invoice_number=number, invoice_date=DAY, currency="USD", subtotal=total, tax="0.00", freight="0.00", total=total, items=lines)
+        text = number + "\n" + "\n".join(line["source_text"] for line in lines)
+        doc = identifier("doc")
+        insert(conn, "documents", id=doc, type="invoice", filename=number+".txt", sha256=hashlib.sha256(text.encode()).hexdigest(),
+               media_type="text/plain", source_text=text, status="detected", created_at=now(), updated_at=now(), is_demo=1,
+               page_count=1, evidence_mode="text")
+        insert(conn, "document_pages", document_id=doc, page_number=1, text=text)
+        assert approve_extraction(conn, doc, value, [text], method="fixture_expected")["status"] == "completed"
+
+
 def records(settings, table):
     with connect(settings.database_path) as conn:
         return [dict(r) for r in conn.execute(f"SELECT * FROM {table} ORDER BY rowid")]
@@ -94,43 +121,46 @@ def test_api_only_queues_worker_processes_and_restarts_without_duplicate_records
         assert upload(client) == doc_id
         assert fake.calls == 1
         assert len(records(settings, "invoices")) == 9
-        assert len(records(settings, "alerts")) == 3
+        assert len(records(settings, "alerts")) == 1
         assert len(records(settings, "notification_outbox")) == 0
         assert client.get("/api/dashboard?as_of=2026-11-07").json()["forecast"]["status"] == "ready"
 
 
-def test_baseline_has_only_recent_complete_day_alert_and_invoice_reprices_automatically(settings):
+def test_no_historical_sales_backlog_and_invoice_creates_one_combined_alert(settings):
     async def exercise():
         async with Worker(settings) as worker:
             await worker.cycle(DAY)
-            alerts = records(settings, "alerts")
-            assert len(alerts) == 1 and alerts[0]["type"] == "unusual_sales"
-            finding = json.loads(alerts[0]["finding_json"])
-            assert finding["date"] == "2026-11-05" and finding["units"] == "39" and finding["baseline_units"] == "80.5"
+            assert records(settings, "alerts") == []
             fixture(settings, INVOICE)
             await worker.cycle(DAY)
             alerts = records(settings, "alerts")
-            price = json.loads(next(a for a in alerts if a["type"] == "ingredient_price_spike")["finding_json"])
-            cost = json.loads(next(a for a in alerts if a["type"] == "projected_cost_increase")["finding_json"])
-            assert price["increase_pct"] == "18" and price["base_unit"] == "lb"
+            assert len(alerts) == 1 and alerts[0]["type"] == "projected_cost_increase"
+            cost = json.loads(alerts[0]["finding_json"])
             assert cost["increase"] == "730.17" and cost["previous_cost"] == "9413.63" and cost["current_cost"] == "10143.80"
+            assert cost["changes"][0]["ingredient_id"] == "beef" and cost["changes"][0]["increase_pct"] == "18"
+            assert "because Ground beef" in alerts[0]["message"]
             for relative in ["edge_cases/E3_pack_size_change_RF-20261107-005", "edge_cases/E5_late_arrival_RF-20261030-002"]:
                 fixture(settings, relative)
                 await worker.cycle(DAY)
-            assert len(records(settings, "alerts")) == 3
+            # The next planning horizon does not turn an already-known supplier
+            # change into another notification.
+            await worker.cycle(date(2026, 12, 1))
+            assert len(records(settings, "alerts")) == 1
             assert records(settings, "notification_outbox") == []
     asyncio.run(exercise())
 
 
-def test_same_price_case_repack_before_startup_does_not_hide_the_original_spike(settings):
+def test_same_price_repack_before_startup_retains_original_combined_cause(settings):
     fixture(settings, INVOICE)
     fixture(settings, "edge_cases/E3_pack_size_change_RF-20261107-005")
     async def exercise():
         async with Worker(settings) as worker:
             await worker.cycle(DAY)
     asyncio.run(exercise())
-    price = json.loads(next(a for a in records(settings, "alerts") if a["type"] == "ingredient_price_spike")["finding_json"])
-    assert price["invoice_number"] == "RF-20261107-004" and price["increase_pct"] == "18"
+    alerts = records(settings, "alerts")
+    assert len(alerts) == 1 and alerts[0]["type"] == "projected_cost_increase"
+    cause = json.loads(alerts[0]["finding_json"])["changes"][0]
+    assert cause["invoice_number"] == "RF-20261107-004" and cause["increase_pct"] == "18"
 
 
 def test_stable_inbox_copy_uses_same_queue_and_never_changes_original(settings):
@@ -239,7 +269,7 @@ def test_transient_retries_are_bounded_and_explicit_retry_can_recover(settings):
         assert fake.calls == 4 and client.get(f"/api/documents/{doc}").json()["status"] == "completed"
 
 
-def test_quality_alert_updates_once_and_resolves_after_approved_correction(settings):
+def test_document_quality_issues_remain_in_inbox_without_business_notifications(settings):
     incomplete = expected(RECEIPT).model_copy(update={"channel_id": None})
     with TestClient(create_app(settings)) as client:
         doc = upload(client, RECEIPT)
@@ -247,13 +277,11 @@ def test_quality_alert_updates_once_and_resolves_after_approved_correction(setti
             async with Worker(settings, extractor=Extractor(incomplete)) as worker:
                 await worker.cycle(DAY)
                 await worker.cycle(DAY)
-                quality = next(a for a in records(settings, "alerts") if a["type"] == "data_quality")
-                assert quality["revision"] == 1
+                assert client.get(f"/api/documents/{doc}").json()["status"] == "needs_review"
+                assert records(settings, "alerts") == []
                 assert client.post(f"/api/documents/{doc}/review", json={"document_type": "receipt", "extraction": expected(RECEIPT).model_dump(mode="json"), "note": "Checked source channel."}).json()["status"] == "completed"
                 await worker.cycle(DAY)
-                quality = next(a for a in records(settings, "alerts") if a["type"] == "data_quality")
-                assert quality["status"] == "resolved"
-                assert records(settings, "notification_outbox") == []
+                assert records(settings, "alerts") == records(settings, "notification_outbox") == []
         asyncio.run(exercise())
 
 
@@ -264,13 +292,14 @@ def test_worker_and_in_app_alert_status_are_honest(settings):
             async with Worker(settings) as worker:
                 await worker.cycle(DAY)
                 status = WorkerStatus.model_validate(client.get("/api/worker").json())
-                assert status.status == "running" and status.new_alerts == 1
+                assert status.status == "running" and status.new_alerts == 0
         asyncio.run(exercise())
         assert client.get("/api/worker").json()["status"] == "stopped"
         assert records(settings, "notification_outbox") == []
 
 
 def test_in_app_acknowledgement_and_resolution_persist_across_worker_restart(settings):
+    fixture(settings, INVOICE)
     with TestClient(create_app(settings)) as client:
         async def exercise():
             async with Worker(settings) as worker:
@@ -297,7 +326,7 @@ def test_ai_wording_failure_or_new_numbers_preserve_deterministic_finding(settin
     async def exercise():
         async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: reply)) as http:
             async with Worker(settings, client=http) as worker:
-                await worker.cycle(DAY)
+                await worker.cycle(date(2026, 11, 6))
     asyncio.run(exercise())
     alert = records(settings, "alerts")[0]
     assert alert["explanation_status"] == "fallback" and "39 units" in alert["message"]
@@ -345,11 +374,11 @@ def test_interrupted_extraction_attempt_budget_is_not_reset_by_worker_restart(se
 def test_sales_alert_is_resolved_when_coverage_is_no_longer_complete(settings):
     async def exercise():
         async with Worker(settings) as worker:
-            await worker.cycle(DAY)
+            await worker.cycle(date(2026, 11, 6))
             with connect(settings.database_path) as conn:
                 conn.execute("UPDATE daily_coverage SET status='partial' WHERE date='2026-11-05' AND channel_id='delivery'")
                 conn.execute("UPDATE restaurant SET data_version=data_version+1")
-            await worker.cycle(DAY)
+            await worker.cycle(date(2026, 11, 6))
     asyncio.run(exercise())
     assert records(settings, "alerts")[0]["status"] == "resolved"
 
@@ -360,8 +389,87 @@ def test_accepted_ai_suggestion_never_replaces_measured_message(settings):
     async def exercise():
         async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: reply)) as http:
             async with Worker(settings, client=http) as worker:
-                await worker.cycle(DAY)
+                await worker.cycle(date(2026, 11, 6))
     asyncio.run(exercise())
     row = records(settings, "alerts")[0]
     assert row["explanation_status"] == "ai"
     assert "39 units" in row["message"] and "Check opening hours" in row["suggestion"]
+
+
+def test_sales_report_is_created_next_day_once_and_never_as_a_historical_backlog(settings):
+    async def exercise():
+        async with Worker(settings) as worker:
+            await worker.cycle(date(2026, 11, 5))
+            assert records(settings, "alerts") == []
+            await worker.cycle(date(2026, 11, 6))
+            alert = records(settings, "alerts")[0]
+            finding = json.loads(alert["finding_json"])
+            assert finding["date"] == "2026-11-05" and finding["reported_on"] == "2026-11-06"
+            assert finding["units"] == "39" and finding["baseline_units"] == "80.5"
+            assert finding["orders"] == 24 and finding["net_revenue"] == "476.00"
+            await worker.cycle(date(2026, 11, 6))
+            await worker.cycle(date(2026, 11, 7))
+            assert len(records(settings, "alerts")) == 1
+            assert records(settings, "alerts")[0]["id"] == alert["id"]
+            assert records(settings, "alerts")[0]["revision"] == 1
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize("confirmation_day,expected_alerts", [(date(2026, 11, 6), 1), (date(2026, 11, 7), 0)])
+def test_sales_report_waits_for_complete_yesterday_and_does_not_catch_up_older_days(settings, confirmation_day, expected_alerts):
+    with connect(settings.database_path) as conn:
+        conn.execute("UPDATE daily_coverage SET status='partial' WHERE date='2026-11-05' AND channel_id='delivery'")
+    with TestClient(create_app(settings)) as client:
+        async def exercise():
+            async with Worker(settings) as worker:
+                await worker.cycle(date(2026, 11, 6))
+                assert records(settings, "alerts") == []
+                response = client.post("/api/coverage/complete", json={"date": "2026-11-05", "channel_id": "delivery"})
+                assert response.status_code == 200
+                await worker.cycle(confirmation_day)
+                assert len(records(settings, "alerts")) == expected_alerts
+        asyncio.run(exercise())
+
+
+def test_small_positive_ingredient_driven_increase_is_not_suppressed_by_old_thresholds(settings):
+    supplier_change(settings, {"beef": "4.01"})
+    async def exercise():
+        async with Worker(settings) as worker:
+            await worker.cycle(DAY)
+    asyncio.run(exercise())
+    alerts = records(settings, "alerts")
+    assert len(alerts) == 1 and alerts[0]["type"] == "projected_cost_increase"
+    finding = json.loads(alerts[0]["finding_json"])
+    assert finding["increase"] == "10.14" and finding["changes"][0]["increase_pct"] == "0.25"
+
+
+@pytest.mark.parametrize("mode", ["net_decrease", "zero_demand", "insufficient_history"])
+def test_ingredient_increase_without_an_overall_projected_cost_increase_has_no_alert(settings, mode):
+    if mode == "net_decrease":
+        supplier_change(settings, {"beef": "4.72", "bun": "0.01"})
+    else:
+        fixture(settings, INVOICE)
+        with connect(settings.database_path) as conn:
+            if mode == "zero_demand":
+                conn.execute("UPDATE restaurant_calendar SET is_open=0 WHERE date BETWEEN '2026-12-01' AND '2026-12-31'")
+            else:
+                conn.execute("UPDATE daily_coverage SET status='unknown'")
+    async def exercise():
+        async with Worker(settings) as worker:
+            await worker.cycle(DAY)
+    asyncio.run(exercise())
+    assert records(settings, "alerts") == []
+
+
+def test_combined_alert_explains_rising_ingredients_and_net_offsets_with_reconciled_contributions(settings):
+    supplier_change(settings, {"beef": "4.72", "bun": "0.50"})
+    async def exercise():
+        async with Worker(settings) as worker:
+            await worker.cycle(DAY)
+    asyncio.run(exercise())
+    alerts = records(settings, "alerts")
+    assert len(alerts) == 1
+    finding = json.loads(alerts[0]["finding_json"])
+    assert finding["increase"] == "471.74"
+    assert sum(Decimal(item["price_effect"]) for item in finding["changes"]) == Decimal(finding["increase"])
+    assert "Other ingredient changes" in alerts[0]["message"]

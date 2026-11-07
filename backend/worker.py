@@ -164,14 +164,14 @@ class Worker:
             owner = ingestion.restaurant_record(conn)
             as_of = as_of or analytics.local_today(owner)
             state = dict(conn.execute("SELECT key,value FROM worker_state").fetchall())
-            policy = json.dumps({k: getattr(settings, k) for k in ["price_spike_pct", "projected_cost_increase_usd", "sales_drop_pct", "sales_drop_min_units", "sales_alert_recent_days"]}, sort_keys=True)
+            policy = json.dumps({"calculation_version": detectors.VERSION,
+                                 "sales_drop_pct": settings.sales_drop_pct,
+                                 "sales_drop_min_units": settings.sales_drop_min_units}, sort_keys=True)
             if state.get("data_version") != str(owner["data_version"]) or state.get("as_of") != as_of.isoformat() or state.get("detector_policy") != policy:
                 forecast = forecasting.calculate(conn, ForecastRequest(as_of=as_of))
                 detectors.run_detectors(conn, settings, as_of, forecast)
                 for key, value in [("data_version", owner["data_version"]), ("as_of", as_of.isoformat()), ("detector_policy", policy)]:
                     set_state(conn, key, value)
-            else:
-                detectors.detect_quality(conn)
             conn.execute("UPDATE worker_leases SET error_code=NULL,heartbeat_at=?,expires_at=? WHERE owner=?", (ingestion.now(), later(30), self.owner))
         await enrich_alerts(self.client, settings, limit=1)
 

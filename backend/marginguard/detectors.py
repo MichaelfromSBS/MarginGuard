@@ -1,7 +1,7 @@
 """Measured demo policies. Findings and all numeric explanations are Python-owned."""
 from collections import defaultdict
 from datetime import timedelta
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 import hashlib
 import json
 
@@ -9,7 +9,7 @@ from .analytics import ZERO, coverage_summary, dates, decimal_text, evidence, sa
 from .ingestion import identifier, insert, now
 from .schemas import Alert
 
-VERSION = "detectors_v1"
+VERSION = "detectors_v2"
 
 
 def alert_payload(row):
@@ -69,23 +69,8 @@ def price_reference(row):
     return evidence({**row, "id": row["line_id"]}, "invoice_line")
 
 
-def detect_prices(conn, settings, as_of, forecast):
+def detect_cost_increases(conn, as_of, forecast):
     changes = price_changes(conn, as_of)
-    for ingredient, old, new in changes:
-        before, after = Decimal(old["unit_cost"]), Decimal(new["unit_cost"])
-        if before <= 0 or after <= before:
-            continue
-        percent = (after / before - 1) * 100
-        if percent <= Decimal(str(settings.price_spike_pct)):
-            continue
-        finding = {"ingredient_id": ingredient, "base_unit": new["base_unit"], "previous_price": old["unit_cost"],
-                   "threshold_pct": str(settings.price_spike_pct),
-                   "current_price": new["unit_cost"], "increase_pct": decimal_text(percent),
-                   "previous_date": old["effective_date"], "effective_date": new["effective_date"],
-                   "invoice_number": new["invoice_number"], "purchase": {k: new[k] for k in ["quantity", "purchase_unit", "pack_size", "pack_unit", "unit_price", "line_total"]}}
-        record(conn, f"{VERSION}:price:{ingredient}:{new['id']}", "ingredient_price_spike", f"{new['name']} price increased",
-               f"{new['name']} rose from ${decimal_text(before, money=True)} to ${decimal_text(after, money=True)}/{new['base_unit']} ({decimal_text(percent)}%) on {new['effective_date']}. Invoice {new['invoice_number']} supplies the new price.",
-               finding, [price_reference(old), price_reference(new)], "Compare the supplier quote and invoice, and review the affected dish's ingredient cost.")
     if forecast is None or forecast.status != "ready":
         return
     ingredients = {i.ingredient_id: i for i in forecast.ingredients}
@@ -99,15 +84,25 @@ def detect_prices(conn, settings, as_of, forecast):
         previous_cost = Decimal(decimal_text(current_cost - effect, money=True))
         next_cost = Decimal(decimal_text(current_cost, money=True))
         delta = next_cost - previous_cost
-        if delta <= Decimal(str(settings.projected_cost_increase_usd)):
+        rising = [(i, old, new) for i, old, new in group if Decimal(new["unit_cost"]) > Decimal(old["unit_cost"])]
+        if delta <= ZERO or not rising:
             continue
-        items = [{"ingredient_id": i, "quantity": ingredients[i].quantity, "base_unit": new["base_unit"],
+        raw_effects = [Decimal(ingredients[i].quantity) * (Decimal(new["unit_cost"]) - Decimal(old["unit_cost"])) for i, old, new in group]
+        effects = [Decimal(decimal_text(value, money=True)) for value in raw_effects]
+        # Keep displayed contributions equal to the displayed total change, even
+        # with mixed increases/decreases and fractional-cent unit prices.
+        effects[max(range(len(effects)), key=lambda index: abs(raw_effects[index]))] += delta - sum(effects, ZERO)
+        items = [{"ingredient_id": i, "ingredient_name": new["name"], "quantity": ingredients[i].quantity, "base_unit": new["base_unit"],
                   "previous_price": old["unit_cost"], "current_price": new["unit_cost"],
-                  "price_effect": decimal_text(Decimal(ingredients[i].quantity) * (Decimal(new["unit_cost"]) - Decimal(old["unit_cost"])), money=True)} for i, old, new in group]
-        record(conn, f"{VERSION}:cost:{document_id}:{forecast.horizon.start}", "projected_cost_increase", "Supplier change raises projected ingredient cost",
-               f"Holding demand fixed for {forecast.horizon.start}–{forecast.horizon.end}, this supplier-price change raises ingredient consumption cost by ${decimal_text(delta, money=True)} (${decimal_text(previous_cost, money=True)} → ${decimal_text(next_cost, money=True)}). This is a planning estimate, not a realized loss.",
+                  "increase_pct": decimal_text((Decimal(new["unit_cost"]) / Decimal(old["unit_cost"]) - 1) * 100) if Decimal(old["unit_cost"]) else None,
+                  "invoice_number": new["invoice_number"],
+                  "price_effect": decimal_text(contribution, money=True)} for (i, old, new), contribution in zip(group, effects)]
+        causes = "; ".join(f"{new['name']} increased from ${decimal_text(old['unit_cost'])} to ${decimal_text(new['unit_cost'])}/{new['base_unit']}" for _, old, new in rising)
+        offsets = " Other ingredient changes in the same invoice are included in the net increase." if len(rising) != len(group) else ""
+        record(conn, f"{VERSION}:cost:{document_id}", "projected_cost_increase", "Ingredient increases raise next-month cost",
+               f"Projected ingredient cost for {forecast.horizon.start}–{forecast.horizon.end} increased from ${decimal_text(previous_cost, money=True)} to ${decimal_text(next_cost, money=True)} (+${decimal_text(delta, money=True)}) because {causes}.{offsets} Expected sales volume is held fixed; this is a projected ingredient cost, not total operating expense.",
                {"previous_cost": decimal_text(previous_cost, money=True), "current_cost": decimal_text(next_cost, money=True),
-                "threshold_usd": str(settings.projected_cost_increase_usd),
+                "policy": "positive_ingredient_change_and_positive_total_cost_change",
                 "increase": decimal_text(delta, money=True), "fixed_demand_forecast_id": forecast.id,
                 "horizon": forecast.horizon.model_dump(mode="json"), "changes": items},
                [{"kind": "forecast_run", "record_id": forecast.id}] + [ref for _, old, new in group for ref in [price_reference(old), price_reference(new)]],
@@ -126,7 +121,7 @@ def detect_sales(conn, settings, as_of):
         rows[row["local_date"]].append(row)
     active_events = set()
     for day in complete_days:
-        if day < as_of - timedelta(days=settings.sales_alert_recent_days):
+        if day != end:
             continue
         previous = [d for d in complete_days if d < day and d.weekday() == day.weekday()][-4:]
         if len(previous) < 4:
@@ -143,35 +138,23 @@ def detect_sales(conn, settings, as_of):
             refs.extend(evidence(r) for r in rows[prior.isoformat()][:3])
         event_key = f"{VERSION}:sales:{day}"
         active_events.add(event_key)
+        revenue = sum((Decimal(r["net_amount"]) for r in rows[day.isoformat()]), ZERO)
+        orders = len({r["receipt_id"] for r in rows[day.isoformat()]})
+        display_drop = decimal_text(drop.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
         record(conn, event_key, "unusual_sales", f"Unusual sales on {day}",
-               f"Complete-day sales were {decimal_text(actual)} units on {day}, {decimal_text(drop)}% below the previous four complete {day.strftime('%A')}s' mean of {decimal_text(mean)} units. The reason is not established.",
-               {"date": day.isoformat(), "units": decimal_text(actual), "baseline_units": decimal_text(mean),
+               f"Report issued {as_of} for the previous day, {day}: {orders} orders, {decimal_text(actual)} units and ${decimal_text(revenue, money=True)} net sales. Units were {display_drop}% below the previous four complete {day.strftime('%A')}s' mean of {decimal_text(mean)} units. The cause is not established; tax and tips are excluded from net sales.",
+               {"date": day.isoformat(), "reported_on": as_of.isoformat(), "orders": orders,
+                "net_revenue": decimal_text(revenue, money=True), "units": decimal_text(actual), "baseline_units": decimal_text(mean),
                 "threshold_pct": str(settings.sales_drop_pct), "minimum_drop_units": str(settings.sales_drop_min_units),
                 "drop_pct": decimal_text(drop), "baseline_dates": [d.isoformat() for d in previous],
                 "coverage": "complete_in_all_channels", "evidence_is_sample": True}, refs,
                "Check opening hours, promotions, local events and receipt-import completeness before attributing a cause.", update=True)
     for row in conn.execute("""SELECT id,event_key FROM alerts WHERE type='unusual_sales' AND status!='resolved'
-        AND json_extract(finding_json,'$.date') BETWEEN ? AND ?""", ((as_of - timedelta(days=settings.sales_alert_recent_days)).isoformat(), end.isoformat())).fetchall():
+        AND json_extract(finding_json,'$.date')=?""", (end.isoformat(),)).fetchall():
         if row["event_key"] not in active_events:
             conn.execute("UPDATE alerts SET status='resolved',updated_at=? WHERE id=?", (now(), row["id"]))
 
 
-def detect_quality(conn):
-    rows = conn.execute("SELECT * FROM documents WHERE status IN ('needs_review','failed') ORDER BY id").fetchall()
-    for row in rows:
-        issues = json.loads(row["validation_issues_json"])
-        record(conn, f"{VERSION}:quality:{row['id']}", "data_quality", f"Document needs attention: {row['filename']}",
-               "This document is excluded from approved financial totals. " + (row["error_message"] or "Review its source and validation notes."),
-               {"document_id": row["id"], "filename": row["filename"], "error_code": row["error_code"], "issues": issues, "classification": "data_quality_not_proven_loss"},
-               [{"kind": "document", "record_id": row["id"], "document_id": row["id"]}],
-               "Inspect the original document, correct the mapping or amounts, or retry after fixing configuration.", update=True)
-    # A corrected/approved document resolves its data-quality finding. The old
-    # finding remains in the audit history and cannot send a late pending alert.
-    conn.execute("""UPDATE alerts SET status='resolved',updated_at=? WHERE type='data_quality' AND status!='resolved'
-        AND event_key IN (SELECT ? || id FROM documents WHERE status='completed')""", (now(), f"{VERSION}:quality:"))
-
-
 def run_detectors(conn, settings, as_of, forecast):
-    detect_prices(conn, settings, as_of, forecast)
+    detect_cost_increases(conn, as_of, forecast)
     detect_sales(conn, settings, as_of)
-    detect_quality(conn)

@@ -1,6 +1,6 @@
 # Checkpoint 4 — persistent worker and in-app alerts
 
-Implemented: a separate persistent worker, automatic forecast refresh, measured anomaly findings, source evidence and in-app acknowledgement/resolution. Notifications stay inside the website. No external owner-message integration or webhook configuration is included.
+Implemented: a separate persistent worker, automatic forecast refresh, two focused anomaly types, source evidence and in-app acknowledgement/resolution. Notifications stay inside the website. No external owner-message integration or webhook configuration is included.
 
 The teammate's frontend wording files are unchanged. The existing alert list, bell counter and toast component consume the live alert API. Optional AI suggestions are available in the alert response for the frontend teammate to display.
 
@@ -15,7 +15,7 @@ npm.cmd run dev
 
 This now starts **three processes**: API, independent worker and frontend. Open http://127.0.0.1:5173. Closing the browser does not stop ingestion or calculation. Ctrl+C in the launcher terminal stops all three.
 
-Startup applies additive migration 4; it does not reset, seed or replay the configured ledger. Existing `.env` key/model/database values are preserved. A fresh terminal has its own environment; point `MARGINGUARD_DATABASE_PATH` at the same full v2-history database if you switch terminals.
+Startup applies migrations through schema 5; it does not reset, seed or replay the configured ledger. Existing `.env` key/model/database values are preserved. A fresh terminal has its own environment; point `MARGINGUARD_DATABASE_PATH` at the same full v2-history database if you switch terminals.
 
 For backend-only work, run the API and worker in separate terminals with the **same database/upload/inbox settings**:
 
@@ -93,20 +93,24 @@ The website's Acknowledge button uses the same endpoint. New/acknowledged/resolv
 
 ## Detection policies
 
-These are configurable demo policies, not universal restaurant standards:
+The system creates only these two notification types:
 
-| Finding | Default gate | Evidence / safeguards |
+| Finding | Gate | Evidence / timing |
 | --- | --- | --- |
-| Ingredient price spike | Normalized comparable unit price increases **more than 10%** | Old/new invoice lines, dates, units, pack details and exact percent. Consecutive same-price repacks retain the original change point. Late older invoices do not replace newer prices. |
-| Projected ingredient cost increase | Repricing a fixed demand snapshot adds **more than $50** | Same ingredient quantities at previous/current prices, originating invoice lines and saved forecast ID. No claim that the difference is a realized loss. |
-| Unusual sales day | Complete-day units fall **more than 30%**, by **at least 10 units** | Four previous fully complete matching weekdays; all configured channels complete. Monitor the last **seven finished local dates**, using up to eight weeks for comparison. Partial/unknown/current days are excluded. |
-| Data quality | Failed/held document | Document ID, source and actual validation/error codes. Excluded records are not treated as a proven monetary loss. |
+| Combined ingredient and overall cost increase | At least one consumed ingredient becomes more expensive **and** net projected ingredient consumption cost increases after cent rounding | One message names the rising ingredients, old/new prices, total monthly cost before/after and the net dollar increase. Same forecast demand is held fixed; offsetting ingredient decreases are included. No separate ingredient-price popup. |
+| Yesterday's unusual sales | Yesterday is complete in every channel, with units **more than 30% below** the previous four complete matching weekdays, by **at least 10 units** | One dated report is issued on the next restaurant-local day. Includes yesterday's orders, units, net revenue, comparison basis and source references. No current-day, partial-day or older-day catch-up notifications. |
 
-Price and cost events are persisted by stable event keys. Repeated scans, duplicate files, same-price case changes and restarts do not create another event. A projected-cost event is fixed to its first demand snapshot for that invoice/horizon; later volume changes do not get attributed to the old supplier-price change. Sales/data-quality findings update their existing event when evidence changes. An approved correction resolves its document-quality alert; a sales finding within the monitoring window resolves if current data/coverage no longer supports it.
+There is no 10% ingredient-price or $50 total-cost minimum. A smaller positive ingredient-driven overall cost increase also qualifies. An ingredient increase alone does not notify when total cost stays flat/falls, projected demand is zero, or required forecast inputs are missing. The cost describes projected ingredient consumption, not all business operating expense or actual profit.
 
-For the baseline demo data, the recent-sales finding is November 5: **39 units versus 80.5 units**, a **51.55279503% decline**. The dataset answer key's roughly 51.3% figure uses **revenue**, while the agreed plan and this implementation use **units**. October 25 also crosses the unit-based threshold but is outside the default recent-seven-day alert window. October 14 is unknown, and November 7 is unfinished/partial; neither is treated as a zero-sales anomaly.
+A supplier-change notification is fixed to its first demand snapshot and deduplicated per source invoice, including across planning-month rollover. Repeated scans, same-price repacks, older late invoices and restarts do not create another event. Ingredient contributions reconcile to the displayed net increase, including offsets and residual-cent rounding.
 
-After the main invoice, the two additional findings are beef **+18%** and a fixed-demand December cost effect of **+$730.17**. Repacked and late-arriving control invoices do not create duplicate price/cost alerts.
+Sales evaluation runs only for **yesterday** in the restaurant timezone. If coverage is incomplete at midnight, it can report later that same day after completion. Once the sale date is older than yesterday it is not newly reported. Existing reports remain in history until acknowledged/resolved, with absolute sale/report dates so their age is clear. Updated evidence can revise yesterday's finding; a no-longer-supported finding resolves. The existing 30%/10-unit sales-drop thresholds remain configurable demo policies.
+
+Document parse/validation failures stay in Inbox and its review task; they do not create business alerts, bell increments or notification toasts.
+
+Migration 5 archives the earlier separate ingredient-price, data-quality and backlog-style notifications before the API serves them. Their measured facts/evidence remain preserved as resolved history. Legacy type labels remain readable for those archive records; newly generated alerts use only `projected_cost_increase` and `unusual_sales` under `detectors_v2`.
+
+For the demo baseline on **November 7**, no sales alert is generated: November 6 is yesterday and does not cross the rule. The November 5 anomaly is reported only on **November 6**: 24 orders, 39 units and $476.00 net sales, versus an 80.5-unit comparable-weekday mean (51.55% lower units). The answer key's roughly 51.3% figure is revenue-based. After the main beef invoice, exactly **one combined alert** explains that beef rose $4.00 → $4.72/lb and December projected ingredient cost rose $9,413.63 → $10,143.80 (+$730.17).
 
 ## AI and failure handling
 
@@ -127,11 +131,8 @@ MARGINGUARD_WORKER_POLL_SECONDS=2
 MARGINGUARD_FILE_STABLE_SECONDS=2
 MARGINGUARD_EXTRACTION_MAX_ATTEMPTS=3
 MARGINGUARD_ALERT_AI_EXPLANATIONS=true
-MARGINGUARD_PRICE_SPIKE_PCT=10
-MARGINGUARD_PROJECTED_COST_INCREASE_USD=50
 MARGINGUARD_SALES_DROP_PCT=30
 MARGINGUARD_SALES_DROP_MIN_UNITS=10
-MARGINGUARD_SALES_ALERT_RECENT_DAYS=7
 ```
 
 `inline` processing is an explicit compatibility/test mode, not the default. Backend-only uploads in worker mode stay queued unless the independent worker is started. `python -m backend.worker --once` performs one bounded scan/process/recompute cycle; a fresh file with the normal stability delay may require a later cycle.
@@ -144,6 +145,6 @@ npm.cmd run build
 npm.cmd run test:frontend
 ```
 
-The automated worker tests use isolated databases and mocked extraction/wording, and exercise durable queues, bounded retries, claims, restart recovery, anomaly evidence, acknowledgement, correction and no external outbox activity. Existing schema versions 1–3 upgrade to version 4 while preserving records. Detailed final verification is in [progress.md](progress.md).
+The automated worker tests use isolated databases and mocked extraction/wording, and exercise durable queues, bounded retries, claims, restart recovery, anomaly evidence, acknowledgement, correction and no external outbox activity. Existing schema versions 1–4 upgrade to version 5 while preserving records and retiring old notification-policy events. Detailed final verification is in [progress.md](progress.md).
 
 Database-grounded owner chat remains checkpoint 5.

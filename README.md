@@ -6,7 +6,7 @@ NOVA 2026 · Carnegie Mellon University · DoorDash Back of House track
 
 MarginGuard is being developed to maintain restaurant records automatically, connect ingredient-price changes to dish costs, project next month's sales and ingredient consumption, and explain significant changes through database-backed chat and evidence-linked alerts.
 
-**Current status:** checkpoint 4 is implemented locally for review. The independent worker processes queued uploads and watched invoice/receipt folders, automatically refreshes forecasts, and creates evidence-based alerts inside the website. The bell, alert list and toasts use persistent new/acknowledged/resolved state. Notifications stay in the website. Database-backed owner chat remains checkpoint 5. See [checkpoint 4](docs/checkpoint-4.md) for run instructions; the teammate's frontend wording files are unchanged.
+**Current status:** checkpoint 4 and the teammate's latest frontend are integrated. The independent worker processes documents, refreshes forecasts and creates two in-app notification types: one combined ingredient/overall projected-cost increase, and a next-day report about yesterday's unusual sales. Document issues remain Inbox review tasks. The bell and toasts use persistent acknowledgement state. Database-backed owner chat remains checkpoint 5. See [checkpoint 4](docs/checkpoint-4.md) for run instructions and the exact alert policy.
 
 ## Development progress
 
@@ -21,7 +21,7 @@ Last updated: **November 7, 2026**. API contract version: **1.0.0**.
 | Checkpoint 2: document ingestion | Implemented; pending team review | PDF/image upload, structured extraction, validation, review/retry, duplicate-safe persistence and explicit fixture import |
 | Checkpoint 3: metrics and forecasting | Implemented; pending team review | Sales/day/dish/channel summaries, effective recipe costs, completeness-aware next-month forecasts, sensitivity scenarios and held-out evaluation |
 | Restaurant frontend integration | Merged and verified | Overview, Trends & Outlook, Inbox and explicit future-chat notice; forecast calculation/freshness and mobile navigation checked |
-| Checkpoint 4: background processing and alerts | Implemented locally; pending review | Durable queue/claims, inbox watcher, automatic recalculation, measured findings, in-app notifications and acknowledgement |
+| Checkpoint 4: background processing and alerts | Implemented and integrated | Durable queue, automatic recalculation, combined cost alert, yesterday-only sales report and in-app acknowledgement |
 | Checkpoint 5: database-backed chat | Planned | Read-only metric tools, grounded answers and evidence references |
 
 See [the progress record](docs/progress.md) for commits, verification evidence and integration notes. Each checkpoint ends with a focused review before the next begins.
