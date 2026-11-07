@@ -4,10 +4,9 @@ import { api, usePoll } from './mg/client';
 import Overview from './mg/Overview';
 import Documents from './mg/Documents';
 import Trends from './mg/Trends';
-import Ask from './mg/Ask';
 
-type Tab = 'overview' | 'documents' | 'trends' | 'ask';
-const TABS: [Tab, string][] = [['overview', 'Overview'], ['trends', 'Trends & Outlook'], ['ask', 'Ask MarginGuard'], ['documents', 'Inbox']];
+type Tab = 'overview' | 'documents' | 'trends';
+const TABS: [Tab, string][] = [['overview', 'Overview'], ['trends', 'Trends & Outlook'], ['documents', 'Inbox']];
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('overview');
@@ -64,7 +63,6 @@ export default function App() {
         {tab === 'overview' && <Overview go={setTab} />}
         {tab === 'documents' && <Documents selectedId={docId} onSelect={setDocId} />}
         {tab === 'trends' && <Trends />}
-        {tab === 'ask' && <Ask />}
       </main>
 
       <div className="toasts">

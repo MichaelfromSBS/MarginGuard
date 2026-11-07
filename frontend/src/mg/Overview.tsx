@@ -4,6 +4,7 @@ import { api, errorText, isNotYet, loadDocuments, usePoll } from './client';
 import { localDate, money, pctChange, shortDate, timeAgo } from './format';
 import { Card, ErrorBox, NotYet } from './ui';
 import { MetricCard } from './Metrics';
+import Ask from './Ask';
 
 type Go = (tab: 'trends' | 'documents') => void;
 
@@ -138,6 +139,8 @@ export default function Overview({ go }: { go: Go }) {
           </Card>
         </section>
       </div>
+
+      <Ask />
     </div>
   );
 }

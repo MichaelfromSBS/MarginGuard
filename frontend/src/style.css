@@ -176,9 +176,9 @@ button:disabled { cursor: default; opacity: .45; }
 .chart .callout.hot { fill: var(--accent); }
 
 /* Chat */
-.ask { display: flex; flex-direction: column; min-height: 560px; }
-.chat { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: auto; padding: 4px 0 12px; }
-.chat-empty { text-align: center; color: var(--muted); padding: 40px 10px; }
+.ask { display: flex; flex-direction: column; }
+.chat { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: auto; padding: 4px 0 12px; max-height: 420px; }
+.chat-empty { text-align: center; color: var(--muted); padding: 8px 10px 4px; }
 .chat-empty .chips { justify-content: center; }
 .bubble { max-width: 78%; padding: 10px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.55; }
 .bubble p { margin: 0; white-space: pre-wrap; }
