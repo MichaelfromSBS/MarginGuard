@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type {
   Alert, CatalogResponse, ChatResponse, DashboardResponse, Document, DocumentDetail, DocumentType,
-  ForecastResponse, IngredientPrice, Invoice, Page, Restaurant,
+  ForecastResponse, ForecastRequest, IngredientPrice, Invoice, Page, Restaurant, CapabilitiesResponse,
 } from '../marginguard-api';
 
 export class ApiError extends Error {
@@ -30,6 +30,7 @@ export const api = {
   health: () => get<unknown>('/api/health'),
   restaurant: () => get<Restaurant>('/api/restaurant'),
   catalog: () => get<CatalogResponse>('/api/catalog'),
+  capabilities: () => get<CapabilitiesResponse>('/api/capabilities'),
   prices: (ingredientId: string) => get<Page<IngredientPrice>>(`/api/ingredients/${encodeURIComponent(ingredientId)}/prices?limit=100`),
   documents: (p: { document_type?: DocumentType; limit?: number; offset?: number }) => get<Page<Document>>(`/api/documents?${qs(p)}`),
   document: (id: string) => get<DocumentDetail>(`/api/documents/${id}`),
@@ -47,6 +48,9 @@ export const api = {
   acknowledge: (id: string) => request<Alert>(`/api/alerts/${id}/acknowledge`, { method: 'POST' }).then((r) => r.data),
   dashboard: () => get<DashboardResponse>('/api/dashboard'),
   forecasts: () => get<Page<ForecastResponse>>('/api/forecasts?limit=5'),
+  recalculate: (policy: ForecastRequest = {}) => request<ForecastResponse>('/api/forecasts/recalculate', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(policy),
+  }).then((r) => r.data),
   chat: (question: string) => request<ChatResponse>('/api/chat', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question }),
   }).then((r) => r.data),
@@ -75,8 +79,19 @@ export function usePoll<T>(fn: () => Promise<T>, ms: number, deps: unknown[] = [
   fnRef.current = fn;
   useEffect(() => {
     let alive = true;
-    const run = () => fnRef.current().then((d) => { if (alive) { setData(d); setError(null); } })
-      .catch((e) => { if (alive) setError(e); });
+    let inFlight = false;
+    setData(null);
+    setError(null);
+    const run = async () => {
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        const d = await fnRef.current();
+        if (alive) { setData(d); setError(null); }
+      } catch (e) {
+        if (alive) setError(e);
+      } finally { inFlight = false; }
+    };
     run();
     const timer = ms ? window.setInterval(run, ms) : undefined;
     return () => { alive = false; if (timer) window.clearInterval(timer); };

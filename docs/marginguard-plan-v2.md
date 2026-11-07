@@ -2,7 +2,7 @@
 
 NOVA 2026 · DoorDash Back of House · Team requirements revision · November 7, 2026
 
-This supersedes the narrower invoice-only plan in `marginguard-plan.md`. It is a project plan; see [progress.md](progress.md) for implementation status. The backend now implements checkpoints 1–3; the frontend remains the generic React/FastAPI/OpenRouter workbench.
+This supersedes the narrower invoice-only plan in `marginguard-plan.md`. It is a project plan; see [progress.md](progress.md) for implementation status. The backend now implements checkpoints 1–3 and is integrated with the teammate's restaurant frontend. Automatic monitoring and database-backed chat remain later checkpoints.
 
 ## Product and five required capabilities
 

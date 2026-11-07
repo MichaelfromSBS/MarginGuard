@@ -199,7 +199,7 @@ button:disabled { cursor: default; opacity: .45; }
 
 @media (max-width: 1000px) {
   .top { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 10px; }
-  .tabs { order: 3; width: 100%; overflow-x: auto; }
+  .tabs { order: 3; flex: 0 0 100%; min-width: 0; overflow-x: auto; }
   .content { padding: 16px; }
   .grid2, .docs-layout { grid-template-columns: 1fr; }
   .metrics { grid-template-columns: repeat(2, 1fr); }
@@ -207,3 +207,15 @@ button:disabled { cursor: default; opacity: .45; }
   .demo { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .pulse, .toast { animation: none; } }
+
+.table-scroll { overflow-x: auto; }
+.tbl caption { text-align: left; color: var(--muted); padding: 12px 8px 6px; font-size: 12px; }
+.card { min-width: 0; }
+.detail { overflow-x: auto; }
+.assume summary { cursor: pointer; }
+@media (max-width: 600px) {
+  .metrics, .menu { grid-template-columns: 1fr; }
+  .card-head { flex-wrap: wrap; gap: 10px; }
+  .metric-foot { flex-wrap: wrap; }
+  .toast { width: min(340px, calc(100vw - 40px)); }
+}

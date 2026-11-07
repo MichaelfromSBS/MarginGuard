@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChatResponse } from '../marginguard-api';
 import { api, errorText, isNotYet } from './client';
-import { MetricCard } from './Overview';
+import { MetricCard } from './Metrics';
 import { Card } from './ui';
 
 type Msg = { role: 'user' | 'assistant'; text: string; data?: ChatResponse; notice?: boolean };

@@ -23,6 +23,16 @@ export function money(value: string | null | undefined, dp = 2): string {
   return value.trim().startsWith('-') ? `-$${decimal(value.trim().slice(1), dp)}` : `$${decimal(value, dp)}`;
 }
 
+/** Exact subtraction at the API's eight-decimal precision. */
+export function subtractDecimal(value: string, discount: string): string {
+  const result = scaled(value, 8) - scaled(discount, 8);
+  const absolute = result < 0n ? -result : result;
+  const fraction = (absolute % 100000000n).toString().padStart(8, '0').replace(/0+$/, '');
+  return `${result < 0n ? '-' : ''}${absolute / 100000000n}${fraction ? '.' + fraction : ''}`;
+}
+
+export const localDate = (iso = new Date().toISOString()) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date(iso));
+
 /** "2.000" -> "2", "0.50" -> "0.5" */
 export function qty(value: string | null | undefined): string {
   if (!value) return '—';

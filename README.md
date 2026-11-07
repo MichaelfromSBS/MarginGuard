@@ -6,7 +6,7 @@ NOVA 2026 · Carnegie Mellon University · DoorDash Back of House track
 
 MarginGuard is being developed to maintain restaurant records automatically, connect ingredient-price changes to dish costs, project next month's sales and ingredient consumption, and explain significant changes through database-backed chat and evidence-linked alerts.
 
-**Current status:** checkpoint 3 is implemented and awaiting team review. Document ingestion, live sales summaries, evidence-linked dish costs and persisted next-month forecasts are available through the backend API. The independent worker, automatic recomputation, anomaly alerts and business-data chat remain subsequent checkpoints. The frontend currently shows the original generic AI workbench; use [the checkpoint 3 review commands](docs/checkpoint-3.md) or the API docs.
+**Current status:** checkpoints 1–3 and the teammate's restaurant frontend are integrated. Overview shows observed sales and modeled dish costs; Trends & Outlook shows price history, daily sales and next-month forecasts; Inbox handles uploads, extraction status, retries and original documents. Use Calculate/Recalculate forecast to refresh projections. The independent worker, automatic recomputation, anomaly alerts and business-data chat remain subsequent checkpoints. See [checkpoint 3](docs/checkpoint-3.md) for definitions and review commands.
 
 ## Development progress
 
@@ -20,6 +20,7 @@ Last updated: **November 7, 2026**. API contract version: **1.0.0**.
 | Team demo dataset v2 | Contract-validated; explicit bulk importer available | [History and demo documents](demo_data/README.md); eight invoices and 2,733 receipts |
 | Checkpoint 2: document ingestion | Implemented; pending team review | PDF/image upload, structured extraction, validation, review/retry, duplicate-safe persistence and explicit fixture import |
 | Checkpoint 3: metrics and forecasting | Implemented; pending team review | Sales/day/dish/channel summaries, effective recipe costs, completeness-aware next-month forecasts, sensitivity scenarios and held-out evaluation |
+| Restaurant frontend integration | Merged and verified | Overview, Trends & Outlook, Inbox and explicit future-chat notice; forecast calculation/freshness and mobile navigation checked |
 | Checkpoint 4: background processing and alerts | Planned | Persistent worker, automatic recalculation, measured anomalies and notification state |
 | Checkpoint 5: database-backed chat | Planned | Read-only metric tools, grounded answers and evidence references |
 
@@ -90,7 +91,7 @@ Start both services:
 npm run dev
 ```
 
-- [Starter frontend](http://127.0.0.1:5173)
+- [MarginGuard dashboard](http://127.0.0.1:5173)
 - [Interactive API documentation](http://127.0.0.1:8000/docs)
 - [API capabilities](http://127.0.0.1:8000/api/capabilities)
 
@@ -117,7 +118,7 @@ MARGINGUARD_UPLOAD_DIRECTORY=data/uploads
 MARGINGUARD_EXTRACTION_MAX_OUTPUT_TOKENS=6000
 ```
 
-Checkpoint 1 works without a model key. For a live call through the existing generic workbench, set `AI_MODE=openrouter`, add the team key, choose a current compatible model ID, and restart. Structured responses require compatible model/endpoint support; image input is a separate capability. See [OpenRouter's model catalog](https://openrouter.ai/models).
+Sales metrics and forecasting work without a model key. For live document extraction through Inbox, set `AI_MODE=openrouter`, add the team key, choose a current compatible model ID, and restart. Structured responses require compatible model/endpoint support; image input is a separate capability. See [OpenRouter's model catalog](https://openrouter.ai/models).
 
 Checkpoint-2 HTTP extraction uses that same live configuration. In mock mode, uploads never fabricate approved financial records: extraction fails visibly with `live_model_required`. Offline history and single-document expected-output imports are separately labeled `fixture_history` and `fixture_expected` and are restricted to explicit demo use.
 
@@ -227,7 +228,8 @@ backend/
     fixture.py               Explicit offline single-document demonstration
     seed.py                  Opt-in fictional seed CLI
 frontend/src/
-  App.tsx                    Existing generic workbench
+  App.tsx                    MarginGuard navigation and connection/alert state
+  mg/                        Restaurant screens, API client and presentation helpers
   marginguard-api.ts          Product TypeScript contracts
 docs/                        Plan, progress, review guide and OpenAPI export
 examples/                    Canonical document pairs and API examples

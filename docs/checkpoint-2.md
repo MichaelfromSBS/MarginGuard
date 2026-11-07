@@ -1,6 +1,6 @@
 # Checkpoint 2 — document ingestion and review
 
-Implemented: readable PDF and PNG/JPEG uploads, structured OpenRouter extraction, deterministic validation, review/correction, duplicate-safe ledger approval, source inspection, retry and explicit offline fixture/history import. The restaurant frontend is still a separate teammate task; test the backend through `/docs` or the commands below.
+Implemented: readable PDF and PNG/JPEG uploads, structured OpenRouter extraction, deterministic validation, review/correction, duplicate-safe ledger approval, source inspection, retry and explicit offline fixture/history import. The teammate's restaurant frontend is now integrated: use Inbox for uploads/status/source inspection/retry, or `/docs` and the commands below for full manual-review API checks.
 
 This is the checkpoint-2 ingestion review guide. Checkpoint 3 now adds [sales summaries, recipe costs and forecasts](checkpoint-3.md). The independent folder watcher, automatic recalculation, anomaly alerts, notification sending and business-data chat remain checkpoints 4–5. The upload request starts a bounded in-process background task, not the checkpoint-4 worker.
 

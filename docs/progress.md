@@ -15,7 +15,8 @@ Last updated: November 7, 2026. This record distinguishes implemented functional
 | 2026-11-07 | Checkpoint 2 implemented | [`84a4f97`](https://github.com/MichaelfromSBS/nova-hackathon/commit/84a4f97): ingestion, extraction, validation, review/retry, source integrity and explicit fixture/history import. |
 | 2026-11-07 | Dataset folder flattened | Teammate commit [`3840d46`](https://github.com/MichaelfromSBS/nova-hackathon/commit/3840d46) moves the v2 corpus directly under `demo_data/`. Importer, tests and documentation paths were updated after merging it. |
 | 2026-11-07 | Gemini compatibility fix published | [`376042a`](https://github.com/MichaelfromSBS/nova-hackathon/commit/376042a): provider schema compatibility, preserved local item bounds and live extraction verification. |
-| 2026-11-07 | Checkpoint 3 implemented locally | Observed sales, evidence-linked replacement recipe costs, audited coverage confirmation and versioned weekday-average forecasts. Pending team review/publication. |
+| 2026-11-07 | Checkpoint 3 implemented | [`8767d3c`](https://github.com/MichaelfromSBS/nova-hackathon/commit/8767d3c): observed sales, evidence-linked replacement recipe costs, audited coverage confirmation and versioned weekday-average forecasts. |
+| 2026-11-07 | Restaurant frontend integrated | Teammate frontend [`e89557b`](https://github.com/MichaelfromSBS/nova-hackathon/commit/e89557b) merged with checkpoint 3 in `0a5ee2b`, followed by integration fixes and verification below. |
 
 ## Checkpoint 1: completed implementation, pending team review
 
@@ -110,14 +111,14 @@ This verifies these two PDF examples, not general extraction accuracy or live im
 
 ## Checkpoint 3: completed implementation, pending team review
 
-Delivered locally on November 7:
+Delivered on November 7:
 
 - `analytics.py`: observed completed-receipt units/orders/net item revenue, inclusive date/dish/channel filtering, per-day/dish/channel breakdowns, bounded receipt evidence and explicit completeness. Tax/tips are excluded and allocated item discounts are already reflected in net amounts.
 - Effective-date recipe cost lookup with lb/oz conversion, latest compatible approved prices, invoice-line evidence and channel contribution assumptions. Missing/invalid recipe inputs return limitations and null modeled costs rather than zero.
 - `forecasting.py`: next-calendar-month weekday averages, configurable 4–26-week history (default eight), at least four complete observations per applicable weekday, explicit calendar/channel closures and zero-versus-missing handling. No model calls or new dependencies.
 - Daily and dish/channel demand projections, ingredient requirements/costs, reconciled money totals, ±15% default sensitivity scenarios and seven-day held-out evaluation against a seasonal-naive baseline. Synthetic-data MAE is not evidence of real-world monthly accuracy.
 - Migration 3 adds immutable forecast calculation snapshots, policy/version cache keys and audited coverage events. Earlier migrations are unchanged. Approved inputs and coverage changes mark saved runs pending; explicit recalculation produces a current-version snapshot. Repeating the same date/policy/version returns the same run.
-- Live dashboard/sales/dish-cost/forecast APIs, explicit coverage confirmation, checkpoint-3 health/capabilities, exported OpenAPI, updated TypeScript interfaces and sales/dish-cost/dashboard examples. No frontend restaurant screen is claimed.
+- Live dashboard/sales/dish-cost/forecast APIs, explicit coverage confirmation, checkpoint-3 health/capabilities, exported OpenAPI, updated TypeScript interfaces and sales/dish-cost/dashboard examples. Subsequent frontend integration is recorded below.
 - [Checkpoint 3 review guide](checkpoint-3.md) with exact PowerShell commands, expected figures, API definitions and planning limitations. Existing runtime files, `.env`, user server and `.vscode/` were preserved.
 
 Recorded verification:
@@ -137,12 +138,26 @@ Recorded verification:
 
 Checkpoint 3 is deterministic analytics, not an additional AI feature. The existing extractor supplies the approved records it uses. Automatic forecast recomputation, anomaly findings/notifications and business-data chat remain checkpoints 4–5. No actual business database was reset and no paid provider requests were needed for this checkpoint.
 
+## Restaurant frontend review and integration
+
+The teammate's Overview, Trends & Outlook, Ask and Inbox screens were reviewed and merged with checkpoint 3. The merge preserved both histories and the checkpoint-3 API contracts.
+
+Integration fixes:
+
+- Added Calculate/Recalculate forecast controls using the actual calculation endpoint. Overview and Trends use the current as-of dashboard snapshot rather than an arbitrary older saved run. Pending/insufficient snapshots cannot display old numeric totals as a ready current forecast.
+- Connected daily sales, consumption requirements, demand sensitivity scenarios, evaluation and modeled menu ingredient costs. Replaced hardcoded December titles with the actual horizon and labeled monitoring unavailable until checkpoint 4.
+- Corrected receipt net revenue to subtract allocated discounts using decimal-string/BigInt arithmetic. Preserved fixture/manual/AI provenance labels.
+- Remount document detail when selection changes, prevent overlapping poll requests, clear data when changing queries, and show retry failures rather than swallowing them.
+- Fixed the narrow-screen navigation row and table scrolling while preserving the teammate's visual design.
+
+Verification: **202 backend tests**, **7 frontend tests**, TypeScript and production build passed. Frontend regression tests cover discounted revenue/rounding, stale-total suppression and forecast readiness. An isolated real-browser check verified observed $7,400 sales, UI forecast calculation, invoice upload in mock mode followed by explicit manual review, stale suppression, recalculation to $10,143.80 ingredient cost, original PDF retrieval, the honest checkpoint-5 chat notice and navigation at 390px width. No JavaScript errors or page-level horizontal overflow were observed. Desktop/mobile screenshots were inspected. Browser review used a temporary database and no paid extraction; the user's database and `.env` were preserved.
+
 ## Upcoming checkpoints
 
 | Checkpoint | Required outcome | State |
 | --- | --- | --- |
 | 2 | Invoice and receipt ingestion, schema/business validation, mapping, persistence and deduplication | Implemented; pending review |
-| 3 | Actual sales metrics, recipe economics, completeness-aware forecasts and evaluation | Implemented locally; pending review/publication |
+| 3 | Actual sales metrics, recipe economics, completeness-aware forecasts and evaluation | Implemented; frontend integrated and verified |
 | 4 | Independent worker, automatic recomputation, measured alerts and notification delivery state | Not started |
 | 5 | Read-only database tools, grounded owner chat and evidence-linked answers | Not started |
 

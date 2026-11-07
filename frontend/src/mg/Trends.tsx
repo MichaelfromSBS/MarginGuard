@@ -1,21 +1,20 @@
 import { useState } from 'react';
 import { api, errorText, isNotYet, usePoll } from './client';
-import { MetricCard } from './Overview';
-import { money, pctChange, shortDate } from './format';
+import Forecast from './Forecast';
+import { decimal, money, pctChange, shortDate } from './format';
 import { Card, Empty, ErrorBox, NotYet, PriceChart } from './ui';
 
 export default function Trends() {
   const catalog = usePoll(() => api.catalog(), 0);
   const [ingredient, setIngredient] = useState('beef');
   const prices = usePoll(() => api.prices(ingredient), 5000, [ingredient]);
-  const forecast = usePoll(() => api.forecasts(), 15000);
+  const dashboard = usePoll(() => api.dashboard(), 15000);
   const invoices = usePoll(() => api.invoices(), 10000);
   const lineToInvoice = new Map<string, string>();
   (invoices.data?.items ?? []).forEach((inv) => inv.items.forEach((line) => lineToInvoice.set(line.id, `${inv.invoice_number} · ${inv.vendor_name}`)));
   const ing = catalog.data?.ingredients.find((i) => i.id === ingredient);
   const items = prices.data?.items ?? [];
   const unit = ing?.base_unit ?? 'unit';
-  const latest = forecast.data?.items[0];
 
   return (
     <div className="stack">
@@ -46,17 +45,14 @@ export default function Trends() {
         )}
       </Card>
 
-      <Card title="Sales and December outlook">
-        {forecast.error ? (isNotYet(forecast.error) ? <NotYet checkpoint={3} what="Daily sales trends and the next-month forecast (base, low and high scenarios)" /> : <ErrorBox>{errorText(forecast.error)}</ErrorBox>) : null}
-        {forecast.data && !latest && <Empty>No forecast has been calculated yet.</Empty>}
-        {latest && (
-          <>
-            <p className="muted">{latest.method} · {shortDate(latest.horizon.start)} – {shortDate(latest.horizon.end)} · {latest.status}</p>
-            <div className="metrics">{latest.metrics.map((m) => <MetricCard key={m.id} m={m} />)}</div>
-            {latest.assumptions.length > 0 && <div className="assume"><b>Assumptions</b><ul>{latest.assumptions.map((a) => <li key={a}>{a}</li>)}</ul></div>}
-          </>
-        )}
-      </Card>
+      {dashboard.error ? (isNotYet(dashboard.error) ? <NotYet checkpoint={3} what="Sales and next-month forecasts" /> : <ErrorBox>{errorText(dashboard.error)}</ErrorBox>) : null}
+      {dashboard.data && !dashboard.error && <>
+        <Card title="Observed daily sales" action={<small className="muted">{dashboard.data.sales && `${shortDate(dashboard.data.sales.period.start)} – ${shortDate(dashboard.data.sales.period.end)}`}</small>}>
+          {dashboard.data.sales?.coverage.status !== 'complete' && <p className="issues">Receipt coverage is incomplete. These are observed totals only.</p>}
+          {dashboard.data.sales?.by_day.length ? <div className="table-scroll"><table className="tbl"><thead><tr><th>Date</th><th className="r">Orders</th><th className="r">Units</th><th className="r">Net item revenue</th></tr></thead><tbody>{dashboard.data.sales.by_day.map((d) => <tr key={d.date}><td>{shortDate(d.date!)}</td><td className="r">{d.orders}</td><td className="r">{decimal(d.units, 0)}</td><td className="r">{money(d.net_revenue)}</td></tr>)}</tbody></table></div> : <Empty>No observed sales in this period.</Empty>}
+        </Card>
+        <Forecast snapshot={dashboard.data.forecast} onChanged={dashboard.refresh} />
+      </>}
     </div>
   );
 }

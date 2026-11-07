@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { DocumentDetail, DocumentType, InvoiceExtraction, ReceiptExtraction } from '../marginguard-api';
 import { api, errorText, loadDocuments, usePoll } from './client';
-import { dateTime, label, money, qty, timeAgo } from './format';
+import { dateTime, label, money, qty, timeAgo, subtractDecimal } from './format';
 import { Card, Empty, ErrorBox, Pill, StatusBadge } from './ui';
 
 export default function Documents({ selectedId, onSelect }: { selectedId: string | null; onSelect: (id: string | null) => void }) {
@@ -39,7 +39,7 @@ export default function Documents({ selectedId, onSelect }: { selectedId: string
           <label className="check"><input type="checkbox" checked={showHistory} onChange={(e) => setShowHistory(e.target.checked)} /> Show latest imported history receipts</label>
         </Card>
       </div>
-      <div>{selectedId ? <Detail id={selectedId} /> : <Card><Empty>Select a document to see what the AI extracted and how it was validated.</Empty></Card>}</div>
+      <div>{selectedId ? <Detail key={selectedId} id={selectedId} /> : <Card><Empty>Select a document to see what the AI extracted and how it was validated.</Empty></Card>}</div>
     </div>
   );
 }
@@ -99,6 +99,7 @@ function Upload({ onUploaded }: { onUploaded: (id: string) => void }) {
 
 function Detail({ id }: { id: string }) {
   const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState('');
   const [view, setView] = useState<'fields' | 'source'>('fields');
   const d = usePoll(() => api.document(id), 2500, [id]);
   useEffect(() => { setView('fields'); }, [id]);
@@ -111,8 +112,8 @@ function Detail({ id }: { id: string }) {
     : doc.extraction_method === 'fixture_expected' ? 'Prepared fixture (no AI call)' : doc.extraction_method ?? '—';
 
   const retry = async () => {
-    setRetrying(true);
-    try { await api.process(doc.id); d.refresh(); } catch { /* shown on next poll */ } finally { setRetrying(false); }
+    setRetrying(true); setRetryError('');
+    try { await api.process(doc.id); d.refresh(); } catch (e) { setRetryError(errorText(e)); } finally { setRetrying(false); }
   };
 
   return (
@@ -125,6 +126,7 @@ function Detail({ id }: { id: string }) {
         <span>{label(doc.type)}</span><span>{method}</span><span>Uploaded {dateTime(doc.created_at)}</span>
         {doc.evidence_mode === 'visual' && <span>Read from image</span>}
       </div>
+      {retryError && <ErrorBox>{retryError}</ErrorBox>}
       {busy && <div className="reading"><i className="pulse" /> The AI is reading this document…</div>}
       {doc.status === 'failed' && (
         <ErrorBox>
@@ -190,7 +192,7 @@ function Fields({ doc }: { doc: DocumentDetail }) {
         <div><dt>Receipt #</dt><dd>{r.receipt_number}</dd></div>
         <div><dt>Sold</dt><dd>{dateTime(r.sold_at)}</dd></div>
         <div><dt>Channel</dt><dd>{r.channel_id ? label(r.channel_id) : <Pill tone="warn">Unknown</Pill>}</dd></div>
-        <div><dt>Revenue</dt><dd className="strong">{money(r.subtotal)}</dd></div>
+        <div><dt>Net item revenue</dt><dd className="strong">{money(subtractDecimal(r.subtotal, r.discount))}</dd></div>
       </dl>
       <table className="tbl">
         <thead><tr><th>Item</th><th>Matched to</th><th className="r">Qty</th><th className="r">Price</th><th className="r">Amount</th></tr></thead>
@@ -209,7 +211,7 @@ function Fields({ doc }: { doc: DocumentDetail }) {
           <tr className="strong"><td colSpan={4} className="r">Total charged</td><td className="r">{money(r.total)}</td></tr>
         </tfoot>
       </table>
-      <p className="hint">Revenue counts the subtotal only; tax and tips are excluded.</p>
+      <p className="hint">Net item revenue is subtotal minus allocated discounts; tax and tips are excluded.</p>
     </>
   );
 }

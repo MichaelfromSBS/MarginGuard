@@ -1,6 +1,8 @@
 # Checkpoint 3 — observed sales, dish costs and forecasts
 
-Backend implementation is ready for team review. The frontend still contains the generic starter workbench; the routes below are ready for the restaurant dashboard teammate. No model calls or new dependencies are required for checkpoint 3. Extraction continues to use the existing `.env` configuration.
+Backend implementation and the teammate's restaurant frontend are integrated. No model calls or new dependencies are required for checkpoint 3. Extraction continues to use the existing `.env` configuration.
+
+For the integrated app, start both services with `npm.cmd run dev` and open http://127.0.0.1:5173. Overview shows current observed sales and dish costs; Trends & Outlook adds daily sales and supplier-price history. Click **Calculate forecast** in either screen. Approved inputs make the saved forecast **Out of date**; click **Recalculate forecast** to refresh it. Old forecast totals are hidden until recalculation. Inbox supports uploads, status, originals and retries; use the review API below for manual corrections. Ask MarginGuard explicitly reports that database chat arrives at checkpoint 5, and monitoring is labeled unavailable until checkpoint 4.
 
 ## Start against your existing checkpoint-2 database
 
@@ -132,4 +134,4 @@ npm.cmd run typecheck
 npm.cmd run test:frontend
 ```
 
-The tests use isolated databases and explicit fixtures/mocked extraction; they do not reset the configured business database or spend API credits. OpenAPI is exported in `docs/openapi.json`; frontend interfaces are in `frontend/src/marginguard-api.ts`.
+The tests use isolated databases and explicit fixtures/mocked extraction; they do not reset the configured business database or spend API credits. OpenAPI is exported in `docs/openapi.json`; frontend interfaces are in `frontend/src/marginguard-api.ts`. Integration review passed 202 backend tests, seven frontend tests, type checking and a production build. A separate browser smoke check verified calculation, stale-total suppression, invoice upload/explicit manual review/recalculation, source viewing, the future-chat notice and mobile navigation. That browser check used an isolated mock-mode database, not paid AI extraction.
