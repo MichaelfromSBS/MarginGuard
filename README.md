@@ -1,84 +1,161 @@
-# NOVA AI Starter
+# MarginGuard
 
-A project-neutral React + TypeScript + FastAPI workspace. Prepared November 6, 2026, before NOVA. **Disclose this starter as pre-existing code when presenting.** See [PREEXISTING.md](PREEXISTING.md) for the preparation inventory and [docs/hackathon-plan.md](docs/hackathon-plan.md) for track advice and ideas.
+**Restaurant finance monitoring from supplier invoices and customer sales receipts.**
 
-The current restaurant project proposal is [MarginGuard v2](docs/marginguard-plan-v2.md). **Checkpoint 1 is implemented:** SQLite foundation, explicit fictional seed data, catalog/ledger read APIs and the versioned frontend contract. Invoice ingestion, analytics/forecasts, the worker/alerts and business-data chat are reserved for checkpoints 2–5. See [checkpoint review instructions](docs/checkpoint-1.md).
+NOVA 2026 · Carnegie Mellon University · DoorDash Back of House track
 
-To inspect the fictional restaurant, run `.\.venv\Scripts\python.exe -m backend.marginguard.seed` once, then start the API with `npm run dev` and open http://127.0.0.1:8000/docs. Seeding is explicit and refuses to mix fixtures into an existing business database. The starter frontend remains the generic workbench until the product UI is connected.
+MarginGuard is being developed to maintain restaurant records automatically, connect ingredient-price changes to dish costs, project next month's sales and ingredient consumption, and explain significant changes through database-backed chat and evidence-linked alerts.
 
-**For your teammate generating invoice PDFs and receipt images:** share [the sample-data contract and copyable Claude prompt](docs/sample-data-contract.md), [paired source/expected examples](examples), [TypeScript contracts](frontend/src/marginguard-api.ts) and the exported [OpenAPI schema](docs/openapi.json). The sample `.txt` files are source text for generating documents, not supported uploads in checkpoint 1.
+**Current status:** checkpoint 1 is implemented; team review is pending. The database foundation and read APIs work. Document ingestion, forecasting, background processing and business-data chat are subsequent checkpoints. The frontend currently shows the original generic AI workbench.
 
-## Start on this computer
+## Development progress
 
-Dependencies are installed in `.venv` and `node_modules`. From this folder:
+Last updated: **November 7, 2026**. API contract version: **1.0.0**.
 
-```powershell
-npm run dev
+| Milestone | Status | Delivered / acceptance boundary |
+| --- | --- | --- |
+| Reusable AI starter | Complete; prepared November 6 | React/TypeScript, FastAPI, OpenRouter transport, mock mode and streaming |
+| Project specification | Current | [MarginGuard v2](docs/marginguard-plan-v2.md) defines the five product capabilities |
+| Checkpoint 1: database and shared contract | Implemented; pending team review | SQLite schema, explicit demo seed, validated schemas, read APIs, OpenAPI, TypeScript and sample-data handoff |
+| Team demo dataset | Contributed; integration pending | [Historical records and demo documents](demo_data/README.md); requires mapping to the backend contract |
+| Checkpoint 2: document ingestion | Planned | Invoice/receipt upload, model extraction, validation, matching and deduplication |
+| Checkpoint 3: metrics and forecasting | Planned | Sales summaries, recipe costs, completeness-aware next-month projections |
+| Checkpoint 4: background processing and alerts | Planned | Persistent worker, automatic recalculation, measured anomalies and notification state |
+| Checkpoint 5: database-backed chat | Planned | Read-only metric tools, grounded answers and evidence references |
+
+See [the progress record](docs/progress.md) for commits, verification evidence and integration notes. Each checkpoint ends with a focused review before the next begins.
+
+## Product workflow
+
+The planned workflow is:
+
+```text
+Supplier invoices + customer sales receipts
+                    ↓
+       Extraction, validation and review
+                    ↓
+       Approved records in the database
+                    ↓
+    Sales metrics, recipe costs and forecasts
+                    ↓
+     Dashboard + owner chat + proactive alerts
 ```
 
-Open **http://127.0.0.1:5173**. API documentation: **http://127.0.0.1:8000/docs**. Use **Run workflow** with the included fictional example. Both structured cards and streaming text work without a key in **mock mode**, which explicitly returns a fixture rather than answering the task.
+AI interprets document language and explains retrieved results. Python owns financial calculations, unit conversions, forecast methods and measurable anomaly rules. Reported figures distinguish observed results, modeled costs and future projections.
 
-Ctrl+C stops both servers. React changes update automatically. Restart after editing Python or `.env`. The launcher binds only to your computer and fails if ports 8000/5173 are already in use.
+## Technology
 
-If PowerShell blocks `npm.ps1`, use `npm.cmd run dev`. No global execution-policy changes are needed.
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, TypeScript, Vite |
+| API | Python, FastAPI, Pydantic |
+| Database | SQLite with transactional, checksummed migrations |
+| Model access | OpenRouter through server-side asynchronous HTTP requests |
+| Testing | pytest, mocked provider responses, Node's test runner |
+| Planned processing | Independent Python worker and persisted jobs |
 
-## First-time setup on your teammate's computer
+## Getting started
 
-Install Python 3.11+ and Node.js 22.12+ (or a supported newer LTS), including npm. Then:
+Prerequisites: Python **3.11+**, Node.js **22.12+** or a supported newer LTS, npm, and Git. The recorded checkpoint validation used Python 3.11.9 and Node.js 22.19.0 on Windows.
 
-```powershell
+Clone the private repository using an account with access:
+
+```bash
+git clone https://github.com/MichaelfromSBS/nova-hackathon.git
+cd nova-hackathon
 python scripts/setup.py
+```
+
+Setup creates `.venv`, installs the dependency lockfiles and creates `.env` from `.env.example` only when `.env` does not already exist. Stop development servers before rerunning setup; Windows can lock the running bundler's native files.
+
+Optionally load the small, explicitly fictional checkpoint-1 dataset:
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.marginguard.seed
+```
+
+On macOS/Linux, use `.venv/bin/python -m backend.marginguard.seed`. Repeating the seed command is a no-op. It refuses to mix fixtures into an existing, unseeded business database. API startup applies migrations but never inserts demo financial records automatically.
+
+Start both services:
+
+```bash
 npm run dev
 ```
 
-The setup script creates an isolated Python environment, installs the lockfiles, and copies `.env.example` to `.env` only if `.env` does not exist. Do not share `.venv` or `node_modules`; share the source and lockfiles. Existing environment variables override `.env` values.
+- [Starter frontend](http://127.0.0.1:5173)
+- [Interactive API documentation](http://127.0.0.1:8000/docs)
+- [API capabilities](http://127.0.0.1:8000/api/capabilities)
 
-Stop the development servers before rerunning setup. Windows locks the native bundler while it is running; setup checks the development ports before installing anything.
+Ctrl+C stops both services. Frontend edits reload automatically; restart after Python or `.env` changes. Ports 8000 and 5173 must be free. If PowerShell blocks `npm.ps1`, use `npm.cmd run dev`.
 
-## Switch to the organizer's API key
+For backend-only development with reload:
 
-The supplied tech guide says each team receives an OpenRouter key at the start. Edit the root `.env`:
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+## Configuration
+
+Edit the local root `.env`:
 
 ```dotenv
-AI_MODE=openrouter
-OPENROUTER_API_KEY=your-team-key
-OPENROUTER_MODEL=copy-a-current-model-id-from-openrouter
+AI_MODE=mock
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=
 AI_TIMEOUT_SECONDS=60
 AI_MAX_OUTPUT_TOKENS=1800
+MARGINGUARD_DATABASE_PATH=data/marginguard.db
 ```
 
-Choose a model endpoint that supports `structured_outputs`; for the optional image also check image input. IDs, availability, allowed models and prices can change, so there is intentionally no assumed default model. Check the [model catalog](https://openrouter.ai/models) and the team's key restrictions/credit allowance. Restart the server and run the included sample once. A configured badge only confirms configuration exists, not that a paid request succeeded.
+Checkpoint 1 works without a model key. For a live call through the existing generic workbench, set `AI_MODE=openrouter`, add the team key, choose a current compatible model ID, and restart. Structured responses require compatible model/endpoint support; image input is a separate capability. See [OpenRouter's model catalog](https://openrouter.ai/models).
 
-**The real paid API path has not been tested with an actual key.** It is tested against mocked OpenRouter responses, including errors. Live mode never silently falls back to fixtures. Do not put keys in `VITE_*` variables, frontend code, screenshots, or Git. `.env` is ignored.
+Live mode does not silently fall back to mock fixtures. The provider transport is tested with mocked responses; no actual paid provider call has been validated in this repository's recorded checkpoint results.
 
-## What's ready
+Environment variables override `.env`. Relative database paths resolve from the repository root. `.env`, local databases, uploads, caches and dependencies are excluded from Git. Keep keys server-side; do not put them in frontend code or `VITE_*` variables.
 
-- Task + up to 8 pasted text sources, 64,000 total characters, and one optional image up to 3 MB.
-- `POST /api/run`: input validation → prompt/context assembly → OpenRouter JSON Schema output → Pydantic validation → exact-quote checks → result + elapsed time + token usage.
-- `POST /api/stream`: asynchronous OpenRouter SSE → normalized NDJSON → incremental browser text. Handles split Unicode, comments, incomplete streams, and provider error events.
-- Browser cancellation, visible errors, export, responsive UI, no automatic retries or unbounded tool loops.
-- One model request at a time and a configurable output cap/total timeout. These reduce accidental usage; they are **not a dollar budget**. Set spending controls on the team key.
-- A local-only development API; it has no login or deployment configuration. Add authentication/rate limits before exposing it publicly.
-- MarginGuard checkpoint-1 catalog, invoice, receipt, document, coverage and price-history read APIs, with versioned schemas and explicit 501 responses for later features.
+## Checkpoint 1 API
 
-The generic workbench checks source quotes for literal membership in supplied text. Warnings flag mismatches, unknown source IDs and missing citations; this does **not** verify whether a quote logically supports a conclusion. Streaming text has no citation validation. Text is rendered as text, not executable HTML. Workbench inputs stay in browser memory until refresh and are not persisted. MarginGuard's explicit seed records are persisted separately in the configured SQLite database. In live mode, workbench inputs go to OpenRouter and its selected provider.
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Service, database and configuration status |
+| GET | `/api/capabilities` | Checkpoint and feature availability |
+| GET | `/api/restaurant` | Restaurant identity, currency, timezone and demo status |
+| GET | `/api/catalog` | Ingredients, dishes, channels, menu prices and recipe versions |
+| GET | `/api/ingredients/{ingredient_id}/prices` | Effective-dated ingredient prices and invoice-line references |
+| GET | `/api/documents` | Paginated document metadata and processing status |
+| GET | `/api/documents/{document_id}` | Document detail with available persisted source text |
+| GET | `/api/invoices` | Approved invoice records and line items |
+| GET | `/api/receipts` | Approved receipt records and items |
+| GET | `/api/coverage` | Complete, partial, unknown or closed date/channel coverage |
+| GET | `/api/alerts` | Persisted alerts; no anomaly detection runs at checkpoint 1 |
 
-## Make it your project
+Money and quantities are decimal strings. List endpoints return `items`, `total`, `limit` and `offset`. Product errors use a versioned `error` object. A fresh database returns empty catalogs/lists and a typed restaurant-not-configured response until configured or explicitly seeded.
 
-Start with these four files:
+Well-formed requests to reserved ingestion, review, dashboard, forecast, coverage-write, alert-acknowledgement and chat routes return **HTTP 501** until their implementation checkpoint. They do not return fabricated financial results. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
 
-| File | Change |
-| --- | --- |
-| `backend/prompts.py` | Product behavior, task rules and context assembly |
-| `backend/schemas.py` | Input and result contracts |
-| `backend/pipeline.py` | Deterministic checks or one useful domain operation |
-| `frontend/src/App.tsx` | Product-specific input and result interaction |
+Authoritative handoff artifacts:
 
-`backend/provider.py` contains the transport layer. `frontend/src/api.ts` defines matching frontend types; update them when changing the schema. Change fixtures and tests to match your product contract too. The provided fictional note-comparison sample exercises the template; it is not an implemented contradiction detector.
+- [Exported OpenAPI schema](docs/openapi.json)
+- [Frontend TypeScript contracts](frontend/src/marginguard-api.ts)
+- [Actual seeded read-response examples](examples/api)
+- [Checkpoint 1 review checklist](docs/checkpoint-1.md)
 
-The generic workbench supports pasted text and one image. MarginGuard checkpoint 1 reserves document upload/extraction routes but does not process PDFs or receipts yet. Analytics, forecasting, autonomous processing and business-data chat are later checkpoints; use `/api/capabilities` to distinguish implemented features.
+## Demo data and document generation
 
-## Verify
+There are two distinct fixture collections:
+
+| Collection | Purpose | Current integration |
+| --- | --- | --- |
+| `examples/` and the built-in seed | Canonical contracts, paired source/expected extraction examples and a small ledger | Supported by the explicit seed command and contract tests |
+| `demo_data/` | Team-contributed historical CSV/JSON, invoice PDFs, receipt documents and expected outcomes | Preserved as contributed; bulk import and compatibility mapping are pending |
+
+Give the document-generating teammate [the sample-data contract and copyable Claude prompt](docs/sample-data-contract.md). Its examples specify stable IDs, decimal strings, timezone-aware timestamps and source references.
+
+The team dataset uses an expanded menu, some different field names, `slice` units and different status/coverage conventions. Its documents and answer key must be reconciled with the agreed backend contract before treating them as integrated acceptance fixtures. See [integration notes](docs/progress.md#demo-dataset-integration-notes). The checkpoint seed command does not import `demo_data/`.
+
+All seeded financial records are fictional. The small checkpoint seed is not an eight-week forecasting history, and seeded records are not evidence that AI extraction has already processed their source documents.
+
+## Verification
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
@@ -86,23 +163,43 @@ npm run test:frontend
 npm run build
 ```
 
-On macOS/Linux use `.venv/bin/python -m pytest -q`. `requirements.lock.txt` and `package-lock.json` record the tested dependencies. The backend tests exercise mocked HTTP errors, malformed outputs, source checks, input validation and byte-split provider streams; frontend tests exercise the actual streaming parser.
+On macOS/Linux, replace the first command with `.venv/bin/python -m pytest -q`. Tests isolate their databases from the configured local ledger.
 
-To run the built UI and API on one port, build first and restart the backend:
+Recorded checkpoint-1 verification: **86 backend tests passed**, **3 frontend parser tests passed**, production build succeeded, dependency consistency passed, and live read-API/persistence smoke checks passed. The test-client dependency currently emits one deprecation warning; it is not a test failure. These results do not validate ingestion or the contributed historical dataset.
+
+After an intentional contract change, regenerate the OpenAPI and seeded response artifacts:
 
 ```powershell
-npm run build
-.\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python.exe scripts/export_contract.py
 ```
 
-Open http://127.0.0.1:8000. For separate terminals with backend auto-reload, run `python -m uvicorn backend.main:app --reload` using the virtual environment, and `npm run dev --workspace frontend` in another terminal.
+The exporter uses an isolated temporary database and leaves the configured business database untouched. Keep the TypeScript contracts aligned with intentional backend schema changes.
 
-## References
+## Repository layout
 
-The supplied organizer guides inform the stack and team-key workflow. Current official documentation checked November 6, 2026:
+```text
+backend/
+  main.py                    FastAPI application and starter endpoints
+  config.py                  Environment-backed settings
+  marginguard/
+    db.py                    Connection and migration management
+    migrations/              Versioned SQLite schema
+    schemas.py               Versioned wire contracts
+    routes.py                Read APIs and explicit future-feature responses
+    seed.py                  Opt-in fictional seed CLI
+frontend/src/
+  App.tsx                    Existing generic workbench
+  marginguard-api.ts          Product TypeScript contracts
+docs/                        Plan, progress, review guide and OpenAPI export
+examples/                    Canonical document pairs and API examples
+demo_data/                   Team-contributed demo corpus
+scripts/                     Setup, development launcher and contract exporter
+tests/                       Database, API, contract and provider tests
+data/                        Local runtime database; excluded from Git
+```
 
-- [OpenRouter structured outputs](https://openrouter.ai/docs/guides/features/structured-outputs)
-- [OpenRouter streaming](https://openrouter.ai/docs/api/reference/streaming)
-- [OpenRouter errors](https://openrouter.ai/docs/api/reference/errors-and-debugging)
-- [HTTPX async requests](https://www.python-httpx.org/async/)
-- [Vite setup](https://vite.dev/guide/)
+## Scope and disclosure
+
+The local application has no production authentication or deployment configuration. Model-supported interpretations and exact source matches do not establish that a business conclusion is correct. Planned cost projections describe ingredient consumption under stated assumptions, not actual net profit or a purchasing cash budget.
+
+The reusable starter was prepared before the event. See [PREEXISTING.md](PREEXISTING.md) for the preparation inventory and disclose it accurately during judging. Preserve the distinction between fictional fixtures, recorded test results and functionality built during each checkpoint.
