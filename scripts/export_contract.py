@@ -48,8 +48,13 @@ def main():
                 (examples / f"{name}.json").write_text(json.dumps(response.json(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         # Transparent canned planner output: no real model/key or user's ledger.
         def planner(request):
-            value = {"status": "answer", "reason": None, "calls": [{"name": "get_sales_summary",
-                "arguments": json.dumps({"period": "last_7_days", "as_of": "2026-11-07"})}]}
+            context = json.loads(json.loads(request.content)["messages"][1]["content"])
+            if context["question"] == "What does partial data mean?":
+                value = {"status": "explain", "reason": None, "calls": [],
+                    "explanation": "Partial data means receipts for the period are incomplete. Today's totals include approved receipts so far, rather than a finalized operating day."}
+            else:
+                value = {"status": "answer", "reason": None, "calls": [{"name": "get_sales_summary",
+                    "arguments": json.dumps({"period": "last_7_days", "as_of": "2026-11-07"})}], "explanation": None}
             return httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(value)}}]})
         chat_app = create_app(Settings(_env_file=None, ai_mode="openrouter", openrouter_api_key="fixture-only-not-a-real-key",
             openrouter_model="fixture/structured-planner", database_path=database), transport=httpx.MockTransport(planner))
@@ -57,6 +62,9 @@ def main():
             response = client.post("/api/chat", json={"question": "As of 2026-11-07, what were sales in the last seven days?"})
             response.raise_for_status()
             (examples / "chat.json").write_text(json.dumps(response.json(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            response = client.post("/api/chat", json={"question": "What does partial data mean?"})
+            response.raise_for_status()
+            (examples / "chat-explanation.json").write_text(json.dumps(response.json(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print("Updated docs/openapi.json and examples/api/*.json from the running contract.")
 
 

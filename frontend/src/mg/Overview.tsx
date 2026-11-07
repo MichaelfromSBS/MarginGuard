@@ -4,7 +4,6 @@ import { api, errorText, isNotYet, loadDocuments, usePoll } from './client';
 import { localDate, money, pctChange, shortDate, timeAgo } from './format';
 import { Card, ErrorBox, NotYet } from './ui';
 import { MetricCard } from './Metrics';
-import Ask from './Ask';
 
 type Go = (tab: 'trends' | 'documents') => void;
 
@@ -50,7 +49,7 @@ const GHOST: Record<string, string> = {
 };
 const RECENT_DAYS = 14;
 
-export default function Overview({ go, onSource }: { go: Go; onSource: (id: string) => void }) {
+export default function Overview({ go }: { go: Go }) {
   // Archived resolved findings cannot displace either live list's first page.
   const alerts = usePoll(async () => {
     const [fresh, acknowledged] = await Promise.all([api.alerts('new'), api.alerts('acknowledged')]);
@@ -145,7 +144,6 @@ export default function Overview({ go, onSource }: { go: Go; onSource: (id: stri
         </section>
       </div>
 
-      <Ask onSource={onSource} />
     </div>
   );
 }

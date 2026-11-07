@@ -1,0 +1,13 @@
+{
+  "answer": "Partial data means receipts for the period are incomplete. Today's totals include approved receipts so far, rather than a finalized operating day.",
+  "as_of": "2026-11-07T21:30:11.395753Z",
+  "metrics": [],
+  "evidence": [],
+  "limitations": [
+    "Explanation only; business figures were not queried or recalculated."
+  ],
+  "status": "answered",
+  "source_data_version": 1,
+  "answer_method": "ai_explanation",
+  "tools": []
+}

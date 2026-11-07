@@ -545,7 +545,7 @@ class ChatResponse(ContractModel):
     limitations: list[str]
     status: Literal["answered", "clarification", "unsupported", "unavailable"] = "answered"
     source_data_version: int = 0
-    answer_method: Literal["grounded_tools"] = "grounded_tools"
+    answer_method: Literal["grounded_tools", "ai_explanation"] = "grounded_tools"
     tools: list[ChatToolTrace] = Field(default_factory=list)
 
 

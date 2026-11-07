@@ -457,7 +457,7 @@ export interface ChatResponse {
   limitations: string[];
   status: 'answered' | 'clarification' | 'unsupported' | 'unavailable';
   source_data_version: number;
-  answer_method: 'grounded_tools';
+  answer_method: 'grounded_tools' | 'ai_explanation';
   tools: ChatToolTrace[];
 }
 

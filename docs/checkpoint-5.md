@@ -1,6 +1,6 @@
 # Checkpoint 5: read-only owner chat
 
-Ask MarginGuard now interprets questions with the configured OpenRouter model, executes a validated query plan, and displays database answers, metric cards, source documents and the queries used. It supports short follow-up questions using up to six previous messages. Conversation state stays in the browser session; it is not stored in the business ledger.
+Ask MarginGuard interprets questions with the configured OpenRouter model. Requests for figures execute validated database tools and display metrics, sources and query traces. Conceptual follow-ups receive a separate plain-language AI explanation. It supports short follow-up questions using up to six previous messages. Conversation state stays in the browser session; it is not stored in the business ledger.
 
 ## Start and test
 
@@ -11,7 +11,7 @@ cd "E:\CMU\Sophomore\Fall\NOVA Hackathon"
 npm.cmd run dev
 ```
 
-Open http://127.0.0.1:5173. **Ask MarginGuard** is at the bottom of **Overview**; there is no separate Ask tab. The conversation scrolls inside its panel and stays available when returning from Inbox. Existing `.env` settings are preserved. Chat requires `AI_MODE=openrouter`, `OPENROUTER_API_KEY` and a compatible `OPENROUTER_MODEL`. Keys remain server-side. Mock/unconfigured chat returns an explicit configuration error instead of simulated business answers. Restart the backend after changing `.env`.
+Open http://127.0.0.1:5173. Use the floating **Ask MarginGuard** button at the lower right of **Overview**; there is no separate Ask tab or inline chat section. It opens a panel over the lower portion of the viewport. Minimize it with the minus button or Escape while focused in chat. The conversation scrolls inside the panel, keeps drafts and history, and stays available when returning from Inbox. Existing `.env` settings are preserved. Chat requires `AI_MODE=openrouter`, `OPENROUTER_API_KEY` and a compatible `OPENROUTER_MODEL`. Keys remain server-side. Mock/unconfigured chat returns an explicit configuration error instead of simulated business answers. Restart the backend after changing `.env`.
 
 Try these questions individually:
 
@@ -22,6 +22,8 @@ Try these questions individually:
 - What are next month's projected sales and ingredient costs?
 - Why did next month's ingredient cost increase?
 - Which alerts need my attention?
+
+After a reply, try **“What does that mean?”**, **“Explain it in simpler terms”**, **“Is that my profit?”** or **“What should I check next?”**. These are examples, not a required list of exact phrases. Qualitative explanations use the recent conversation and appear as **AI explanation · no new business figures**. A vague follow-up without a prior answer can ask for clarification.
 
 The last seven days means **today plus the six previous restaurant-local dates**, matching the live dashboard. Ask for today to see approved receipts so far, or for the last seven finished days to exclude today. Last week means the previous **Monday–Sunday calendar week**. This month/week includes the current day and reports incomplete coverage where applicable. Explicit historical as-of queries should state the date as `YYYY-MM-DD`.
 
@@ -85,11 +87,11 @@ These are dated fixture acceptance values, not hardcoded answers. Different date
 
 ## How AI and the database work together
 
-One model request maps a question to at most four allowlisted tools. The provider sees the question, bounded conversation and a small catalog/date context. It does not receive the entire ledger. The plan must pass a strict schema and tool-specific argument validation. A second free-form model response is not used: Python calculates and renders the reported facts. This keeps numeric claims tied to approved data rather than trusting generated arithmetic.
+One model request chooses between a plain-language explanation and a query plan containing at most four allowlisted tools. The provider sees the question, bounded conversation and a small catalog/date context. It does not receive the entire ledger. Query plans must pass a strict schema and tool-specific argument validation. Python calculates and renders reported financial figures. Explanation mode generates qualitative prose about a prior answer, definitions, limitations or conditional next checks; it executes no tools and is labeled separately. It does not report new business statistics or numerical examples. Generated explanation prose containing digits, currency symbols or percentage signs is rejected. A request for actual figures returns to the database tools rather than treating conversation history as evidence.
 
 All tools execute in one query-only SQLite snapshot, with a query time budget. No database transaction spans the provider request. Chat does not write a conversation log, mark alerts read, change prices, trigger recalculation, run arbitrary SQL or send owner messages. This checkpoint adds no database migration and preserves schema version 5.
 
-Missing, stale or insufficient forecasts suppress current forecast totals. Unknown/partial receipt coverage remains visible. Actual profit, actual COGS, inventory on hand, platform-specific payouts and unmeasured causes of demand changes are unsupported. Delivery is the configured aggregate channel. Modeled recipe costs exclude labor, rent, waste and other operating costs.
+Missing, stale or insufficient forecasts suppress current forecast totals. Unknown/partial receipt coverage remains visible. Actual profit, actual COGS, inventory on hand, platform-specific payouts and unmeasured causes of demand changes cannot be reported as established business facts. The assistant can still explain these concepts and the inputs that would be needed. Delivery is the configured aggregate channel. Modeled recipe costs exclude labor, rent, waste and other operating costs.
 
 The model still determines question routing; schema validation cannot prove perfect language understanding. Known date/channel/entity mismatches ask for clarification. Inspect the displayed query trace when a question is ambiguous, and specify the period and catalog name. Chat is intentionally a bounded reporting assistant.
 
@@ -116,4 +118,4 @@ npm.cmd --prefix frontend run build
 .\.venv\Scripts\python.exe scripts/export_contract.py
 ```
 
-The automated provider is mocked; real model smoke checks are recorded separately in [progress.md](progress.md). The exported chat example is a transparent canned query-plan fixture over seeded records, not evidence of a paid model call.
+The automated provider is mocked; real model smoke checks are recorded separately in [progress.md](progress.md). The exported chat and explanation examples use transparent canned model responses over seeded records, not paid model calls.

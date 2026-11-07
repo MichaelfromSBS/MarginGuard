@@ -256,6 +256,31 @@ A live configured-model check approved the actual fictional `1_receipt_TB-202611
 
 The browser used a separate localhost port and an isolated copied fixture database; test-only request forwarding preserved the production local-origin guard. Existing user server, `.env` and business data were preserved. Temporary API/worker processes were stopped. Restart the existing API and worker (or restart `npm.cmd run dev`) to load the fix: the running API on port 8000 still uses the older period behavior until restarted.
 
+## Conversational explanations and natural follow-ups
+
+Implemented and verified. Previously every answer required a database tool call and all prose was a fixed server template. A valid follow-up such as “what does that mean?” could therefore be rejected even when the preceding answer supplied enough context.
+
+The structured planner now selects either a read-only data query or a qualitative explanation. Explanation mode uses the recent bounded conversation for terms, prior-answer meaning, simpler wording and conditional next checks. Definitions such as profit versus ingredient cost are allowed even when actual profit cannot be calculated. The UI labels these responses **AI explanation · no new business figures**, with no fabricated metric cards or source citations. Missing context can ask which answer or term needs explanation.
+
+Financial-stat requests still use the six existing validated tools and Python-rendered numbers. Explanation plans cannot execute tools or carry a refusal reason; non-explanation plans cannot smuggle in generated prose. Explanation text containing digits, currency symbols or percentage signs is rejected rather than presenting unqueried numbers. The SQL/write guard remains ahead of conceptual-question handling. Query snapshots, history/request bounds and the existing unsupported-data rules remain in place. Neither chat path changes the ledger.
+
+Verification: **373 backend tests passed**, including **94 chat/API tests**; **7 frontend tests**, TypeScript/production build and contract export passed. New cases exercise generic follow-ups with context, definitions that previously triggered keyword refusals, next-check questions, missing context, fabricated-number rejection, malformed explanation plans and write attempts disguised as explanations. The first test run exhausted the C: temporary drive; successful review used a fresh ignored directory under `.venv` on E:. An attempted cleanup of the earlier generated test directory was blocked by policy, so that directory was left in place.
+
+Actual configured-model checks successfully handled this conversation: Classic Burger replacement cost → “what does that mean?” → “is that my profit?” → partial-data definition → next checks → today's actual sales. Conceptual responses used explanation mode; the final financial question queried the database and returned the real fictional $37.00 sale. Ledger dumps were unchanged. A separate GPT-4o call also answered the same vague follow-up with the new strict schema. No `.env` change, business-data reset, external owner notification or database migration was needed.
+
+The API adds `ai_explanation` as an additive `answer_method` value. TypeScript, OpenAPI, and an explicitly canned explanation example were updated. Restart the existing backend/development command to load this change.
+
+## Subtle motion and floating assistant
+
+Implemented and verified alongside the conversational-explanation changes.
+
+- Restored the original neutral white/gray palette at the user’s request, including neutral floating-chat surfaces. Retained modest hover feedback, message entrances and directional tab transitions. Animations do not replay when polling updates records; reduced-motion preferences disable animations, transitions and hover movement.
+- Moved chat out of the Overview document flow into a fixed lower-right launcher and expandable panel over the lower viewport. The panel is outside animated tab containers so its position stays anchored to the viewport. It has a minimize button, Escape handling, keyboard focus restoration, safe-area spacing and an independently scrolling message area.
+- The assistant remains mounted across minimize, tabs and source navigation, retaining drafts and conversation history. It is hidden and inert where appropriate, appears only on Overview, and leaves the rest of the page interactive. Toasts use the upper-right area to keep the chat input clear.
+- Corrected forecast-card minimum sizing at narrow widths so the two-card outlook does not create horizontal page overflow.
+
+Validation: **7 frontend tests passed** and TypeScript/production build passed. A browser check at **1440×1000, 390×844, 360×640 and 844×390** verified the floating panel stays within the viewport, chat input access, source navigation, history/draft retention, focus/minimize/Escape, forward/backward tab animation and reduced-motion overrides. Screenshots were visually inspected; no page errors or horizontal overflow remained. The UI check used an isolated fixture database and canned provider plans, with no paid model calls, ledger changes or external owner notifications. The prior **373-test backend suite** remains the validation for the unchanged backend. Existing `.env`, user data and `.vscode/` were preserved.
+
 ## Checkpoint review status
 
 | Checkpoint | Required outcome | State |

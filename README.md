@@ -6,7 +6,7 @@ NOVA 2026 · Carnegie Mellon University · DoorDash Back of House track
 
 MarginGuard is being developed to maintain restaurant records automatically, connect ingredient-price changes to dish costs, project next month's sales and ingredient consumption, and explain significant changes through database-backed chat and evidence-linked alerts.
 
-**Current status:** checkpoints 1–5 and the teammate's frontend are integrated. Invoices and receipts feed approved records, deterministic metrics and forecasts, and two website-only alert types. Ask MarginGuard now uses an AI-selected, validated read-only query plan and returns database-calculated answers with source links. See [checkpoint 5](docs/checkpoint-5.md) to test chat and [checkpoint 4](docs/checkpoint-4.md) for the worker and alert policy.
+**Current status:** checkpoints 1–5 and the teammate's frontend are integrated. Invoices and receipts feed approved records, deterministic metrics and forecasts, and two website-only alert types. Ask MarginGuard now uses an AI-selected, validated read-only query plan and returns database-calculated answers with source links, plus plain-language explanations for natural follow-ups. The assistant opens in a floating panel on Overview; the original neutral color theme and reduced-motion-aware transitions keep the interface calm. See [checkpoint 5](docs/checkpoint-5.md) to test chat and [checkpoint 4](docs/checkpoint-4.md) for the worker and alert policy.
 
 ## Development progress
 
@@ -42,7 +42,7 @@ Supplier invoices + customer sales receipts
      Dashboard + owner chat + proactive alerts
 ```
 
-AI extracts document language and maps owner questions to validated read-only tools. Python renders chat answers from retrieved facts. Python owns financial calculations, unit conversions, forecast methods and measurable anomaly rules. Reported figures distinguish observed results, modeled costs and future projections.
+AI extracts document language and maps owner questions to validated read-only tools. Python renders financial chat answers from retrieved facts; AI separately explains concepts and earlier answers in plain language. Python owns financial calculations, unit conversions, forecast methods and measurable anomaly rules. Reported figures distinguish observed results, modeled costs and future projections.
 
 ## Technology
 
@@ -161,7 +161,7 @@ Environment variables override `.env`. Relative database paths resolve from the 
 
 Money and quantities are decimal strings. List endpoints return `items`, `total`, `limit` and `offset`. Product errors use a versioned `error` object. A fresh database returns empty catalogs/lists and a typed restaurant-not-configured response until configured or explicitly seeded.
 
-Owner chat requires a configured OpenRouter model with structured-output support; unconfigured/mock chat returns an explicit HTTP 503. AI selects tools and filters; Python queries approved records and renders all figures. Chat cannot alter records, recalculate forecasts or send messages. Other financial calculations run without a model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
+Owner chat requires a configured OpenRouter model with structured-output support; unconfigured/mock chat returns an explicit HTTP 503. AI selects tools and filters, or explains concepts and prior answers in a separately labeled qualitative response; Python queries approved records and renders all financial figures. Chat cannot alter records, recalculate forecasts or send messages. Other financial calculations run without a model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
 
 Approved inputs immediately affect observed sales and effective recipe costs. The default sales window includes today and its six previous local dates; Overview and daily-sales charts refresh every three seconds. Today’s observed receipts remain partial rather than being treated as a complete forecast-training day. They invalidate saved forecasts; the worker automatically refreshes current projections. The explicit recalculation endpoint remains available. Forecasts distinguish ingredient consumption from purchases/actual profit and sensitivity scenarios from statistical prediction intervals.
 
@@ -205,7 +205,7 @@ npm run build
 
 On macOS/Linux, replace the first command with `.venv/bin/python -m pytest -q`. Tests isolate their databases from the configured local ledger.
 
-Current checkpoint-5 verification: **353 backend tests**, **7 frontend tests**, TypeScript/production build and dependency consistency passed. Live configured-model and desktop/mobile browser checks verified immediate receipt sales updates, grounded chat, follow-ups, document sources and the $730.17 forecast-cost attribution. Earlier checkpoint verification and detailed acceptance results are recorded in [the progress record](docs/progress.md). The test-client dependency emits one existing deprecation warning.
+Current checkpoint-5 verification: **373 backend tests**, **7 frontend tests**, TypeScript/production build and dependency consistency passed. Live configured-model and desktop/mobile browser checks verified immediate receipt sales updates, grounded chat, follow-ups, document sources and the $730.17 forecast-cost attribution. Earlier checkpoint verification and detailed acceptance results are recorded in [the progress record](docs/progress.md). The test-client dependency emits one existing deprecation warning.
 
 After an intentional contract change, regenerate the OpenAPI and seeded response artifacts:
 

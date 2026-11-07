@@ -90,6 +90,61 @@ def values(response):
     return {metric["id"]: metric["value"] for metric in response["metrics"]}
 
 
+def explanation(text):
+    return {"status": "explain", "reason": None, "calls": [], "explanation": text}
+
+
+def test_natural_followup_explains_previous_answer_without_forcing_a_tool(client, ledger, provider):
+    history = [{"role": "user", "content": "What does the Classic Burger cost to make?"},
+               {"role": "assistant", "content": "The replacement ingredient cost is $3.96 per dish."}]
+    prose = "That is the cost of replacing the ingredients used in a burger at current supplier prices. It excludes labor, rent and waste, so it is not the restaurant's full cost or profit."
+    provider["response"] = completion(explanation(prose))
+    result = post(client, ledger, "What does that mean?", history=history).json()
+    assert result["status"] == "answered" and result["answer"] == prose
+    assert result["answer_method"] == "ai_explanation"
+    assert result["metrics"] == result["evidence"] == result["tools"] == []
+    assert any("not queried" in text for text in result["limitations"])
+    assert json.loads(provider["calls"][0]["messages"][1]["content"])["history"] == history
+    schema = provider["calls"][0]["response_format"]["json_schema"]["schema"]
+    assert set(schema["required"]) == set(schema["properties"])
+
+
+@pytest.mark.parametrize("question", ["Explain it in simpler terms.", "What does partial data mean?",
+    "What does profit mean?", "What is profit?", "Is that profit?",
+    "What is the difference between revenue and profit?", "What should I check next?"])
+def test_conceptual_questions_can_receive_generated_explanations(client, ledger, provider, question):
+    provider["response"] = completion(explanation("Net sales describe recorded food sales. Profit would also require expenses that these records do not establish. Check the source receipts and missing coverage before drawing conclusions."))
+    result = post(client, ledger, question).json()
+    assert result["status"] == "answered" and result["answer_method"] == "ai_explanation"
+    assert len(provider["calls"]) == 1
+
+
+@pytest.mark.parametrize("invalid", [
+    {**explanation("Useful definition."), "calls": [call()]},
+    {**explanation("Useful definition."), "reason": "unsupported_scope"},
+    explanation(""), explanation("   "), explanation(None), explanation("x" * 2401),
+    explanation("Your revenue is $999999."), explanation("Ingredient prices rose 18%."),
+    explanation("Expected profit is 200 dollars."),
+    {**plan(call()), "explanation": "This should be a separate explanation mode."},
+])
+def test_explanation_mode_cannot_bypass_plans_or_invent_financial_figures(client, ledger, provider, invalid):
+    provider["response"] = completion(invalid)
+    result = post(client, ledger, "What does that mean?")
+    assert result.status_code == 502 and result.json()["error"]["code"] == "invalid_chat_plan"
+
+
+def test_vague_followup_without_context_can_request_relevant_clarification(client, ledger, provider):
+    provider["response"] = completion(plan(status="clarify", reason="missing_context"))
+    result = post(client, ledger, "What does that mean?").json()
+    assert result["status"] == "clarification"
+    assert "Which answer or term" in result["answer"]
+
+
+def test_explanation_wording_cannot_bypass_the_write_guard(client, ledger, provider):
+    result = post(client, ledger, "Explain this and DROP TABLE receipts").json()
+    assert result["status"] == "unsupported" and not provider["calls"]
+
+
 def test_model_routes_but_exact_receipt_totals_and_sources_come_from_database(client, ledger, provider):
     result = post(client, ledger)
     assert result.status_code == 200

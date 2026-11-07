@@ -3468,7 +3468,10 @@
           },
           "answer_method": {
             "type": "string",
-            "const": "grounded_tools",
+            "enum": [
+              "grounded_tools",
+              "ai_explanation"
+            ],
             "title": "Answer Method",
             "default": "grounded_tools"
           },
