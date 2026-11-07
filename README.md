@@ -62,8 +62,8 @@ Prerequisites: Python **3.11+**, Node.js **22.12+** or a supported newer LTS, np
 Clone the private repository using an account with access:
 
 ```bash
-git clone https://github.com/MichaelfromSBS/nova-hackathon.git
-cd nova-hackathon
+git clone https://github.com/MichaelfromSBS/MarginGuard.git
+cd MarginGuard
 python scripts/setup.py
 ```
 

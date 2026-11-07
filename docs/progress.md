@@ -7,18 +7,18 @@ Last updated: November 7, 2026. This record distinguishes implemented functional
 | Date | Milestone | Record |
 | --- | --- | --- |
 | 2026-11-06 | Generic starter prepared | React/TypeScript workbench, FastAPI, OpenRouter transport, mock mode, streaming and setup/test scripts. See [pre-existing inventory](../PREEXISTING.md). |
-| 2026-11-07 | Repository initialized | [`a9e9c28`](https://github.com/MichaelfromSBS/nova-hackathon/commit/a9e9c28): starter and planning documents. |
+| 2026-11-07 | Repository initialized | [`a9e9c28`](https://github.com/MichaelfromSBS/MarginGuard/commit/a9e9c28): starter and planning documents. |
 | 2026-11-07 | Product scope revised | [MarginGuard v2](marginguard-plan-v2.md): invoices, receipts, forecasts, grounded chat and automatic alerts. |
-| 2026-11-07 | Checkpoint 1 implemented | [`8e74884`](https://github.com/MichaelfromSBS/nova-hackathon/commit/8e74884): SQLite foundation, schemas, explicit seed, read APIs, OpenAPI, TypeScript and sample-data handoff. |
-| 2026-11-07 | Team demo corpus contributed | [`291062e`](https://github.com/MichaelfromSBS/nova-hackathon/commit/291062e): restaurant configuration, history, PDF/image documents and expected outputs. Integration remains pending. |
-| 2026-11-07 | Parallel work merged | [`f47d90b`](https://github.com/MichaelfromSBS/nova-hackathon/commit/f47d90b): preserved checkpoint 1 and the contributed dataset. Resolved the `.gitignore` overlap by retaining both sets of runtime-data exclusions. |
-| 2026-11-07 | Checkpoint 2 implemented | [`84a4f97`](https://github.com/MichaelfromSBS/nova-hackathon/commit/84a4f97): ingestion, extraction, validation, review/retry, source integrity and explicit fixture/history import. |
-| 2026-11-07 | Dataset folder flattened | Teammate commit [`3840d46`](https://github.com/MichaelfromSBS/nova-hackathon/commit/3840d46) moves the v2 corpus directly under `demo_data/`. Importer, tests and documentation paths were updated after merging it. |
-| 2026-11-07 | Gemini compatibility fix published | [`376042a`](https://github.com/MichaelfromSBS/nova-hackathon/commit/376042a): provider schema compatibility, preserved local item bounds and live extraction verification. |
-| 2026-11-07 | Checkpoint 3 implemented | [`8767d3c`](https://github.com/MichaelfromSBS/nova-hackathon/commit/8767d3c): observed sales, evidence-linked replacement recipe costs, audited coverage confirmation and versioned weekday-average forecasts. |
-| 2026-11-07 | Restaurant frontend integrated | Teammate frontend [`e89557b`](https://github.com/MichaelfromSBS/nova-hackathon/commit/e89557b) merged with checkpoint 3 in `0a5ee2b`, followed by integration fixes and verification below. |
-| 2026-11-07 | Checkpoint 4 implemented | [`d858525`](https://github.com/MichaelfromSBS/nova-hackathon/commit/d858525): persistent worker, automatic forecasts and website-only notifications. Refined two-event policy is recorded below. |
-| 2026-11-07 | Readability frontend merged | Teammate [`0bec869`](https://github.com/MichaelfromSBS/nova-hackathon/commit/0bec869), integrated in `75c22a1`, preserves simpler sales labels, compact Overview, supplier changes and dish-cost detail in Trends. |
+| 2026-11-07 | Checkpoint 1 implemented | [`8e74884`](https://github.com/MichaelfromSBS/MarginGuard/commit/8e74884): SQLite foundation, schemas, explicit seed, read APIs, OpenAPI, TypeScript and sample-data handoff. |
+| 2026-11-07 | Team demo corpus contributed | [`291062e`](https://github.com/MichaelfromSBS/MarginGuard/commit/291062e): restaurant configuration, history, PDF/image documents and expected outputs. Integration remains pending. |
+| 2026-11-07 | Parallel work merged | [`f47d90b`](https://github.com/MichaelfromSBS/MarginGuard/commit/f47d90b): preserved checkpoint 1 and the contributed dataset. Resolved the `.gitignore` overlap by retaining both sets of runtime-data exclusions. |
+| 2026-11-07 | Checkpoint 2 implemented | [`84a4f97`](https://github.com/MichaelfromSBS/MarginGuard/commit/84a4f97): ingestion, extraction, validation, review/retry, source integrity and explicit fixture/history import. |
+| 2026-11-07 | Dataset folder flattened | Teammate commit [`3840d46`](https://github.com/MichaelfromSBS/MarginGuard/commit/3840d46) moves the v2 corpus directly under `demo_data/`. Importer, tests and documentation paths were updated after merging it. |
+| 2026-11-07 | Gemini compatibility fix published | [`376042a`](https://github.com/MichaelfromSBS/MarginGuard/commit/376042a): provider schema compatibility, preserved local item bounds and live extraction verification. |
+| 2026-11-07 | Checkpoint 3 implemented | [`8767d3c`](https://github.com/MichaelfromSBS/MarginGuard/commit/8767d3c): observed sales, evidence-linked replacement recipe costs, audited coverage confirmation and versioned weekday-average forecasts. |
+| 2026-11-07 | Restaurant frontend integrated | Teammate frontend [`e89557b`](https://github.com/MichaelfromSBS/MarginGuard/commit/e89557b) merged with checkpoint 3 in `0a5ee2b`, followed by integration fixes and verification below. |
+| 2026-11-07 | Checkpoint 4 implemented | [`d858525`](https://github.com/MichaelfromSBS/MarginGuard/commit/d858525): persistent worker, automatic forecasts and website-only notifications. Refined two-event policy is recorded below. |
+| 2026-11-07 | Readability frontend merged | Teammate [`0bec869`](https://github.com/MichaelfromSBS/MarginGuard/commit/0bec869), integrated in `75c22a1`, preserves simpler sales labels, compact Overview, supplier changes and dish-cost detail in Trends. |
 
 ## Checkpoint 1: completed implementation, pending team review
 
@@ -203,7 +203,7 @@ The November 5 fixture anomaly is reported on November 6 only; a new November 7 
 
 ## Checkpoint 5: database-grounded owner chat
 
-Implemented November 7, 2026; pending team review. The existing `.env`, business databases and teammate files were preserved. Implementation committed as [`e8dab40`](https://github.com/MichaelfromSBS/nova-hackathon/commit/e8dab40); the subsequent teammate frontend integration is recorded below.
+Implemented November 7, 2026; pending team review. The existing `.env`, business databases and teammate files were preserved. Implementation committed as [`e8dab40`](https://github.com/MichaelfromSBS/MarginGuard/commit/e8dab40); the subsequent teammate frontend integration is recorded below.
 
 - `POST /api/chat` now makes one structured OpenRouter planning request, validates at most four allowlisted calls, and returns Python-rendered answers with exact decimal metrics, periods, coverage, source versions, evidence and executed query traces. The model does not generate financial figures or SQL.
 - Six tools cover approved sales and rankings, normalized ingredient-price history, recipe replacement costs, existing monthly forecasts, existing alerts and compatible saved-forecast attribution. Forecast comparison separates usage/dish mix, supplier-price, interaction and rounding effects and names the main changed ingredients.
@@ -230,7 +230,7 @@ The browser test used a temporary imported history, explicitly approved fictiona
 
 ## Teammate alert lifecycle and Overview chat integration
 
-Integrated teammate commits [`ed82757`](https://github.com/MichaelfromSBS/nova-hackathon/commit/ed82757) and [`c5035f2`](https://github.com/MichaelfromSBS/nova-hackathon/commit/c5035f2) with checkpoint 5 (`e8dab40`).
+Integrated teammate commits [`ed82757`](https://github.com/MichaelfromSBS/MarginGuard/commit/ed82757) and [`c5035f2`](https://github.com/MichaelfromSBS/MarginGuard/commit/c5035f2) with checkpoint 5 (`e8dab40`).
 
 - Acknowledge moves a new alert into a separate expandable Acknowledged list and refreshes the bell immediately. Resolve persists the handled status and removes the finding from both live lists. Both lists query their own status, so resolved archives do not displace their first page. The existing two detector types and website-only notification policy are unchanged.
 - Chat sits at the bottom of Overview; the separate Ask tab is removed. Responses scroll inside the bounded panel, without jumping to chat on initial load. Checkpoint-5 metrics, history, errors, query traces and source links remain connected. Overview stays mounted across navigation so visiting a source in Inbox does not discard the conversation.
@@ -280,6 +280,10 @@ Implemented and verified alongside the conversational-explanation changes.
 - Corrected forecast-card minimum sizing at narrow widths so the two-card outlook does not create horizontal page overflow.
 
 Validation: **7 frontend tests passed** and TypeScript/production build passed. A browser check at **1440×1000, 390×844, 360×640 and 844×390** verified the floating panel stays within the viewport, chat input access, source navigation, history/draft retention, focus/minimize/Escape, forward/backward tab animation and reduced-motion overrides. Screenshots were visually inspected; no page errors or horizontal overflow remained. The UI check used an isolated fixture database and canned provider plans, with no paid model calls, ledger changes or external owner notifications. The prior **373-test backend suite** remains the validation for the unchanged backend. Existing `.env`, user data and `.vscode/` were preserved.
+
+## Publication and repository rename
+
+Published the conversational explanations, floating assistant, original color palette and subtle motion in [`f34283c`](https://github.com/MichaelfromSBS/MarginGuard/commit/f34283c). Renamed the GitHub repository from `nova-hackathon` to **MarginGuard**, preserving its identity, history and visibility. The local `origin`, clone instructions and repository links now use [MichaelfromSBS/MarginGuard](https://github.com/MichaelfromSBS/MarginGuard). The local workspace directory name is unchanged.
 
 ## Checkpoint review status
 
