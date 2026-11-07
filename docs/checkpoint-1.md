@@ -1,6 +1,6 @@
 # Checkpoint 1 — database foundation and shared contract
 
-Historical checkpoint record. Checkpoint 2 now implements ingestion and review; use [checkpoint-2.md](checkpoint-2.md) and the current OpenAPI for the latest behavior.
+Historical checkpoint record. Checkpoint 2 implements ingestion/review, and checkpoint 3 implements metrics/forecasting. Use [checkpoint-2.md](checkpoint-2.md), [checkpoint-3.md](checkpoint-3.md) and the current OpenAPI for the latest behavior.
 
 Checkpoint 1 establishes the persistent data model, validated schemas, explicit fictional seed data and frontend API shapes. It does not implement document ingestion, PDF/image extraction, financial analytics, forecasting, a background watcher, notification delivery or business-data chat.
 

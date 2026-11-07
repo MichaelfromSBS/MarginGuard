@@ -1,4 +1,4 @@
-"""Export OpenAPI and actual checkpoint-one read examples using an isolated demo DB.
+"""Export OpenAPI and read/calculation examples using an isolated small demo DB.
 
 Run with the venv: python scripts/export_contract.py
 Does not inspect or modify your configured business database or API credentials.
@@ -36,6 +36,9 @@ def main():
                 "invoices": "/api/invoices", "receipts": "/api/receipts",
                 "coverage": "/api/coverage", "ingredient-prices": "/api/ingredients/beef/prices",
                 "alerts": "/api/alerts", "capabilities": "/api/capabilities",
+                "sales": "/api/sales?as_of=2026-11-07",
+                "dish-cost": "/api/dishes/classic_burger/cost?as_of=2026-11-07",
+                "dashboard": "/api/dashboard?as_of=2026-11-07",
             }
             for name, path in paths.items():
                 response = client.get(path)

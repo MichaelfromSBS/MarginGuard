@@ -6,7 +6,7 @@ NOVA 2026 · Carnegie Mellon University · DoorDash Back of House track
 
 MarginGuard is being developed to maintain restaurant records automatically, connect ingredient-price changes to dish costs, project next month's sales and ingredient consumption, and explain significant changes through database-backed chat and evidence-linked alerts.
 
-**Current status:** checkpoint 2 is implemented and awaiting team review. Uploads, extraction, deterministic validation, correction/retry and duplicate-safe ledger persistence work. Forecasting, the independent worker, alerts and business-data chat remain subsequent checkpoints. The frontend currently shows the original generic AI workbench; use the API docs for ingestion review.
+**Current status:** checkpoint 3 is implemented and awaiting team review. Document ingestion, live sales summaries, evidence-linked dish costs and persisted next-month forecasts are available through the backend API. The independent worker, automatic recomputation, anomaly alerts and business-data chat remain subsequent checkpoints. The frontend currently shows the original generic AI workbench; use [the checkpoint 3 review commands](docs/checkpoint-3.md) or the API docs.
 
 ## Development progress
 
@@ -19,7 +19,7 @@ Last updated: **November 7, 2026**. API contract version: **1.0.0**.
 | Checkpoint 1: database and shared contract | Complete | SQLite schema, explicit demo seed, validated schemas, read APIs, OpenAPI, TypeScript and sample-data handoff |
 | Team demo dataset v2 | Contract-validated; explicit bulk importer available | [History and demo documents](demo_data/README.md); eight invoices and 2,733 receipts |
 | Checkpoint 2: document ingestion | Implemented; pending team review | PDF/image upload, structured extraction, validation, review/retry, duplicate-safe persistence and explicit fixture import |
-| Checkpoint 3: metrics and forecasting | Planned | Sales summaries, recipe costs, completeness-aware next-month projections |
+| Checkpoint 3: metrics and forecasting | Implemented; pending team review | Sales/day/dish/channel summaries, effective recipe costs, completeness-aware next-month forecasts, sensitivity scenarios and held-out evaluation |
 | Checkpoint 4: background processing and alerts | Planned | Persistent worker, automatic recalculation, measured anomalies and notification state |
 | Checkpoint 5: database-backed chat | Planned | Read-only metric tools, grounded answers and evidence references |
 
@@ -143,11 +143,20 @@ Environment variables override `.env`. Relative database paths resolve from the 
 | GET | `/api/invoices` | Approved invoice records and line items |
 | GET | `/api/receipts` | Approved receipt records and items |
 | GET | `/api/coverage` | Complete, partial, unknown or closed date/channel coverage |
+| POST | `/api/coverage/complete` | Audited confirmation of a finished day/channel or explicit closure |
+| GET | `/api/sales` | Observed sales totals, breakdowns, coverage and sampled receipt evidence |
+| GET | `/api/dishes/{dish_id}/cost` | Effective replacement recipe costs and channel contribution assumptions |
+| GET | `/api/dashboard` | Actual/modeled metrics, dish costs and saved forecast for the as-of date |
+| POST | `/api/forecasts/recalculate` | Calculate and persist a versioned next-calendar-month planning snapshot |
+| GET | `/api/forecasts` | Paginated saved snapshots with freshness status |
+| GET | `/api/forecasts/{run_id}` | Forecast details, daily/series values, ingredient requirements, scenarios and evaluation |
 | GET | `/api/alerts` | Persisted alerts; no anomaly detection runs at checkpoint 1 |
 
 Money and quantities are decimal strings. List endpoints return `items`, `total`, `limit` and `offset`. Product errors use a versioned `error` object. A fresh database returns empty catalogs/lists and a typed restaurant-not-configured response until configured or explicitly seeded.
 
-Well-formed requests to reserved dashboard, forecast, coverage-write, alert-acknowledgement and chat routes return **HTTP 501** until their implementation checkpoint. They do not return fabricated financial results. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
+Well-formed requests to reserved alert-acknowledgement and business-chat routes return **HTTP 501** until checkpoints 4–5. Checkpoint 3 calculations use Python and approved records, with no model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
+
+Approved inputs immediately affect observed sales and effective recipe costs. They invalidate saved forecasts; use `POST /api/forecasts/recalculate` to refresh them at checkpoint 3. Automatic recalculation belongs to the independent checkpoint-4 worker. Forecasts distinguish ingredient consumption from purchases/actual profit and sensitivity scenarios from statistical prediction intervals.
 
 Uploads return HTTP 202; poll the document detail for `completed`, `needs_review` or `failed`. Exact-byte duplicates return the existing ID, while different bytes with an existing invoice/receipt business key enter review. Images are labeled as visual evidence, without claiming an independent OCR quote check. See [checkpoint 2](docs/checkpoint-2.md) for supported formats, limits, corrections, retry and offline examples.
 
@@ -158,6 +167,7 @@ Authoritative handoff artifacts:
 - [Actual seeded read-response examples](examples/api)
 - [Checkpoint 1 review checklist](docs/checkpoint-1.md)
 - [Checkpoint 2 upload/review checklist](docs/checkpoint-2.md)
+- [Checkpoint 3 calculation definitions and copyable test commands](docs/checkpoint-3.md)
 
 ## Demo data and document generation
 
@@ -186,7 +196,7 @@ npm run build
 
 On macOS/Linux, replace the first command with `.venv/bin/python -m pytest -q`. Tests isolate their databases from the configured local ledger.
 
-Recorded checkpoint-2 verification: **180 backend tests passed**, **3 frontend parser tests passed**, production build and dependency consistency passed. Live HTTP checks verified upload, explicit mock failure, manual review approval, byte-identical deduplication, source retrieval and unchanged future-feature boundaries. The full v2 history passed schema/business validation and atomic import tests. The test-client dependency emits one deprecation warning. Actual paid model extraction remains unverified until a key/model is configured.
+Recorded checkpoint-2 verification: **180 backend tests passed**, **3 frontend parser tests passed**, production build and dependency consistency passed. Live HTTP checks verified upload, explicit mock failure, manual review approval, byte-identical deduplication and source retrieval. Subsequent Gemini compatibility verification passed **86 focused tests** plus real model extraction of the two main PDFs. Checkpoint-3 verification and numeric acceptance results are recorded in [the progress record](docs/progress.md). The test-client dependency emits one existing deprecation warning.
 
 After an intentional contract change, regenerate the OpenAPI and seeded response artifacts:
 
@@ -211,6 +221,8 @@ backend/
     extraction.py            Structured OpenRouter extraction
     validation.py            Arithmetic, catalog, units and evidence checks
     ingestion.py             Upload state, approval, review and retry
+    analytics.py             Observed sales, coverage and replacement recipe costs
+    forecasting.py           Versioned weekday-average projections and evaluation
     import_demo.py           Explicit validated full-history fixture importer
     fixture.py               Explicit offline single-document demonstration
     seed.py                  Opt-in fictional seed CLI
@@ -227,6 +239,6 @@ data/                        Local runtime database; excluded from Git
 
 ## Scope and disclosure
 
-The local application has no production authentication or deployment configuration. Model-supported interpretations and exact source matches do not establish that a business conclusion is correct. Planned cost projections describe ingredient consumption under stated assumptions, not actual net profit or a purchasing cash budget.
+The local application has no production authentication or deployment configuration. Model-supported interpretations and exact source matches do not establish that a business conclusion is correct. Cost projections describe ingredient consumption under stated assumptions, not actual net profit or a purchasing cash budget.
 
 The reusable starter was prepared before the event. See [PREEXISTING.md](PREEXISTING.md) for the preparation inventory and disclose it accurately during judging. Preserve the distinction between fictional fixtures, recorded test results and functionality built during each checkpoint.

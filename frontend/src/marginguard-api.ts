@@ -1,6 +1,6 @@
 /**
- * Checkpoint 1 contracts mirrored from backend/marginguard/schemas.py.
- * Runtime authority: GET /openapi.json. Future product endpoints return 501.
+ * Checkpoint 3 contracts mirrored from backend/marginguard/schemas.py.
+ * Runtime authority: GET /openapi.json. Alerts/chat writes still return 501.
  * Decimal strings are unsigned fixed decimals with up to eight fractional digits.
  */
 export type ApiVersion = '1.0.0';
@@ -247,7 +247,7 @@ export interface Metric {
   id: string;
   label: string;
   value: SignedDecimalString | null;
-  unit: 'USD' | 'units' | 'orders' | 'percent' | 'lb' | 'each';
+  unit: 'USD' | 'units' | 'orders' | 'percent' | 'lb' | 'oz' | 'each';
   kind: 'actual' | 'modeled' | 'projected';
   period: Period | null;
   as_of: ISODateTime;
@@ -266,6 +266,145 @@ export interface ForecastResponse {
   created_at: ISODateTime;
   metrics: Metric[];
   assumptions: string[];
+  as_of: ISODate | null;
+  training_period: Period | null;
+  training_coverage: CoverageSummary | null;
+  series: ForecastSeries[];
+  daily: ForecastDay[];
+  ingredients: IngredientRequirement[];
+  scenarios: ForecastScenario[];
+  evaluation: ForecastEvaluation | null;
+  limitations: string[];
+}
+
+export interface CoverageSummary {
+  period: Period;
+  complete: number;
+  partial: number;
+  unknown: number;
+  closed: number;
+  status: 'complete' | 'partial' | 'unknown';
+  days: Coverage[];
+}
+
+export interface SalesGroup {
+  date: ISODate | null;
+  dish_id: string | null;
+  channel_id: ChannelId | null;
+  units: DecimalString;
+  net_revenue: DecimalString;
+  orders: number;
+}
+
+export interface SalesSummary {
+  period: Period;
+  as_of: ISODateTime;
+  source_data_version: number;
+  units: DecimalString;
+  net_revenue: DecimalString;
+  orders: number;
+  average_order_revenue: DecimalString | null;
+  coverage: CoverageSummary;
+  by_day: SalesGroup[];
+  by_dish: SalesGroup[];
+  by_channel: SalesGroup[];
+  evidence: EvidenceReference[];
+  evidence_truncated: boolean;
+  assumptions: string[];
+}
+
+export interface RecipeCostLine {
+  ingredient_id: string;
+  name: string;
+  quantity: DecimalString;
+  base_unit: BaseUnit;
+  unit_cost: DecimalString | null;
+  extended_cost: DecimalString | null;
+  price_effective_date: ISODate | null;
+  evidence: EvidenceReference | null;
+}
+
+export interface ChannelContribution {
+  channel_id: ChannelId;
+  menu_price: DecimalString | null;
+  menu_price_id: string | null;
+  fee_rate: DecimalString;
+  packaging_cost: DecimalString;
+  contribution: SignedDecimalString | null;
+  contribution_margin_pct: SignedDecimalString | null;
+}
+
+export interface DishCost {
+  dish_id: string;
+  name: string;
+  as_of: ISODate;
+  source_data_version: number;
+  recipe_version_id: string | null;
+  ingredient_cost: DecimalString | null;
+  ingredients: RecipeCostLine[];
+  channels: ChannelContribution[];
+  limitations: string[];
+  assumptions: string[];
+}
+
+export interface ForecastRequest {
+  as_of?: ISODate;
+  history_weeks?: number;
+  min_observations?: number;
+  sensitivity_pct?: DecimalString;
+}
+
+export interface WeekdayEstimate {
+  weekday: number;
+  sample_dates: ISODate[];
+  mean_units: DecimalString | null;
+}
+
+export interface ForecastSeries {
+  dish_id: string;
+  channel_id: ChannelId;
+  status: 'ready' | 'insufficient_history' | 'missing_inputs';
+  units: DecimalString | null;
+  revenue: DecimalString | null;
+  ingredient_cost: DecimalString | null;
+  menu_price: DecimalString | null;
+  recipe_version_id: string | null;
+  weekday_estimates: WeekdayEstimate[];
+  limitations: string[];
+}
+
+export interface ForecastDay {
+  date: ISODate;
+  dish_id: string;
+  channel_id: ChannelId;
+  is_open: boolean;
+  units: DecimalString | null;
+}
+
+export interface IngredientRequirement {
+  ingredient_id: string;
+  quantity: DecimalString;
+  base_unit: BaseUnit;
+  unit_cost: DecimalString;
+  cost: DecimalString;
+  evidence: EvidenceReference;
+}
+
+export interface ForecastScenario {
+  name: 'low' | 'base' | 'high';
+  volume_multiplier: DecimalString;
+  units: DecimalString;
+  revenue: DecimalString;
+  ingredient_cost: DecimalString;
+}
+
+export interface ForecastEvaluation {
+  status: 'ready' | 'insufficient_history';
+  holdout: Period;
+  observations: number;
+  weekday_average_mae: DecimalString | null;
+  seasonal_naive_mae: DecimalString | null;
+  assumptions: string[];
 }
 
 export interface DashboardResponse {
@@ -277,6 +416,8 @@ export interface DashboardResponse {
   forecast: ForecastResponse | null;
   alerts: Alert[];
   limitations: string[];
+  sales: SalesSummary | null;
+  dish_costs: DishCost[];
 }
 
 export interface ChatRequest {
@@ -319,6 +460,6 @@ export interface Capability {
 
 export interface CapabilitiesResponse {
   api_version: ApiVersion;
-  checkpoint: 2;
+  checkpoint: 3;
   capabilities: Capability[];
 }

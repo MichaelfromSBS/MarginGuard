@@ -45,19 +45,22 @@ def test_fixture_cannot_approve_expected_json_into_non_demo_restaurant(tmp_path)
     assert not settings.upload_directory.exists()
 
 
-def test_schema_two_upgrades_existing_schema_one_without_reset(tmp_path, monkeypatch):
-    migrations = tmp_path / "schema_one"
+@pytest.mark.parametrize("old_version", [1, 2])
+def test_current_schema_upgrades_previous_versions_without_reset(tmp_path, monkeypatch, old_version):
+    migrations = tmp_path / "previous_schema"
     migrations.mkdir()
     original = db.MIGRATIONS_DIR
-    shutil.copyfile(original / "001_initial.sql", migrations / "001_initial.sql")
+    for source in sorted(original.glob("*.sql"))[:old_version]:
+        shutil.copyfile(source, migrations / source.name)
     database = tmp_path / "upgrade.db"
     monkeypatch.setattr(db, "MIGRATIONS_DIR", migrations)
-    assert db.initialize_database(database) == 1
+    assert db.initialize_database(database) == old_version
     with db.connect(database) as conn:
         conn.execute("INSERT INTO dishes(id,name) VALUES ('existing','Existing Dish')")
     monkeypatch.setattr(db, "MIGRATIONS_DIR", original)
-    assert db.initialize_database(database) == 2
+    assert db.initialize_database(database) == db.SCHEMA_VERSION
     with db.connect(database) as conn:
         assert conn.execute("SELECT name FROM dishes WHERE id='existing'").fetchone()[0] == "Existing Dish"
-        assert conn.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == 2
+        assert conn.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == db.SCHEMA_VERSION
+        assert conn.execute("SELECT COUNT(*) FROM forecast_snapshots").fetchone()[0] == 0
         assert conn.execute("PRAGMA foreign_key_check").fetchall() == []

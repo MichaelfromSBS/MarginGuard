@@ -1,4 +1,4 @@
-"""Live checkpoint-1 read endpoints and explicit contracts for later checkpoints."""
+"""Checkpoint 3 APIs: ingestion, observed metrics and persisted forecasts."""
 import json
 import hashlib
 from datetime import date
@@ -11,11 +11,12 @@ from pathlib import Path
 from .db import connect
 from .errors import DomainError
 from . import ingestion
+from . import analytics, forecasting
 from .schemas import (
     API_VERSION, Alert, CapabilitiesResponse, CatalogResponse, ChatRequest,
     ChatResponse, Coverage, CoverageRequest, DashboardResponse, Document, DocumentDetail,
     DocumentStatus, DocumentType, ErrorResponse, ForecastResponse, IngredientPrice,
-    Invoice, Page, Receipt, Restaurant, ReviewRequest,
+    Invoice, Page, Receipt, Restaurant, ReviewRequest, ForecastRequest, SalesSummary, DishCost,
 )
 
 
@@ -47,8 +48,8 @@ def unavailable(checkpoint: int, feature: str):
 
 @router.get("/capabilities", response_model=CapabilitiesResponse)
 def capabilities():
-    return {"api_version": API_VERSION, "checkpoint": 2, "capabilities": [
-        {"name": name, "available": checkpoint <= 2, "checkpoint": checkpoint}
+    return {"api_version": API_VERSION, "checkpoint": 3, "capabilities": [
+        {"name": name, "available": checkpoint <= 3, "checkpoint": checkpoint}
         for name, checkpoint in [
             ("catalog_and_seed_ledger", 1), ("document_ingestion", 2),
             ("metrics_and_forecasting", 3), ("background_processing_and_alerts", 4),
@@ -200,20 +201,82 @@ def process_document(document_id: str, request: Request, background_tasks: Backg
 
 
 @router.post("/coverage/complete", response_model=Coverage)
-def complete_coverage(body: CoverageRequest):
-    unavailable(3, "Coverage updates")
+def complete_coverage(body: CoverageRequest, request: Request):
+    with connection(request) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        return analytics.complete_coverage(conn, body)
+
+
+@router.get("/sales", response_model=SalesSummary)
+def sales(request: Request, start: date | None = None, end: date | None = None,
+          as_of: date | None = None, dish_id: str | None = None, channel_id: Literal["in_store", "delivery"] | None = None):
+    with connection(request) as conn:
+        conn.execute("BEGIN")
+        owner = ingestion.restaurant_record(conn)
+        start, end, _ = analytics.period_dates(owner, start, end, as_of)
+        return analytics.sales_summary(conn, start, end, dish_id=dish_id, channel_id=channel_id)
+
+
+@router.get("/dishes/{dish_id}/cost", response_model=DishCost)
+def current_dish_cost(dish_id: str, request: Request, as_of: date | None = None):
+    with connection(request) as conn:
+        conn.execute("BEGIN")
+        owner = ingestion.restaurant_record(conn)
+        return analytics.dish_cost(conn, dish_id, as_of or analytics.local_today(owner))
 
 
 @router.get("/dashboard", response_model=DashboardResponse)
-def dashboard(start: date | None = None, end: date | None = None):
-    if start and end and end < start:
-        raise DomainError("invalid_period", "Period end precedes start.", 422)
-    unavailable(3, "Dashboard metrics")
+def dashboard(request: Request, start: date | None = None, end: date | None = None, as_of: date | None = None):
+    with connection(request) as conn:
+        conn.execute("BEGIN")
+        owner = ingestion.restaurant_record(conn)
+        start, end, as_of = analytics.period_dates(owner, start, end, as_of)
+        summary = analytics.sales_summary(conn, start, end)
+        costs = [analytics.dish_cost(conn, r["id"], as_of) for r in conn.execute("SELECT id FROM dishes ORDER BY id").fetchall()]
+        metrics = analytics.actual_metrics(summary)
+        for cost in costs:
+            metrics.append({"id": f"dish.{cost['dish_id']}.ingredient_cost", "label": f"{cost['name']} replacement ingredient cost",
+                "value": cost["ingredient_cost"], "unit": "USD", "kind": "modeled", "period": None,
+                "as_of": summary["as_of"], "coverage": "complete" if not cost["limitations"] else "unknown",
+                "source_data_version": owner["data_version"], "evidence": [i["evidence"] for i in cost["ingredients"] if i["evidence"]],
+                "assumptions": analytics.COST_ASSUMPTIONS})
+        warnings = analytics.COST_ASSUMPTIONS + [issue for cost in costs for issue in cost["limitations"]]
+        if summary["coverage"]["status"] != "complete":
+            warnings.append("Sales are observed totals from incomplete coverage, not the restaurant's full-period sales.")
+        forecast = forecasting.latest_forecast(conn, as_of)
+        if forecast is None:
+            warnings.append("No forecast has been calculated for this as-of date. POST /api/forecasts/recalculate to create one.")
+        elif forecast.status == "pending":
+            warnings.append("The saved forecast is stale; recalculate it after approved data or coverage changes.")
+        alerts = []
+        for row in conn.execute("SELECT * FROM alerts ORDER BY created_at DESC,id DESC LIMIT 20"):
+            alert = dict(row)
+            alert["evidence"] = json.loads(alert.pop("evidence_json"))
+            alerts.append(alert)
+        return {"restaurant": owner, "as_of": summary["as_of"], "source_data_version": owner["data_version"],
+                "metrics": metrics, "forecast": forecast, "alerts": alerts, "limitations": warnings,
+                "sales": summary, "dish_costs": costs}
 
 
 @router.get("/forecasts", response_model=Page[ForecastResponse])
-def forecasts(limit: Limit = 50, offset: Offset = 0):
-    unavailable(3, "Forecasting")
+def forecasts(request: Request, limit: Limit = 50, offset: Offset = 0):
+    with connection(request) as conn:
+        conn.execute("BEGIN")
+        return forecasting.list_forecasts(conn, limit, offset)
+
+
+@router.post("/forecasts/recalculate", response_model=ForecastResponse)
+def recalculate_forecast(body: ForecastRequest, request: Request):
+    with connection(request) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        return forecasting.calculate(conn, body)
+
+
+@router.get("/forecasts/{run_id}", response_model=ForecastResponse)
+def forecast_detail(run_id: str, request: Request):
+    with connection(request) as conn:
+        conn.execute("BEGIN")
+        return forecasting.get_forecast(conn, run_id)
 
 
 @router.post("/alerts/{alert_id}/acknowledge", response_model=Alert)

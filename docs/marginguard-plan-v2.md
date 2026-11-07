@@ -2,7 +2,7 @@
 
 NOVA 2026 · DoorDash Back of House · Team requirements revision · November 7, 2026
 
-This supersedes the narrower invoice-only plan in `marginguard-plan.md`. It is a project plan, not a statement that these features already exist. The repository currently provides the generic React/FastAPI/OpenRouter starter.
+This supersedes the narrower invoice-only plan in `marginguard-plan.md`. It is a project plan; see [progress.md](progress.md) for implementation status. The backend now implements checkpoints 1–3; the frontend remains the generic React/FastAPI/OpenRouter workbench.
 
 ## Product and five required capabilities
 

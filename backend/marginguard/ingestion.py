@@ -1,6 +1,6 @@
 """Checkpoint 2: accepted uploads, bounded request-process tasks and atomic ledger approval.
 
-No directory watcher, forecasting, anomaly alerts or notification sending lives here.
+No directory watcher, forecast computation, anomaly alerts or notification sending lives here.
 Pending jobs are durable; manual process/retry resumes them until checkpoint 4 adds a worker.
 """
 import asyncio
@@ -167,7 +167,7 @@ def persist_ledger(conn, document_id: str, extraction, normalized_prices, stamp:
     insert(conn, "data_changes", source_data_version=version, document_id=document_id,
            change_type="invoice_approved" if isinstance(extraction, InvoiceExtraction) else "receipt_approved", created_at=stamp)
     # An approved source change must never leave an old forecast presented as ready.
-    conn.execute("UPDATE forecast_runs SET status='pending' WHERE status='ready'")
+    conn.execute("UPDATE forecast_runs SET status='pending' WHERE status IN ('ready','insufficient_history')")
     return record_id
 
 

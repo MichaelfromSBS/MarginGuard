@@ -1,5 +1,6 @@
 """Version 1 wire contracts. Money and quantities are JSON strings, never floats."""
 from datetime import date, datetime
+from datetime import date as CalendarDate
 from decimal import Decimal
 from enum import StrEnum
 from typing import Annotated, Generic, Literal, TypeVar
@@ -313,13 +314,153 @@ class Metric(ContractModel):
     id: str
     label: str
     value: SignedDecimalString | None
-    unit: Literal["USD", "units", "orders", "percent", "lb", "each"]
+    unit: Literal["USD", "units", "orders", "percent", "lb", "oz", "each"]
     kind: Literal["actual", "modeled", "projected"]
     period: Period | None
     as_of: datetime
     coverage: Literal["complete", "partial", "unknown", "insufficient_history"]
     source_data_version: int
     evidence: list[EvidenceReference]
+    assumptions: list[str]
+
+
+class CoverageSummary(ContractModel):
+    period: Period
+    complete: int
+    partial: int
+    unknown: int
+    closed: int
+    status: Literal["complete", "partial", "unknown"]
+    days: list[Coverage]
+
+
+class SalesGroup(ContractModel):
+    date: CalendarDate | None = None
+    dish_id: str | None = None
+    channel_id: ChannelId | None = None
+    units: DecimalString
+    net_revenue: DecimalString
+    orders: int
+
+
+class SalesSummary(ContractModel):
+    period: Period
+    as_of: datetime
+    source_data_version: int
+    units: DecimalString
+    net_revenue: DecimalString
+    orders: int
+    average_order_revenue: DecimalString | None
+    coverage: CoverageSummary
+    by_day: list[SalesGroup]
+    by_dish: list[SalesGroup]
+    by_channel: list[SalesGroup]
+    evidence: list[EvidenceReference]
+    evidence_truncated: bool
+    assumptions: list[str]
+
+
+class RecipeCostLine(ContractModel):
+    ingredient_id: str
+    name: str
+    quantity: DecimalString
+    base_unit: Unit
+    unit_cost: DecimalString | None
+    extended_cost: DecimalString | None
+    price_effective_date: date | None
+    evidence: EvidenceReference | None
+
+
+class ChannelContribution(ContractModel):
+    channel_id: ChannelId
+    menu_price: DecimalString | None
+    menu_price_id: str | None
+    fee_rate: DecimalString
+    packaging_cost: DecimalString
+    contribution: SignedDecimalString | None
+    contribution_margin_pct: SignedDecimalString | None
+
+
+class DishCost(ContractModel):
+    dish_id: str
+    name: str
+    as_of: date
+    source_data_version: int
+    recipe_version_id: str | None
+    ingredient_cost: DecimalString | None
+    ingredients: list[RecipeCostLine]
+    channels: list[ChannelContribution]
+    limitations: list[str]
+    assumptions: list[str]
+
+
+class ForecastRequest(ContractModel):
+    as_of: date | None = None
+    history_weeks: int = Field(default=8, ge=4, le=26)
+    min_observations: int = Field(default=4, ge=4, le=26)
+    sensitivity_pct: DecimalString = "15"
+
+    @model_validator(mode="after")
+    def valid_policy(self):
+        if self.as_of is not None and not 1900 <= self.as_of.year <= 9998:
+            raise ValueError("As-of year must be between 1900 and 9998.")
+        if self.min_observations > self.history_weeks:
+            raise ValueError("Minimum observations cannot exceed the history window in weeks.")
+        if Decimal(self.sensitivity_pct) > 100:
+            raise ValueError("Sensitivity must be between 0 and 100 percent.")
+        return self
+
+
+class WeekdayEstimate(ContractModel):
+    weekday: int = Field(ge=0, le=6)
+    sample_dates: list[date]
+    mean_units: DecimalString | None
+
+
+class ForecastSeries(ContractModel):
+    dish_id: str
+    channel_id: ChannelId
+    status: Literal["ready", "insufficient_history", "missing_inputs"]
+    units: DecimalString | None
+    revenue: DecimalString | None
+    ingredient_cost: DecimalString | None
+    menu_price: DecimalString | None
+    recipe_version_id: str | None
+    weekday_estimates: list[WeekdayEstimate]
+    limitations: list[str]
+
+
+class ForecastDay(ContractModel):
+    date: date
+    dish_id: str
+    channel_id: ChannelId
+    is_open: bool
+    units: DecimalString | None
+
+
+class IngredientRequirement(ContractModel):
+    ingredient_id: str
+    quantity: DecimalString
+    base_unit: Unit
+    unit_cost: DecimalString
+    cost: DecimalString
+    evidence: EvidenceReference
+
+
+class ForecastScenario(ContractModel):
+    name: Literal["low", "base", "high"]
+    volume_multiplier: DecimalString
+    units: DecimalString
+    revenue: DecimalString
+    ingredient_cost: DecimalString
+
+
+class ForecastEvaluation(ContractModel):
+    status: Literal["ready", "insufficient_history"]
+    holdout: Period
+    observations: int
+    weekday_average_mae: DecimalString | None
+    seasonal_naive_mae: DecimalString | None
     assumptions: list[str]
 
 
@@ -332,6 +473,15 @@ class ForecastResponse(ContractModel):
     created_at: datetime
     metrics: list[Metric]
     assumptions: list[str]
+    as_of: date | None = None
+    training_period: Period | None = None
+    training_coverage: CoverageSummary | None = None
+    series: list[ForecastSeries] = Field(default_factory=list)
+    daily: list[ForecastDay] = Field(default_factory=list)
+    ingredients: list[IngredientRequirement] = Field(default_factory=list)
+    scenarios: list[ForecastScenario] = Field(default_factory=list)
+    evaluation: ForecastEvaluation | None = None
+    limitations: list[str] = Field(default_factory=list)
 
 
 class DashboardResponse(ContractModel):
@@ -343,6 +493,8 @@ class DashboardResponse(ContractModel):
     forecast: ForecastResponse | None
     alerts: list[Alert]
     limitations: list[str]
+    sales: SalesSummary | None = None
+    dish_costs: list[DishCost] = Field(default_factory=list)
 
 
 class ChatRequest(ContractModel):
@@ -393,5 +545,5 @@ class Capability(ContractModel):
 
 class CapabilitiesResponse(ContractModel):
     api_version: Literal["1.0.0"] = API_VERSION
-    checkpoint: Literal[2] = 2
+    checkpoint: Literal[3] = 3
     capabilities: list[Capability]

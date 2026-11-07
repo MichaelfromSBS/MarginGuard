@@ -1773,6 +1773,305 @@
         }
       }
     },
+    "/api/sales": {
+      "get": {
+        "tags": [
+          "MarginGuard v1"
+        ],
+        "summary": "Sales",
+        "operationId": "sales_api_sales_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          },
+          {
+            "name": "dish_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dish Id"
+            }
+          },
+          {
+            "name": "channel_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "in_store",
+                    "delivery"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Channel Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesSummary"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        }
+      }
+    },
+    "/api/dishes/{dish_id}/cost": {
+      "get": {
+        "tags": [
+          "MarginGuard v1"
+        ],
+        "summary": "Current Dish Cost",
+        "operationId": "current_dish_cost_api_dishes__dish_id__cost_get",
+        "parameters": [
+          {
+            "name": "dish_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dish Id"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DishCost"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        }
+      }
+    },
     "/api/dashboard": {
       "get": {
         "tags": [
@@ -1813,6 +2112,23 @@
                 }
               ],
               "title": "End"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
             }
           }
         ],
@@ -1939,6 +2255,209 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Page_ForecastResponse_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        }
+      }
+    },
+    "/api/forecasts/recalculate": {
+      "post": {
+        "tags": [
+          "MarginGuard v1"
+        ],
+        "summary": "Recalculate Forecast",
+        "operationId": "recalculate_forecast_api_forecasts_recalculate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/forecasts/{run_id}": {
+      "get": {
+        "tags": [
+          "MarginGuard v1"
+        ],
+        "summary": "Forecast Detail",
+        "operationId": "forecast_detail_api_forecasts__run_id__get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResponse"
                 }
               }
             }
@@ -2371,9 +2890,9 @@
           },
           "checkpoint": {
             "type": "integer",
-            "const": 2,
+            "const": 3,
             "title": "Checkpoint",
-            "default": 2
+            "default": 3
           },
           "capabilities": {
             "items": {
@@ -2500,6 +3019,92 @@
           "packaging_cost"
         ],
         "title": "Channel"
+      },
+      "ChannelContribution": {
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "enum": [
+              "in_store",
+              "delivery"
+            ],
+            "title": "Channel Id"
+          },
+          "menu_price": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Menu Price"
+          },
+          "menu_price_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Menu Price Id"
+          },
+          "fee_rate": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Fee Rate"
+          },
+          "packaging_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Packaging Cost"
+          },
+          "contribution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 41,
+                "pattern": "^-?(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contribution"
+          },
+          "contribution_margin_pct": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 41,
+                "pattern": "^-?(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contribution Margin Pct"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "channel_id",
+          "menu_price",
+          "menu_price_id",
+          "fee_rate",
+          "packaging_cost",
+          "contribution",
+          "contribution_margin_pct"
+        ],
+        "title": "ChannelContribution"
       },
       "ChatRequest": {
         "properties": {
@@ -2635,6 +3240,57 @@
         ],
         "title": "CoverageRequest"
       },
+      "CoverageSummary": {
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/Period"
+          },
+          "complete": {
+            "type": "integer",
+            "title": "Complete"
+          },
+          "partial": {
+            "type": "integer",
+            "title": "Partial"
+          },
+          "unknown": {
+            "type": "integer",
+            "title": "Unknown"
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "partial",
+              "unknown"
+            ],
+            "title": "Status"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/Coverage"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "period",
+          "complete",
+          "partial",
+          "unknown",
+          "closed",
+          "status",
+          "days"
+        ],
+        "title": "CoverageSummary"
+      },
       "DashboardResponse": {
         "properties": {
           "api_version": {
@@ -2685,6 +3341,23 @@
             },
             "type": "array",
             "title": "Limitations"
+          },
+          "sales": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalesSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dish_costs": {
+            "items": {
+              "$ref": "#/components/schemas/DishCost"
+            },
+            "type": "array",
+            "title": "Dish Costs"
           }
         },
         "additionalProperties": false,
@@ -2737,6 +3410,94 @@
           "recipes"
         ],
         "title": "Dish"
+      },
+      "DishCost": {
+        "properties": {
+          "dish_id": {
+            "type": "string",
+            "title": "Dish Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "source_data_version": {
+            "type": "integer",
+            "title": "Source Data Version"
+          },
+          "recipe_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipe Version Id"
+          },
+          "ingredient_cost": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ingredient Cost"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/RecipeCostLine"
+            },
+            "type": "array",
+            "title": "Ingredients"
+          },
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/ChannelContribution"
+            },
+            "type": "array",
+            "title": "Channels"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dish_id",
+          "name",
+          "as_of",
+          "source_data_version",
+          "recipe_version_id",
+          "ingredient_cost",
+          "ingredients",
+          "channels",
+          "limitations",
+          "assumptions"
+        ],
+        "title": "DishCost"
       },
       "Document": {
         "properties": {
@@ -3153,6 +3914,157 @@
         ],
         "title": "Finding"
       },
+      "ForecastDay": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "dish_id": {
+            "type": "string",
+            "title": "Dish Id"
+          },
+          "channel_id": {
+            "type": "string",
+            "enum": [
+              "in_store",
+              "delivery"
+            ],
+            "title": "Channel Id"
+          },
+          "is_open": {
+            "type": "boolean",
+            "title": "Is Open"
+          },
+          "units": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "date",
+          "dish_id",
+          "channel_id",
+          "is_open",
+          "units"
+        ],
+        "title": "ForecastDay"
+      },
+      "ForecastEvaluation": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "insufficient_history"
+            ],
+            "title": "Status"
+          },
+          "holdout": {
+            "$ref": "#/components/schemas/Period"
+          },
+          "observations": {
+            "type": "integer",
+            "title": "Observations"
+          },
+          "weekday_average_mae": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weekday Average Mae"
+          },
+          "seasonal_naive_mae": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seasonal Naive Mae"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "holdout",
+          "observations",
+          "weekday_average_mae",
+          "seasonal_naive_mae",
+          "assumptions"
+        ],
+        "title": "ForecastEvaluation"
+      },
+      "ForecastRequest": {
+        "properties": {
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "history_weeks": {
+            "type": "integer",
+            "maximum": 26.0,
+            "minimum": 4.0,
+            "title": "History Weeks",
+            "default": 8
+          },
+          "min_observations": {
+            "type": "integer",
+            "maximum": 26.0,
+            "minimum": 4.0,
+            "title": "Min Observations",
+            "default": 4
+          },
+          "sensitivity_pct": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Sensitivity Pct",
+            "default": "15"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ForecastRequest"
+      },
       "ForecastResponse": {
         "properties": {
           "id": {
@@ -3201,6 +4113,83 @@
             },
             "type": "array",
             "title": "Assumptions"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "training_period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Period"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "training_coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverageSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastSeries"
+            },
+            "type": "array",
+            "title": "Series"
+          },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastDay"
+            },
+            "type": "array",
+            "title": "Daily"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientRequirement"
+            },
+            "type": "array",
+            "title": "Ingredients"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastScenario"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          },
+          "evaluation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ForecastEvaluation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
           }
         },
         "additionalProperties": false,
@@ -3216,6 +4205,170 @@
           "assumptions"
         ],
         "title": "ForecastResponse"
+      },
+      "ForecastScenario": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "low",
+              "base",
+              "high"
+            ],
+            "title": "Name"
+          },
+          "volume_multiplier": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Volume Multiplier"
+          },
+          "units": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Units"
+          },
+          "revenue": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Revenue"
+          },
+          "ingredient_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Ingredient Cost"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "volume_multiplier",
+          "units",
+          "revenue",
+          "ingredient_cost"
+        ],
+        "title": "ForecastScenario"
+      },
+      "ForecastSeries": {
+        "properties": {
+          "dish_id": {
+            "type": "string",
+            "title": "Dish Id"
+          },
+          "channel_id": {
+            "type": "string",
+            "enum": [
+              "in_store",
+              "delivery"
+            ],
+            "title": "Channel Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "insufficient_history",
+              "missing_inputs"
+            ],
+            "title": "Status"
+          },
+          "units": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units"
+          },
+          "revenue": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenue"
+          },
+          "ingredient_cost": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ingredient Cost"
+          },
+          "menu_price": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Menu Price"
+          },
+          "recipe_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipe Version Id"
+          },
+          "weekday_estimates": {
+            "items": {
+              "$ref": "#/components/schemas/WeekdayEstimate"
+            },
+            "type": "array",
+            "title": "Weekday Estimates"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dish_id",
+          "channel_id",
+          "status",
+          "units",
+          "revenue",
+          "ingredient_cost",
+          "menu_price",
+          "recipe_version_id",
+          "weekday_estimates",
+          "limitations"
+        ],
+        "title": "ForecastSeries"
       },
       "HTTPValidationError": {
         "properties": {
@@ -3325,6 +4478,55 @@
           "base_unit"
         ],
         "title": "IngredientPrice"
+      },
+      "IngredientRequirement": {
+        "properties": {
+          "ingredient_id": {
+            "type": "string",
+            "title": "Ingredient Id"
+          },
+          "quantity": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Quantity"
+          },
+          "base_unit": {
+            "type": "string",
+            "enum": [
+              "lb",
+              "oz",
+              "each"
+            ],
+            "title": "Base Unit"
+          },
+          "unit_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Unit Cost"
+          },
+          "cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Cost"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceReference"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ingredient_id",
+          "quantity",
+          "base_unit",
+          "unit_cost",
+          "cost",
+          "evidence"
+        ],
+        "title": "IngredientRequirement"
       },
       "Invoice": {
         "properties": {
@@ -3864,6 +5066,7 @@
               "orders",
               "percent",
               "lb",
+              "oz",
               "each"
             ],
             "title": "Unit"
@@ -4618,6 +5821,94 @@
         ],
         "title": "ReceiptReview"
       },
+      "RecipeCostLine": {
+        "properties": {
+          "ingredient_id": {
+            "type": "string",
+            "title": "Ingredient Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "quantity": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Quantity"
+          },
+          "base_unit": {
+            "type": "string",
+            "enum": [
+              "lb",
+              "oz",
+              "each"
+            ],
+            "title": "Base Unit"
+          },
+          "unit_cost": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Cost"
+          },
+          "extended_cost": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extended Cost"
+          },
+          "price_effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Effective Date"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ingredient_id",
+          "name",
+          "quantity",
+          "base_unit",
+          "unit_cost",
+          "extended_cost",
+          "price_effective_date",
+          "evidence"
+        ],
+        "title": "RecipeCostLine"
+      },
       "RecipeItem": {
         "properties": {
           "id": {
@@ -4788,6 +6079,178 @@
         ],
         "title": "RunResponse"
       },
+      "SalesGroup": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "dish_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dish Id"
+          },
+          "channel_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "in_store",
+                  "delivery"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Id"
+          },
+          "units": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Units"
+          },
+          "net_revenue": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Net Revenue"
+          },
+          "orders": {
+            "type": "integer",
+            "title": "Orders"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "units",
+          "net_revenue",
+          "orders"
+        ],
+        "title": "SalesGroup"
+      },
+      "SalesSummary": {
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/Period"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "source_data_version": {
+            "type": "integer",
+            "title": "Source Data Version"
+          },
+          "units": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Units"
+          },
+          "net_revenue": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Net Revenue"
+          },
+          "orders": {
+            "type": "integer",
+            "title": "Orders"
+          },
+          "average_order_revenue": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Order Revenue"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/CoverageSummary"
+          },
+          "by_day": {
+            "items": {
+              "$ref": "#/components/schemas/SalesGroup"
+            },
+            "type": "array",
+            "title": "By Day"
+          },
+          "by_dish": {
+            "items": {
+              "$ref": "#/components/schemas/SalesGroup"
+            },
+            "type": "array",
+            "title": "By Dish"
+          },
+          "by_channel": {
+            "items": {
+              "$ref": "#/components/schemas/SalesGroup"
+            },
+            "type": "array",
+            "title": "By Channel"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceReference"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "evidence_truncated": {
+            "type": "boolean",
+            "title": "Evidence Truncated"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "period",
+          "as_of",
+          "source_data_version",
+          "units",
+          "net_revenue",
+          "orders",
+          "average_order_revenue",
+          "coverage",
+          "by_day",
+          "by_dish",
+          "by_channel",
+          "evidence",
+          "evidence_truncated",
+          "assumptions"
+        ],
+        "title": "SalesSummary"
+      },
       "Source": {
         "properties": {
           "id": {
@@ -4888,6 +6351,45 @@
           "aliases"
         ],
         "title": "Vendor"
+      },
+      "WeekdayEstimate": {
+        "properties": {
+          "weekday": {
+            "type": "integer",
+            "maximum": 6.0,
+            "minimum": 0.0,
+            "title": "Weekday"
+          },
+          "sample_dates": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Sample Dates"
+          },
+          "mean_units": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Units"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "weekday",
+          "sample_dates",
+          "mean_units"
+        ],
+        "title": "WeekdayEstimate"
       }
     }
   }

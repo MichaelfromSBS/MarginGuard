@@ -78,7 +78,7 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
     async def health():
         return {
             "status": "ok", "mode": settings.ai_mode,
-            "api_version": API_VERSION, "checkpoint": 2, "database": "ready",
+            "api_version": API_VERSION, "checkpoint": 3, "database": "ready",
             "model": settings.openrouter_model if settings.ai_mode == "openrouter" else "mock-fixture",
             "configured": settings.ai_mode == "mock" or bool(settings.openrouter_api_key.get_secret_value().strip() and settings.openrouter_model.strip()),
         }

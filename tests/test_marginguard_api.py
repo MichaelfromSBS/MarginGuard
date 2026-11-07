@@ -12,7 +12,7 @@ from backend.main import create_app
 from backend.marginguard.schemas import (
     Alert, CapabilitiesResponse, CatalogResponse, Coverage, Document, DocumentDetail,
     ErrorResponse, IngredientPrice, Invoice, InvoiceExtraction, Page, Receipt,
-    ReceiptExtraction, Restaurant,
+    ReceiptExtraction, Restaurant, DashboardResponse, ForecastResponse,
 )
 from backend.marginguard.seed import seed_demo
 
@@ -103,13 +103,15 @@ def test_product_guard_errors_match_frontend_contract(seeded_client, headers, st
     assert ErrorResponse.model_validate(response.json()).error.code == code
 
 
-@pytest.mark.parametrize("path,checkpoint", [("/api/dashboard", 3), ("/api/forecasts", 3)])
-def test_unimplemented_metrics_never_masquerade_as_live_results(seeded_client, path, checkpoint):
-    response = seeded_client.get(path)
-    assert response.status_code == 501
-    error = ErrorResponse.model_validate(response.json()).error
-    assert error.code == "checkpoint_not_implemented"
-    assert error.details["checkpoint"] == checkpoint
+def test_metrics_are_available_but_small_seed_does_not_invent_a_forecast(seeded_client):
+    response = seeded_client.get("/api/dashboard?as_of=2026-11-07")
+    assert response.status_code == 200
+    assert DashboardResponse.model_validate(response.json()).forecast is None
+    assert seeded_client.get("/api/forecasts").json()["total"] == 0
+    response = seeded_client.post("/api/forecasts/recalculate", json={"as_of": "2026-11-07"})
+    forecast = ForecastResponse.model_validate(response.json())
+    assert forecast.status == "insufficient_history"
+    assert all(m.value is None for m in forecast.metrics)
 
 
 def test_invalid_upload_and_future_write_routes_do_not_persist_records(seeded_client):
@@ -118,7 +120,6 @@ def test_invalid_upload_and_future_write_routes_do_not_persist_records(seeded_cl
     assert response.status_code == 415
     assert seeded_client.get("/api/documents").json()["total"] == count
     assert seeded_client.post("/api/chat", json={"question": "What were sales?"}).status_code == 501
-    assert seeded_client.post("/api/coverage/complete", json={"date": "2026-11-07", "channel_id": "in_store"}).status_code == 501
     assert seeded_client.post("/api/alerts/test/acknowledge").status_code == 501
     data = json.loads((ROOT / "examples/invoice.expected.json").read_text())
     assert seeded_client.post("/api/documents/test/review", json={"document_type": "invoice", "extraction": data}).status_code == 404
@@ -159,6 +160,6 @@ def test_contract_openapi_covers_multipart_and_future_success_shapes(seeded_clie
 def test_checkpoint_features_and_configuration_do_not_expose_credentials(tmp_path):
     with TestClient(create_app(Settings(_env_file=None, database_path=tmp_path / "key.db", openrouter_api_key="private-test-value"))) as client:
         features = client.get("/api/capabilities").json()
-        assert [f["name"] for f in features["capabilities"] if f["available"]] == ["catalog_and_seed_ledger", "document_ingestion"]
+        assert [f["name"] for f in features["capabilities"] if f["available"]] == ["catalog_and_seed_ledger", "document_ingestion", "metrics_and_forecasting"]
         assert "private-test-value" not in client.get("/api/health").text
         assert client.get("/api/health").json()["database"] == "ready"

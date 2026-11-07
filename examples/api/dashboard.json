@@ -1,0 +1,818 @@
+{
+  "api_version": "1.0.0",
+  "restaurant": {
+    "id": "tartan_burger_co",
+    "name": "Tartan Burger Co.",
+    "currency": "USD",
+    "timezone": "America/New_York",
+    "data_version": 1,
+    "is_demo": true
+  },
+  "as_of": "2026-11-07T18:36:42.477406Z",
+  "source_data_version": 1,
+  "metrics": [
+    {
+      "id": "sales.units",
+      "label": "Observed units sold",
+      "value": "5",
+      "unit": "units",
+      "kind": "actual",
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "as_of": "2026-11-07T18:36:42.477406Z",
+      "coverage": "partial",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_1",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "2 x Classic Burger @ $12.00 = $24.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_2",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_1",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_2",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Classic Burger @ $12.00 = $12.00"
+        }
+      ],
+      "assumptions": [
+        "Observed approved completed receipts only; missing receipts are not estimated.",
+        "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+        "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+        "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+      ]
+    },
+    {
+      "id": "sales.orders",
+      "label": "Observed completed orders",
+      "value": "2",
+      "unit": "orders",
+      "kind": "actual",
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "as_of": "2026-11-07T18:36:42.477406Z",
+      "coverage": "partial",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_1",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "2 x Classic Burger @ $12.00 = $24.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_2",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_1",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_2",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Classic Burger @ $12.00 = $12.00"
+        }
+      ],
+      "assumptions": [
+        "Observed approved completed receipts only; missing receipts are not estimated.",
+        "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+        "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+        "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+      ]
+    },
+    {
+      "id": "sales.net_revenue",
+      "label": "Observed net item revenue",
+      "value": "60.00",
+      "unit": "USD",
+      "kind": "actual",
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "as_of": "2026-11-07T18:36:42.477406Z",
+      "coverage": "partial",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_1",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "2 x Classic Burger @ $12.00 = $24.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_2",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_1",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_2",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Classic Burger @ $12.00 = $12.00"
+        }
+      ],
+      "assumptions": [
+        "Observed approved completed receipts only; missing receipts are not estimated.",
+        "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+        "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+        "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+      ]
+    },
+    {
+      "id": "sales.average_order_revenue",
+      "label": "Average net item revenue per order",
+      "value": "30.00",
+      "unit": "USD",
+      "kind": "actual",
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "as_of": "2026-11-07T18:36:42.477406Z",
+      "coverage": "partial",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_1",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "2 x Classic Burger @ $12.00 = $24.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_001_2",
+          "document_id": "doc_receipt_001",
+          "source_page": 1,
+          "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_1",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+        },
+        {
+          "kind": "receipt_item",
+          "record_id": "item_receipt_002_2",
+          "document_id": "doc_receipt_002",
+          "source_page": 1,
+          "quote": "1 x Classic Burger @ $12.00 = $12.00"
+        }
+      ],
+      "assumptions": [
+        "Observed approved completed receipts only; missing receipts are not estimated.",
+        "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+        "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+        "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+      ]
+    },
+    {
+      "id": "dish.cheeseburger.ingredient_cost",
+      "label": "Cheeseburger replacement ingredient cost",
+      "value": "4.36",
+      "unit": "USD",
+      "kind": "modeled",
+      "period": null,
+      "as_of": "2026-11-07T18:36:42.477406Z",
+      "coverage": "complete",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_beef_increase_beef",
+          "document_id": "doc_invoice_beef_increase",
+          "source_page": 1,
+          "quote": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40"
+        },
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_baseline_bun",
+          "document_id": "doc_invoice_baseline",
+          "source_page": 1,
+          "quote": "Burger buns - 100 each | quantity 100 each | unit price $0.60 | line total $60.00"
+        },
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_baseline_cheese",
+          "document_id": "doc_invoice_baseline",
+          "source_page": 1,
+          "quote": "American cheese slices - 100 each | quantity 100 each | unit price $0.40 | line total $40.00"
+        },
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_baseline_produce",
+          "document_id": "doc_invoice_baseline",
+          "source_page": 1,
+          "quote": "Lettuce tomato portions - 100 each | quantity 100 each | unit price $1.00 | line total $100.00"
+        }
+      ],
+      "assumptions": [
+        "Replacement ingredient cost uses approved prices effective on or before the as-of date.",
+        "Ingredient costs exclude freight, purchase tax, waste, inventory, labor and rent; they are not actual COGS or profit.",
+        "Channel contribution assumes configured menu prices, fee rates and packaging only; demand response is not modeled."
+      ]
+    },
+    {
+      "id": "dish.classic_burger.ingredient_cost",
+      "label": "Classic Burger replacement ingredient cost",
+      "value": "3.96",
+      "unit": "USD",
+      "kind": "modeled",
+      "period": null,
+      "as_of": "2026-11-07T18:36:42.477406Z",
+      "coverage": "complete",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_beef_increase_beef",
+          "document_id": "doc_invoice_beef_increase",
+          "source_page": 1,
+          "quote": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40"
+        },
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_baseline_bun",
+          "document_id": "doc_invoice_baseline",
+          "source_page": 1,
+          "quote": "Burger buns - 100 each | quantity 100 each | unit price $0.60 | line total $60.00"
+        },
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_baseline_produce",
+          "document_id": "doc_invoice_baseline",
+          "source_page": 1,
+          "quote": "Lettuce tomato portions - 100 each | quantity 100 each | unit price $1.00 | line total $100.00"
+        }
+      ],
+      "assumptions": [
+        "Replacement ingredient cost uses approved prices effective on or before the as-of date.",
+        "Ingredient costs exclude freight, purchase tax, waste, inventory, labor and rent; they are not actual COGS or profit.",
+        "Channel contribution assumes configured menu prices, fee rates and packaging only; demand response is not modeled."
+      ]
+    },
+    {
+      "id": "dish.veggie_burger.ingredient_cost",
+      "label": "Veggie Burger replacement ingredient cost",
+      "value": "3.20",
+      "unit": "USD",
+      "kind": "modeled",
+      "period": null,
+      "as_of": "2026-11-07T18:36:42.477406Z",
+      "coverage": "complete",
+      "source_data_version": 1,
+      "evidence": [
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_baseline_bun",
+          "document_id": "doc_invoice_baseline",
+          "source_page": 1,
+          "quote": "Burger buns - 100 each | quantity 100 each | unit price $0.60 | line total $60.00"
+        },
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_baseline_produce",
+          "document_id": "doc_invoice_baseline",
+          "source_page": 1,
+          "quote": "Lettuce tomato portions - 100 each | quantity 100 each | unit price $1.00 | line total $100.00"
+        },
+        {
+          "kind": "invoice_line",
+          "record_id": "line_invoice_baseline_veggie_patty",
+          "document_id": "doc_invoice_baseline",
+          "source_page": 1,
+          "quote": "Plant patties - 100 each | quantity 100 each | unit price $1.60 | line total $160.00"
+        }
+      ],
+      "assumptions": [
+        "Replacement ingredient cost uses approved prices effective on or before the as-of date.",
+        "Ingredient costs exclude freight, purchase tax, waste, inventory, labor and rent; they are not actual COGS or profit.",
+        "Channel contribution assumes configured menu prices, fee rates and packaging only; demand response is not modeled."
+      ]
+    }
+  ],
+  "forecast": null,
+  "alerts": [],
+  "limitations": [
+    "Replacement ingredient cost uses approved prices effective on or before the as-of date.",
+    "Ingredient costs exclude freight, purchase tax, waste, inventory, labor and rent; they are not actual COGS or profit.",
+    "Channel contribution assumes configured menu prices, fee rates and packaging only; demand response is not modeled.",
+    "Sales are observed totals from incomplete coverage, not the restaurant's full-period sales.",
+    "No forecast has been calculated for this as-of date. POST /api/forecasts/recalculate to create one."
+  ],
+  "sales": {
+    "period": {
+      "start": "2026-10-31",
+      "end": "2026-11-06"
+    },
+    "as_of": "2026-11-07T18:36:42.477406Z",
+    "source_data_version": 1,
+    "units": "5",
+    "net_revenue": "60.00",
+    "orders": 2,
+    "average_order_revenue": "30.00",
+    "coverage": {
+      "period": {
+        "start": "2026-10-31",
+        "end": "2026-11-06"
+      },
+      "complete": 2,
+      "partial": 0,
+      "unknown": 12,
+      "closed": 0,
+      "status": "partial",
+      "days": [
+        {
+          "date": "2026-10-31",
+          "channel_id": "delivery",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-10-31",
+          "channel_id": "in_store",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-01",
+          "channel_id": "delivery",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-01",
+          "channel_id": "in_store",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-02",
+          "channel_id": "delivery",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-02",
+          "channel_id": "in_store",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-03",
+          "channel_id": "delivery",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-03",
+          "channel_id": "in_store",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-04",
+          "channel_id": "delivery",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-04",
+          "channel_id": "in_store",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-05",
+          "channel_id": "delivery",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-05",
+          "channel_id": "in_store",
+          "status": "unknown",
+          "updated_at": "2026-11-07T18:36:42.478491Z"
+        },
+        {
+          "date": "2026-11-06",
+          "channel_id": "delivery",
+          "status": "complete",
+          "updated_at": "2026-11-07T19:00:00Z"
+        },
+        {
+          "date": "2026-11-06",
+          "channel_id": "in_store",
+          "status": "complete",
+          "updated_at": "2026-11-07T19:00:00Z"
+        }
+      ]
+    },
+    "by_day": [
+      {
+        "date": "2026-11-06",
+        "dish_id": null,
+        "channel_id": null,
+        "units": "5",
+        "net_revenue": "60.00",
+        "orders": 2
+      }
+    ],
+    "by_dish": [
+      {
+        "date": null,
+        "dish_id": "cheeseburger",
+        "channel_id": null,
+        "units": "1",
+        "net_revenue": "13.00",
+        "orders": 1
+      },
+      {
+        "date": null,
+        "dish_id": "classic_burger",
+        "channel_id": null,
+        "units": "3",
+        "net_revenue": "36.00",
+        "orders": 2
+      },
+      {
+        "date": null,
+        "dish_id": "veggie_burger",
+        "channel_id": null,
+        "units": "1",
+        "net_revenue": "11.00",
+        "orders": 1
+      }
+    ],
+    "by_channel": [
+      {
+        "date": null,
+        "dish_id": null,
+        "channel_id": "delivery",
+        "units": "2",
+        "net_revenue": "25.00",
+        "orders": 1
+      },
+      {
+        "date": null,
+        "dish_id": null,
+        "channel_id": "in_store",
+        "units": "3",
+        "net_revenue": "35.00",
+        "orders": 1
+      }
+    ],
+    "evidence": [
+      {
+        "kind": "receipt_item",
+        "record_id": "item_receipt_001_1",
+        "document_id": "doc_receipt_001",
+        "source_page": 1,
+        "quote": "2 x Classic Burger @ $12.00 = $24.00"
+      },
+      {
+        "kind": "receipt_item",
+        "record_id": "item_receipt_001_2",
+        "document_id": "doc_receipt_001",
+        "source_page": 1,
+        "quote": "1 x Veggie Burger @ $11.00 = $11.00"
+      },
+      {
+        "kind": "receipt_item",
+        "record_id": "item_receipt_002_1",
+        "document_id": "doc_receipt_002",
+        "source_page": 1,
+        "quote": "1 x Cheeseburger @ $13.00 = $13.00"
+      },
+      {
+        "kind": "receipt_item",
+        "record_id": "item_receipt_002_2",
+        "document_id": "doc_receipt_002",
+        "source_page": 1,
+        "quote": "1 x Classic Burger @ $12.00 = $12.00"
+      }
+    ],
+    "evidence_truncated": false,
+    "assumptions": [
+      "Observed approved completed receipts only; missing receipts are not estimated.",
+      "Net item revenue includes allocated item discounts and excludes tax and tips; it is not payout or profit.",
+      "Void/refund documents are not modeled as completed sales; unresolved documents are excluded.",
+      "Receipt local dates use the restaurant timezone. Evidence is a bounded sample, not an exhaustive source list."
+    ]
+  },
+  "dish_costs": [
+    {
+      "dish_id": "cheeseburger",
+      "name": "Cheeseburger",
+      "as_of": "2026-11-07",
+      "source_data_version": 1,
+      "recipe_version_id": "recipe_cheeseburger_v1",
+      "ingredient_cost": "4.36",
+      "ingredients": [
+        {
+          "ingredient_id": "beef",
+          "name": "Ground beef 80/20",
+          "quantity": "0.5",
+          "base_unit": "lb",
+          "unit_cost": "4.72",
+          "extended_cost": "2.36",
+          "price_effective_date": "2026-11-07",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_beef_increase_beef",
+            "document_id": "doc_invoice_beef_increase",
+            "source_page": 1,
+            "quote": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40"
+          }
+        },
+        {
+          "ingredient_id": "bun",
+          "name": "Burger bun",
+          "quantity": "1",
+          "base_unit": "each",
+          "unit_cost": "0.60",
+          "extended_cost": "0.6",
+          "price_effective_date": "2026-11-01",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_baseline_bun",
+            "document_id": "doc_invoice_baseline",
+            "source_page": 1,
+            "quote": "Burger buns - 100 each | quantity 100 each | unit price $0.60 | line total $60.00"
+          }
+        },
+        {
+          "ingredient_id": "cheese",
+          "name": "Cheese slice",
+          "quantity": "1",
+          "base_unit": "each",
+          "unit_cost": "0.40",
+          "extended_cost": "0.4",
+          "price_effective_date": "2026-11-01",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_baseline_cheese",
+            "document_id": "doc_invoice_baseline",
+            "source_page": 1,
+            "quote": "American cheese slices - 100 each | quantity 100 each | unit price $0.40 | line total $40.00"
+          }
+        },
+        {
+          "ingredient_id": "produce",
+          "name": "Burger produce portion",
+          "quantity": "1",
+          "base_unit": "each",
+          "unit_cost": "1.00",
+          "extended_cost": "1",
+          "price_effective_date": "2026-11-01",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_baseline_produce",
+            "document_id": "doc_invoice_baseline",
+            "source_page": 1,
+            "quote": "Lettuce tomato portions - 100 each | quantity 100 each | unit price $1.00 | line total $100.00"
+          }
+        }
+      ],
+      "channels": [
+        {
+          "channel_id": "delivery",
+          "menu_price": "13.00",
+          "menu_price_id": "menu_cheeseburger_delivery_v1",
+          "fee_rate": "0.30",
+          "packaging_cost": "0.60",
+          "contribution": "4.14",
+          "contribution_margin_pct": "31.84615385"
+        },
+        {
+          "channel_id": "in_store",
+          "menu_price": "13.00",
+          "menu_price_id": "menu_cheeseburger_in_store_v1",
+          "fee_rate": "0.00",
+          "packaging_cost": "0.00",
+          "contribution": "8.64",
+          "contribution_margin_pct": "66.46153846"
+        }
+      ],
+      "limitations": [],
+      "assumptions": [
+        "Replacement ingredient cost uses approved prices effective on or before the as-of date.",
+        "Ingredient costs exclude freight, purchase tax, waste, inventory, labor and rent; they are not actual COGS or profit.",
+        "Channel contribution assumes configured menu prices, fee rates and packaging only; demand response is not modeled."
+      ]
+    },
+    {
+      "dish_id": "classic_burger",
+      "name": "Classic Burger",
+      "as_of": "2026-11-07",
+      "source_data_version": 1,
+      "recipe_version_id": "recipe_classic_burger_v1",
+      "ingredient_cost": "3.96",
+      "ingredients": [
+        {
+          "ingredient_id": "beef",
+          "name": "Ground beef 80/20",
+          "quantity": "0.5",
+          "base_unit": "lb",
+          "unit_cost": "4.72",
+          "extended_cost": "2.36",
+          "price_effective_date": "2026-11-07",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_beef_increase_beef",
+            "document_id": "doc_invoice_beef_increase",
+            "source_page": 1,
+            "quote": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40"
+          }
+        },
+        {
+          "ingredient_id": "bun",
+          "name": "Burger bun",
+          "quantity": "1",
+          "base_unit": "each",
+          "unit_cost": "0.60",
+          "extended_cost": "0.6",
+          "price_effective_date": "2026-11-01",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_baseline_bun",
+            "document_id": "doc_invoice_baseline",
+            "source_page": 1,
+            "quote": "Burger buns - 100 each | quantity 100 each | unit price $0.60 | line total $60.00"
+          }
+        },
+        {
+          "ingredient_id": "produce",
+          "name": "Burger produce portion",
+          "quantity": "1",
+          "base_unit": "each",
+          "unit_cost": "1.00",
+          "extended_cost": "1",
+          "price_effective_date": "2026-11-01",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_baseline_produce",
+            "document_id": "doc_invoice_baseline",
+            "source_page": 1,
+            "quote": "Lettuce tomato portions - 100 each | quantity 100 each | unit price $1.00 | line total $100.00"
+          }
+        }
+      ],
+      "channels": [
+        {
+          "channel_id": "delivery",
+          "menu_price": "12.00",
+          "menu_price_id": "menu_classic_burger_delivery_v1",
+          "fee_rate": "0.30",
+          "packaging_cost": "0.60",
+          "contribution": "3.84",
+          "contribution_margin_pct": "32"
+        },
+        {
+          "channel_id": "in_store",
+          "menu_price": "12.00",
+          "menu_price_id": "menu_classic_burger_in_store_v1",
+          "fee_rate": "0.00",
+          "packaging_cost": "0.00",
+          "contribution": "8.04",
+          "contribution_margin_pct": "67"
+        }
+      ],
+      "limitations": [],
+      "assumptions": [
+        "Replacement ingredient cost uses approved prices effective on or before the as-of date.",
+        "Ingredient costs exclude freight, purchase tax, waste, inventory, labor and rent; they are not actual COGS or profit.",
+        "Channel contribution assumes configured menu prices, fee rates and packaging only; demand response is not modeled."
+      ]
+    },
+    {
+      "dish_id": "veggie_burger",
+      "name": "Veggie Burger",
+      "as_of": "2026-11-07",
+      "source_data_version": 1,
+      "recipe_version_id": "recipe_veggie_burger_v1",
+      "ingredient_cost": "3.20",
+      "ingredients": [
+        {
+          "ingredient_id": "bun",
+          "name": "Burger bun",
+          "quantity": "1",
+          "base_unit": "each",
+          "unit_cost": "0.60",
+          "extended_cost": "0.6",
+          "price_effective_date": "2026-11-01",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_baseline_bun",
+            "document_id": "doc_invoice_baseline",
+            "source_page": 1,
+            "quote": "Burger buns - 100 each | quantity 100 each | unit price $0.60 | line total $60.00"
+          }
+        },
+        {
+          "ingredient_id": "produce",
+          "name": "Burger produce portion",
+          "quantity": "1",
+          "base_unit": "each",
+          "unit_cost": "1.00",
+          "extended_cost": "1",
+          "price_effective_date": "2026-11-01",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_baseline_produce",
+            "document_id": "doc_invoice_baseline",
+            "source_page": 1,
+            "quote": "Lettuce tomato portions - 100 each | quantity 100 each | unit price $1.00 | line total $100.00"
+          }
+        },
+        {
+          "ingredient_id": "veggie_patty",
+          "name": "Veggie patty",
+          "quantity": "1",
+          "base_unit": "each",
+          "unit_cost": "1.60",
+          "extended_cost": "1.6",
+          "price_effective_date": "2026-11-01",
+          "evidence": {
+            "kind": "invoice_line",
+            "record_id": "line_invoice_baseline_veggie_patty",
+            "document_id": "doc_invoice_baseline",
+            "source_page": 1,
+            "quote": "Plant patties - 100 each | quantity 100 each | unit price $1.60 | line total $160.00"
+          }
+        }
+      ],
+      "channels": [
+        {
+          "channel_id": "delivery",
+          "menu_price": "11.00",
+          "menu_price_id": "menu_veggie_burger_delivery_v1",
+          "fee_rate": "0.30",
+          "packaging_cost": "0.60",
+          "contribution": "3.90",
+          "contribution_margin_pct": "35.45454545"
+        },
+        {
+          "channel_id": "in_store",
+          "menu_price": "11.00",
+          "menu_price_id": "menu_veggie_burger_in_store_v1",
+          "fee_rate": "0.00",
+          "packaging_cost": "0.00",
+          "contribution": "7.80",
+          "contribution_margin_pct": "70.90909091"
+        }
+      ],
+      "limitations": [],
+      "assumptions": [
+        "Replacement ingredient cost uses approved prices effective on or before the as-of date.",
+        "Ingredient costs exclude freight, purchase tax, waste, inventory, labor and rent; they are not actual COGS or profit.",
+        "Channel contribution assumes configured menu prices, fee rates and packaging only; demand response is not modeled."
+      ]
+    }
+  ]
+}

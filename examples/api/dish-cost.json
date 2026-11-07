@@ -1,0 +1,84 @@
+{
+  "dish_id": "classic_burger",
+  "name": "Classic Burger",
+  "as_of": "2026-11-07",
+  "source_data_version": 1,
+  "recipe_version_id": "recipe_classic_burger_v1",
+  "ingredient_cost": "3.96",
+  "ingredients": [
+    {
+      "ingredient_id": "beef",
+      "name": "Ground beef 80/20",
+      "quantity": "0.5",
+      "base_unit": "lb",
+      "unit_cost": "4.72",
+      "extended_cost": "2.36",
+      "price_effective_date": "2026-11-07",
+      "evidence": {
+        "kind": "invoice_line",
+        "record_id": "line_invoice_beef_increase_beef",
+        "document_id": "doc_invoice_beef_increase",
+        "source_page": 1,
+        "quote": "GROUND CHUCK 80/20 - 2 CASES, 10 LB EACH | quantity 2 case | unit price $47.20 | line total $94.40"
+      }
+    },
+    {
+      "ingredient_id": "bun",
+      "name": "Burger bun",
+      "quantity": "1",
+      "base_unit": "each",
+      "unit_cost": "0.60",
+      "extended_cost": "0.6",
+      "price_effective_date": "2026-11-01",
+      "evidence": {
+        "kind": "invoice_line",
+        "record_id": "line_invoice_baseline_bun",
+        "document_id": "doc_invoice_baseline",
+        "source_page": 1,
+        "quote": "Burger buns - 100 each | quantity 100 each | unit price $0.60 | line total $60.00"
+      }
+    },
+    {
+      "ingredient_id": "produce",
+      "name": "Burger produce portion",
+      "quantity": "1",
+      "base_unit": "each",
+      "unit_cost": "1.00",
+      "extended_cost": "1",
+      "price_effective_date": "2026-11-01",
+      "evidence": {
+        "kind": "invoice_line",
+        "record_id": "line_invoice_baseline_produce",
+        "document_id": "doc_invoice_baseline",
+        "source_page": 1,
+        "quote": "Lettuce tomato portions - 100 each | quantity 100 each | unit price $1.00 | line total $100.00"
+      }
+    }
+  ],
+  "channels": [
+    {
+      "channel_id": "delivery",
+      "menu_price": "12.00",
+      "menu_price_id": "menu_classic_burger_delivery_v1",
+      "fee_rate": "0.30",
+      "packaging_cost": "0.60",
+      "contribution": "3.84",
+      "contribution_margin_pct": "32"
+    },
+    {
+      "channel_id": "in_store",
+      "menu_price": "12.00",
+      "menu_price_id": "menu_classic_burger_in_store_v1",
+      "fee_rate": "0.00",
+      "packaging_cost": "0.00",
+      "contribution": "8.04",
+      "contribution_margin_pct": "67"
+    }
+  ],
+  "limitations": [],
+  "assumptions": [
+    "Replacement ingredient cost uses approved prices effective on or before the as-of date.",
+    "Ingredient costs exclude freight, purchase tax, waste, inventory, labor and rent; they are not actual COGS or profit.",
+    "Channel contribution assumes configured menu prices, fee rates and packaging only; demand response is not modeled."
+  ]
+}
