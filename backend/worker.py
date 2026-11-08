@@ -18,7 +18,6 @@ from backend.marginguard.errors import DomainError
 from backend.marginguard.extraction import extract_document
 from backend.marginguard.jobs import later, exhaust_abandoned_jobs
 from backend.marginguard.alert_explanations import enrich_alerts
-from backend.marginguard.schemas import ForecastRequest
 
 
 def set_state(conn, key, value):
@@ -162,13 +161,15 @@ class Worker:
             conn.execute("BEGIN IMMEDIATE")
             self.check_lease(conn)
             owner = ingestion.restaurant_record(conn)
-            as_of = as_of or analytics.local_today(owner)
+            as_of = as_of or (settings.demo_as_of if owner["is_demo"] else None) or analytics.local_today(owner)
             state = dict(conn.execute("SELECT key,value FROM worker_state").fetchall())
+            forecast_request = forecasting.default_request(conn, as_of)
             policy = json.dumps({"calculation_version": detectors.VERSION,
+                                 "forecast_policy": forecast_request.model_dump(mode="json"),
                                  "sales_drop_pct": settings.sales_drop_pct,
                                  "sales_drop_min_units": settings.sales_drop_min_units}, sort_keys=True)
             if state.get("data_version") != str(owner["data_version"]) or state.get("as_of") != as_of.isoformat() or state.get("detector_policy") != policy:
-                forecast = forecasting.calculate(conn, ForecastRequest(as_of=as_of))
+                forecast = forecasting.calculate(conn, forecast_request)
                 detectors.run_detectors(conn, settings, as_of, forecast)
                 for key, value in [("data_version", owner["data_version"]), ("as_of", as_of.isoformat()), ("detector_policy", policy)]:
                     set_state(conn, key, value)

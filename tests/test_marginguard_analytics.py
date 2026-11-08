@@ -42,7 +42,7 @@ def client(ledger, tmp_path):
 
 
 def recalculate(client, **policy):
-    response = client.post("/api/forecasts/recalculate", json={"as_of": DAY.isoformat(), **policy})
+    response = client.post("/api/forecasts/recalculate", json={"as_of": DAY.isoformat(), "method": "weekday_average_v1", **policy})
     assert response.status_code == 200, response.text
     ForecastResponse.model_validate(response.json())
     return response.json()

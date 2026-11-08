@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type {
   Alert, CatalogResponse, ChatMessage, ChatResponse, DashboardResponse, Document, DocumentDetail, DocumentType,
   ForecastResponse, ForecastRequest, IngredientPrice, Invoice, Page, Restaurant, CapabilitiesResponse, WorkerStatus,
+  PricingScenarioRequest, PricingScenarioResponse,
 } from '../marginguard-api';
 
 export class ApiError extends Error {
@@ -27,7 +28,7 @@ const qs = (params: Record<string, string | number | undefined>) =>
   Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&');
 
 export const api = {
-  health: () => get<unknown>('/api/health'),
+  health: () => get<{ status: string; mode: 'mock' | 'openrouter'; demo_as_of?: string | null }>('/api/health'),
   restaurant: () => get<Restaurant>('/api/restaurant'),
   catalog: () => get<CatalogResponse>('/api/catalog'),
   capabilities: () => get<CapabilitiesResponse>('/api/capabilities'),
@@ -46,12 +47,16 @@ export const api = {
   process: (id: string) => request<Document>(`/api/documents/${id}/process`, { method: 'POST' }).then((r) => r.data),
   invoices: () => get<Page<Invoice>>('/api/invoices?limit=100'),
   alerts: (status?: Alert['status']) => get<Page<Alert>>(`/api/alerts?${qs({ status, limit: 100 })}`),
-  acknowledge: (id: string) => request<Alert>(`/api/alerts/${id}/acknowledge`, { method: 'POST' }).then((r) => r.data),
+  // The existing persisted "acknowledged" state represents Save for later in the UI.
+  saveAlertForLater: (id: string) => request<Alert>(`/api/alerts/${id}/acknowledge`, { method: 'POST' }).then((r) => r.data),
   resolve: (id: string) => request<Alert>(`/api/alerts/${id}/resolve`, { method: 'POST' }).then((r) => r.data),
   dashboard: () => get<DashboardResponse>('/api/dashboard'),
   forecasts: () => get<Page<ForecastResponse>>('/api/forecasts?limit=5'),
   recalculate: (policy: ForecastRequest = {}) => request<ForecastResponse>('/api/forecasts/recalculate', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(policy),
+  }).then((r) => r.data),
+  pricingScenario: (id: string, policy: PricingScenarioRequest, signal?: AbortSignal) => request<PricingScenarioResponse>(`/api/forecasts/${encodeURIComponent(id)}/pricing-scenario`, {
+    signal, method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(policy),
   }).then((r) => r.data),
   chat: (question: string, history: ChatMessage[] = []) => request<ChatResponse>('/api/chat', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, history }),
@@ -64,8 +69,10 @@ export const errorText = (e: unknown) => (e instanceof Error ? e.message : Strin
 
 /** Recent uploaded documents plus imported invoices; imported history receipts only on request. */
 export async function loadDocuments(includeHistoryReceipts: boolean): Promise<Document[]> {
-  const invoices = await api.documents({ document_type: 'invoice', limit: 100 });
-  const first = await api.documents({ document_type: 'receipt', limit: 1 });
+  const [invoices, first] = await Promise.all([
+    api.documents({ document_type: 'invoice', limit: 100 }),
+    api.documents({ document_type: 'receipt', limit: 1 }),
+  ]);
   const receipts = await api.documents({ document_type: 'receipt', limit: 100, offset: Math.max(0, first.total - 100) });
   let all = [...invoices.items, ...receipts.items];
   if (!includeHistoryReceipts) all = all.filter((d) => d.media_type !== 'text/plain');
@@ -77,6 +84,7 @@ export function usePoll<T>(fn: () => Promise<T>, ms: number, deps: unknown[] = [
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [tick, setTick] = useState(0);
+  const revision = useRef(0);
   const fnRef = useRef(fn);
   fnRef.current = fn;
   useEffect(() => {
@@ -87,11 +95,12 @@ export function usePoll<T>(fn: () => Promise<T>, ms: number, deps: unknown[] = [
     const run = async () => {
       if (inFlight) return;
       inFlight = true;
+      const startedAtRevision = revision.current;
       try {
         const d = await fnRef.current();
-        if (alive) { setData(d); setError(null); }
+        if (alive && startedAtRevision === revision.current) { setData(d); setError(null); }
       } catch (e) {
-        if (alive) setError(e);
+        if (alive && startedAtRevision === revision.current) setError(e);
       } finally { inFlight = false; }
     };
     run();
@@ -99,5 +108,6 @@ export function usePoll<T>(fn: () => Promise<T>, ms: number, deps: unknown[] = [
     return () => { alive = false; if (timer) window.clearInterval(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, tick, ms]);
-  return { data, error, loading: data === null && error === null, refresh: () => setTick((t) => t + 1) };
+  return { data, error, loading: data === null && error === null, refresh: () => setTick((t) => t + 1),
+    update: (value: T) => { revision.current++; setData(value); setError(null); } };
 }

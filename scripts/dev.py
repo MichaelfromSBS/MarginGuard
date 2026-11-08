@@ -22,7 +22,12 @@ def main():
     processes = []
     code = 0
     try:
-        processes.append(subprocess.Popen([str(PYTHON), "-m", "uvicorn", "backend.main:app", "--host", "127.0.0.1", "--port", "8000"], cwd=ROOT))
+        api_command = [str(PYTHON), "-m", "uvicorn", "backend.main:app", "--host", "127.0.0.1", "--port", "8000"]
+        if sys.platform == "win32":
+            # Proactor AcceptEx can close the listener after WinError 64.
+            # Use Uvicorn's explicit loop factory, not a global asyncio policy.
+            api_command += ["--loop", "asyncio:SelectorEventLoop"]
+        processes.append(subprocess.Popen(api_command, cwd=ROOT))
         # Serve the UI only after the API is ready, so its first health check succeeds.
         deadline = time.monotonic() + 15
         while True:
@@ -39,7 +44,7 @@ def main():
             time.sleep(0.2)
         processes.append(subprocess.Popen([str(PYTHON), "-m", "backend.worker"], cwd=ROOT))
         processes.append(subprocess.Popen([node, str(VITE), "--config", "vite.config.ts"], cwd=ROOT / "frontend"))
-        print("\nNOVA: http://127.0.0.1:5173 | API docs: http://127.0.0.1:8000/docs", flush=True)
+        print("\nMarginGuard: http://127.0.0.1:5173 | API docs: http://127.0.0.1:8000/docs", flush=True)
         print("React edits reload automatically. Restart after backend or .env edits. Ctrl+C stops API, worker and frontend.", flush=True)
         while all(process.poll() is None for process in processes):
             time.sleep(0.25)

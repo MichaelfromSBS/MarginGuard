@@ -1,0 +1,487 @@
+{
+  "is_demo": true,
+  "as_of": "2026-11-07",
+  "source_data_version": 2741,
+  "method": "adaptive_ensemble_v1",
+  "evaluation": {
+    "status": "ready",
+    "holdout": {
+      "start": "2026-10-31",
+      "end": "2026-11-06"
+    },
+    "observations": 42,
+    "weekday_average_mae": "4.64739229",
+    "seasonal_naive_mae": "5.4047619",
+    "selected_method": "adaptive_ensemble_v1",
+    "selected_method_mae": "4.64084882",
+    "assumptions": [
+      "Final seven past local days are withheld; training ends before the holdout starts.",
+      "MAE is units per dish/channel/day, evaluated on matched complete days for both methods.",
+      "Insufficient-history evaluations may show a partial matched sample; they are not full-window evaluations.",
+      "Seven-day performance is not monthly predictive accuracy; fictional demo results do not validate real-world performance."
+    ]
+  },
+  "choices": {
+    "validation_blend": 10,
+    "baseline_competitive": 8
+  },
+  "model_metadata": {
+    "implementation_version": 3,
+    "training_data_version": 2741,
+    "training_cutoff": "2026-11-06",
+    "prediction_origin": "2026-11-07",
+    "refit_policy": "Refit from approved history for each new data version/date/policy; immutable predictions are cached.",
+    "elasticity_fitted": false,
+    "adaptive": {
+      "strategy": "adaptive_ensemble_v1",
+      "validation_origins": [
+        "2026-10-10",
+        "2026-10-17",
+        "2026-10-24",
+        "2026-10-31"
+      ],
+      "validation_horizon_days": 28,
+      "unavailable_candidates": {},
+      "available_candidates": [
+        "weekday_average_v1",
+        "recency_weekday_v1",
+        "seasonal_naive_v1",
+        "regularized_poisson_v1",
+        "poisson_gradient_boosting_v1"
+      ],
+      "selection": [
+        {
+          "dish_id": "cheeseburger",
+          "channel_id": "delivery",
+          "lead_days": [
+            1,
+            7
+          ],
+          "weights": {
+            "regularized_poisson_v1": 0.16900220057069987,
+            "weekday_average_v1": 0.6760059392533693,
+            "recency_weekday_v1": 0.15499186017593086
+          },
+          "reason": "validation_blend",
+          "observations": 26,
+          "folds": 4,
+          "mae": {
+            "weekday_average_v1": 2.7699633699633703,
+            "recency_weekday_v1": 2.800192708890575,
+            "seasonal_naive_v1": 3.3076923076923075,
+            "regularized_poisson_v1": 2.639266719260905,
+            "poisson_gradient_boosting_v1": 3.038630580182688
+          },
+          "eligible_observations": 27
+        },
+        {
+          "dish_id": "cheeseburger",
+          "channel_id": "delivery",
+          "lead_days": [
+            8,
+            14
+          ],
+          "weights": {
+            "regularized_poisson_v1": 0.1441348377679071,
+            "recency_weekday_v1": 0.13760579708413223,
+            "weekday_average_v1": 0.7182593651479605
+          },
+          "reason": "validation_blend",
+          "observations": 20,
+          "folds": 3,
+          "mae": {
+            "weekday_average_v1": 2.6983333333333333,
+            "recency_weekday_v1": 2.6621452087589703,
+            "seasonal_naive_v1": 3.4,
+            "regularized_poisson_v1": 2.578239816715123,
+            "poisson_gradient_boosting_v1": 3.0810736461885844
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "cheeseburger",
+          "channel_id": "delivery",
+          "lead_days": [
+            15,
+            28
+          ],
+          "weights": {
+            "regularized_poisson_v1": 0.14533793948176266,
+            "weekday_average_v1": 0.7207815901612358,
+            "recency_weekday_v1": 0.1338804703570016
+          },
+          "reason": "validation_blend",
+          "observations": 20,
+          "folds": 2,
+          "mae": {
+            "weekday_average_v1": 2.33,
+            "recency_weekday_v1": 2.3740789228840877,
+            "seasonal_naive_v1": 3.0,
+            "regularized_poisson_v1": 2.2383542272981214,
+            "poisson_gradient_boosting_v1": 3.0207435787184838
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "cheeseburger",
+          "channel_id": "in_store",
+          "lead_days": [
+            1,
+            7
+          ],
+          "weights": {
+            "poisson_gradient_boosting_v1": 0.1728720373845233,
+            "regularized_poisson_v1": 0.16357648859720036,
+            "weekday_average_v1": 0.6635514740182764
+          },
+          "reason": "validation_blend",
+          "observations": 26,
+          "folds": 4,
+          "mae": {
+            "weekday_average_v1": 5.188095238095238,
+            "recency_weekday_v1": 5.217181616135314,
+            "seasonal_naive_v1": 6.8076923076923075,
+            "regularized_poisson_v1": 4.82679712254661,
+            "poisson_gradient_boosting_v1": 4.667975475937249
+          },
+          "eligible_observations": 27
+        },
+        {
+          "dish_id": "cheeseburger",
+          "channel_id": "in_store",
+          "lead_days": [
+            8,
+            14
+          ],
+          "weights": {
+            "poisson_gradient_boosting_v1": 0.15691131416015167,
+            "recency_weekday_v1": 0.1299203860449485,
+            "regularized_poisson_v1": 0.1298349664615665,
+            "weekday_average_v1": 0.5833333333333333
+          },
+          "reason": "validation_blend",
+          "observations": 20,
+          "folds": 3,
+          "mae": {
+            "weekday_average_v1": 5.515833333333333,
+            "recency_weekday_v1": 5.3901372782607035,
+            "seasonal_naive_v1": 6.15,
+            "regularized_poisson_v1": 5.392238996810544,
+            "poisson_gradient_boosting_v1": 4.814624976570535
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "cheeseburger",
+          "channel_id": "in_store",
+          "lead_days": [
+            15,
+            28
+          ],
+          "weights": {
+            "poisson_gradient_boosting_v1": 0.18460822346865594,
+            "regularized_poisson_v1": 0.13438285685497098,
+            "recency_weekday_v1": 0.09767558634303973,
+            "weekday_average_v1": 0.5833333333333333
+          },
+          "reason": "validation_blend",
+          "observations": 20,
+          "folds": 2,
+          "mae": {
+            "weekday_average_v1": 5.9350000000000005,
+            "recency_weekday_v1": 5.782531034746024,
+            "seasonal_naive_v1": 6.3,
+            "regularized_poisson_v1": 4.782463077074955,
+            "poisson_gradient_boosting_v1": 3.9335471329467486
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "classic_burger",
+          "channel_id": "delivery",
+          "lead_days": [
+            1,
+            7
+          ],
+          "weights": {
+            "weekday_average_v1": 1.0
+          },
+          "reason": "baseline_competitive",
+          "observations": 26,
+          "folds": 4,
+          "mae": {
+            "weekday_average_v1": 3.896153846153846,
+            "recency_weekday_v1": 3.9408773961000185,
+            "seasonal_naive_v1": 4.923076923076923,
+            "regularized_poisson_v1": 4.213857477837019,
+            "poisson_gradient_boosting_v1": 4.09417366433153
+          },
+          "eligible_observations": 27
+        },
+        {
+          "dish_id": "classic_burger",
+          "channel_id": "delivery",
+          "lead_days": [
+            8,
+            14
+          ],
+          "weights": {
+            "poisson_gradient_boosting_v1": 0.14859402871303495,
+            "regularized_poisson_v1": 0.1394953305799838,
+            "weekday_average_v1": 0.7119106407069811
+          },
+          "reason": "validation_blend",
+          "observations": 20,
+          "folds": 3,
+          "mae": {
+            "weekday_average_v1": 4.2425,
+            "recency_weekday_v1": 4.562662263783901,
+            "seasonal_naive_v1": 5.85,
+            "regularized_poisson_v1": 4.033160356662636,
+            "poisson_gradient_boosting_v1": 3.8766313213283725
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "classic_burger",
+          "channel_id": "delivery",
+          "lead_days": [
+            15,
+            28
+          ],
+          "weights": {
+            "weekday_average_v1": 1.0
+          },
+          "reason": "baseline_competitive",
+          "observations": 20,
+          "folds": 2,
+          "mae": {
+            "weekday_average_v1": 4.725,
+            "recency_weekday_v1": 4.759973816425925,
+            "seasonal_naive_v1": 6.35,
+            "regularized_poisson_v1": 4.7190198615650125,
+            "poisson_gradient_boosting_v1": 5.103867178663686
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "classic_burger",
+          "channel_id": "in_store",
+          "lead_days": [
+            1,
+            7
+          ],
+          "weights": {
+            "weekday_average_v1": 1.0
+          },
+          "reason": "baseline_competitive",
+          "observations": 26,
+          "folds": 4,
+          "mae": {
+            "weekday_average_v1": 7.1887362637362635,
+            "recency_weekday_v1": 7.37263957794187,
+            "seasonal_naive_v1": 7.576923076923077,
+            "regularized_poisson_v1": 7.653551250586665,
+            "poisson_gradient_boosting_v1": 8.566545172171963
+          },
+          "eligible_observations": 27
+        },
+        {
+          "dish_id": "classic_burger",
+          "channel_id": "in_store",
+          "lead_days": [
+            8,
+            14
+          ],
+          "weights": {
+            "weekday_average_v1": 1.0
+          },
+          "reason": "baseline_competitive",
+          "observations": 20,
+          "folds": 3,
+          "mae": {
+            "weekday_average_v1": 6.800833333333332,
+            "recency_weekday_v1": 7.2509047221061325,
+            "seasonal_naive_v1": 10.45,
+            "regularized_poisson_v1": 6.857832007931374,
+            "poisson_gradient_boosting_v1": 8.60939461734817
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "classic_burger",
+          "channel_id": "in_store",
+          "lead_days": [
+            15,
+            28
+          ],
+          "weights": {
+            "weekday_average_v1": 1.0
+          },
+          "reason": "baseline_competitive",
+          "observations": 20,
+          "folds": 2,
+          "mae": {
+            "weekday_average_v1": 6.33,
+            "recency_weekday_v1": 6.262478047328102,
+            "seasonal_naive_v1": 9.65,
+            "regularized_poisson_v1": 6.675906011710938,
+            "poisson_gradient_boosting_v1": 8.682018741218808
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "veggie_burger",
+          "channel_id": "delivery",
+          "lead_days": [
+            1,
+            7
+          ],
+          "weights": {
+            "weekday_average_v1": 1.0
+          },
+          "reason": "baseline_competitive",
+          "observations": 26,
+          "folds": 4,
+          "mae": {
+            "weekday_average_v1": 2.803113553113553,
+            "recency_weekday_v1": 2.896979056241195,
+            "seasonal_naive_v1": 3.730769230769231,
+            "regularized_poisson_v1": 2.7911100914986346,
+            "poisson_gradient_boosting_v1": 3.1248309908959544
+          },
+          "eligible_observations": 27
+        },
+        {
+          "dish_id": "veggie_burger",
+          "channel_id": "delivery",
+          "lead_days": [
+            8,
+            14
+          ],
+          "weights": {
+            "weekday_average_v1": 1.0
+          },
+          "reason": "baseline_competitive",
+          "observations": 20,
+          "folds": 3,
+          "mae": {
+            "weekday_average_v1": 3.2233333333333336,
+            "recency_weekday_v1": 3.3405346188639045,
+            "seasonal_naive_v1": 4.35,
+            "regularized_poisson_v1": 3.15786106003312,
+            "poisson_gradient_boosting_v1": 3.4507701065842014
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "veggie_burger",
+          "channel_id": "delivery",
+          "lead_days": [
+            15,
+            28
+          ],
+          "weights": {
+            "regularized_poisson_v1": 0.15120461276211777,
+            "weekday_average_v1": 0.7179680518209326,
+            "recency_weekday_v1": 0.13082733541694955
+          },
+          "reason": "validation_blend",
+          "observations": 20,
+          "folds": 2,
+          "mae": {
+            "weekday_average_v1": 2.79,
+            "recency_weekday_v1": 2.8447534490310984,
+            "seasonal_naive_v1": 3.8,
+            "regularized_poisson_v1": 2.576310544014976,
+            "poisson_gradient_boosting_v1": 2.937599159006177
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "veggie_burger",
+          "channel_id": "in_store",
+          "lead_days": [
+            1,
+            7
+          ],
+          "weights": {
+            "seasonal_naive_v1": 0.16915230605894208,
+            "recency_weekday_v1": 0.1586994544333558,
+            "weekday_average_v1": 0.6721482395077021
+          },
+          "reason": "validation_blend",
+          "observations": 26,
+          "folds": 4,
+          "mae": {
+            "weekday_average_v1": 4.2465201465201465,
+            "recency_weekday_v1": 4.1620386140322205,
+            "seasonal_naive_v1": 4.0,
+            "regularized_poisson_v1": 4.400687080611091,
+            "poisson_gradient_boosting_v1": 5.573283158632374
+          },
+          "eligible_observations": 27
+        },
+        {
+          "dish_id": "veggie_burger",
+          "channel_id": "in_store",
+          "lead_days": [
+            8,
+            14
+          ],
+          "weights": {
+            "weekday_average_v1": 1.0
+          },
+          "reason": "baseline_competitive",
+          "observations": 20,
+          "folds": 3,
+          "mae": {
+            "weekday_average_v1": 4.549166666666666,
+            "recency_weekday_v1": 4.459490119118297,
+            "seasonal_naive_v1": 5.05,
+            "regularized_poisson_v1": 4.921713128245058,
+            "poisson_gradient_boosting_v1": 5.59004620055328
+          },
+          "eligible_observations": 21
+        },
+        {
+          "dish_id": "veggie_burger",
+          "channel_id": "in_store",
+          "lead_days": [
+            15,
+            28
+          ],
+          "weights": {
+            "seasonal_naive_v1": 0.14683723278112384,
+            "recency_weekday_v1": 0.1353797158267603,
+            "regularized_poisson_v1": 0.13444971805878256,
+            "weekday_average_v1": 0.5833333333333333
+          },
+          "reason": "validation_blend",
+          "observations": 20,
+          "folds": 2,
+          "mae": {
+            "weekday_average_v1": 4.345,
+            "recency_weekday_v1": 4.207284439695907,
+            "seasonal_naive_v1": 4.0,
+            "regularized_poisson_v1": 4.2252629724335256,
+            "poisson_gradient_boosting_v1": 5.215839651783174
+          },
+          "eligible_observations": 21
+        }
+      ],
+      "assumptions": [
+        "Model weights use only completed observations strictly before the prediction origin.",
+        "Per-dish/channel, lead-bucket MAE uses common validation cases; candidates need 90% case coverage.",
+        "At least two rolling origins and fourteen cases are required; weights shrink toward weekday averages.",
+        "Lead times beyond twenty-eight days reuse the longest validated bucket with deviations reduced by 28/lead.",
+        "Overlapping validation windows are dependent; these scores select weights and are not unbiased accuracy estimates.",
+        "The separately held-out evaluation refits the complete selector before its own forecast origin."
+      ]
+    },
+    "scikit_learn_version": "1.9.1"
+  },
+  "limitations": [
+    "Fictional data; seven-day holdout does not establish monthly or real-world accuracy."
+  ]
+}

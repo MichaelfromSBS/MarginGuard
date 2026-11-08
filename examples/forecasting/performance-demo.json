@@ -1,0 +1,18 @@
+{
+  "is_demo": true,
+  "as_of": "2026-11-07",
+  "method": "adaptive_ensemble_v1",
+  "implementation_version": 4,
+  "environment": "Same Windows workstation and Python 3.11.9 environment; optional scientific dependencies already loaded for warm runs.",
+  "scope": "Unprofiled calculate() including holdout evaluation on fresh isolated copies of the same unchanged corpus.",
+  "before_warm_uncached_seconds": 8.438,
+  "after_warm_uncached_seconds": 1.004,
+  "cached_seconds": 0.003,
+  "cached_browser_curve_ms": 226,
+  "correctness": "Optimized Poisson recursive batches match the original fitted pipeline within rtol=1e-12 and atol=1e-12.",
+  "limitations": [
+    "Indicative single-run timings; not a cross-hardware latency guarantee.",
+    "Cold process startup still loads scientific libraries once.",
+    "Timing changes do not establish an accuracy improvement."
+  ]
+}

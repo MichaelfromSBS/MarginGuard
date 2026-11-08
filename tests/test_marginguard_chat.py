@@ -418,7 +418,7 @@ def test_future_observation_request_is_unavailable_without_a_fabricated_total(cl
 
 def test_stale_saved_forecast_is_not_presented_as_current(client, ledger, provider):
     with connect(ledger) as conn:
-        forecast = forecasting.calculate(conn, ForecastRequest(as_of=DAY))
+        forecast = forecasting.calculate(conn, ForecastRequest(as_of=DAY, method="weekday_average_v1"))
         conn.execute("UPDATE restaurant SET data_version=data_version+1")
     provider["response"] = completion(plan(call("get_month_forecast")))
     result = post(client, ledger, "What are projected sales next month?").json()

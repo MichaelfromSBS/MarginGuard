@@ -292,7 +292,8 @@ def month_forecast(conn, args, today):
         WHERE r.horizon_start=? ORDER BY s.as_of_date DESC,r.created_at DESC,r.rowid DESC LIMIT 1""", (start.isoformat(),)).fetchone()
     if row is None:
         return ToolResult(f"No saved forecast exists for {start:%Y-%m}. Chat does not calculate forecasts; wait for automatic refresh or use Trends & Outlook.", unavailable=True)
-    result = forecasting.get_forecast(conn, row["id"])
+    active = forecasting.latest_forecast(conn, today)
+    result = active if active is not None and active.horizon.start == start else forecasting.get_forecast(conn, row["id"])
     refs = [{"kind": "forecast_run", "record_id": result.id}]
     if result.status != "ready" or result.as_of != today:
         reason = "out of date" if result.status == "pending" or result.as_of != today else result.status.replace("_", " ")

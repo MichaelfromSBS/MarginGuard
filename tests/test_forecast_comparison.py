@@ -166,7 +166,7 @@ def test_real_saved_demo_snapshots_explain_beef_price_effect_without_rebuilding_
     from backend.marginguard.schemas import ForecastRequest
 
     import_demo(database)
-    policy = ForecastRequest(as_of=date(2026, 11, 7))
+    policy = ForecastRequest(as_of=date(2026, 11, 7), method="weekday_average_v1")
     with connect(database) as conn:
         previous = calculate(conn, policy)
     source = ROOT / "demo_data/live_demo/2_invoice_RF-20261107-004.pdf"

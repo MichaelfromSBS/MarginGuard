@@ -1,35 +1,12 @@
-import { useState } from 'react';
-import type { Alert, Metric } from '../marginguard-api';
+import type { Metric } from '../marginguard-api';
+import type { AlertFeed } from './useAlerts';
+import { AlertItem } from './Alerts';
 import { api, errorText, isNotYet, loadDocuments, usePoll } from './client';
-import { localDate, money, pctChange, shortDate, timeAgo } from './format';
+import { localDate, money, pctChange, shortDate } from './format';
 import { Card, ErrorBox, NotYet } from './ui';
 import { MetricCard } from './Metrics';
 
 type Go = (tab: 'trends' | 'documents') => void;
-
-export function AlertItem({ a, onChanged }: { a: Alert; onChanged?: () => void }) {
-  const [err, setErr] = useState('');
-  const [busy, setBusy] = useState(false);
-  const act = async (fn: (id: string) => Promise<Alert>) => {
-    setBusy(true); setErr('');
-    try { await fn(a.id); onChanged?.(); window.dispatchEvent(new Event('mg:alerts-changed')); } catch (e) { setErr(errorText(e)); } finally { setBusy(false); }
-  };
-  return (
-    <div className={`alert ${a.severity} ${a.status === 'acknowledged' ? 'seen' : ''}`}>
-      <div className="alert-main">
-        <b>{a.title}</b>
-        <p>{a.message}</p>
-        {a.suggestion && <span className="suggest"><b>Suggested next step:</b> {a.suggestion}{a.explanation_status === 'ai' ? ' (AI suggestion)' : ''}</span>}
-        <small>{timeAgo(a.created_at)}{a.evidence.length ? ` · ${a.evidence.length} source${a.evidence.length > 1 ? 's' : ''}` : ''}</small>
-        {err && <small className="err">{err}</small>}
-      </div>
-      <div className="alert-actions">
-        {a.status === 'new' && <button className="ghost" disabled={busy} onClick={() => act(api.acknowledge)}>Acknowledge</button>}
-        <button className="ghost" disabled={busy} onClick={() => act(api.resolve)} title="Mark as handled and remove from the list">Resolve</button>
-      </div>
-    </div>
-  );
-}
 
 /** A lightweight attention row that links to the page where it can be handled. */
 function Task({ tone, title, text, action, onClick }: { tone: 'warn' | 'info'; title: string; text: string; action: string; onClick: () => void }) {
@@ -49,12 +26,7 @@ const GHOST: Record<string, string> = {
 };
 const RECENT_DAYS = 14;
 
-export default function Overview({ go }: { go: Go }) {
-  // Archived resolved findings cannot displace either live list's first page.
-  const alerts = usePoll(async () => {
-    const [fresh, acknowledged] = await Promise.all([api.alerts('new'), api.alerts('acknowledged')]);
-    return { items: [...fresh.items, ...acknowledged.items] };
-  }, 5000);
+export default function Overview({ go, alerts, onOpenAlert, onSource, demoAsOf }: { go: Go; alerts: AlertFeed; onOpenAlert: (id: string) => void; onSource: (id: string) => void; demoAsOf?: string | null }) {
   const capabilities = usePoll(() => api.capabilities(), 0);
   const worker = usePoll(() => api.worker(), 5000);
   const dash = usePoll(() => api.dashboard(), 3000);
@@ -66,7 +38,6 @@ export default function Overview({ go }: { go: Go }) {
   }, 10000, [catalog.data]);
 
   const open = (alerts.data?.items ?? []).filter((a) => a.status === 'new');
-  const seen = (alerts.data?.items ?? []).filter((a) => a.status === 'acknowledged');
   const monitoringAvailable = capabilities.data?.capabilities.some((c) => c.name === 'background_processing_and_alerts' && c.available);
   const monitoring = monitoringAvailable && worker.data?.status === 'running' && !worker.error && !worker.data.error_code;
   const review = (docs.data ?? []).filter((d) => d.status === 'needs_review' || d.status === 'failed');
@@ -79,9 +50,10 @@ export default function Overview({ go }: { go: Go }) {
   const outlook = pick(OUTLOOK, forecast?.status === 'ready' && !dash.error ? forecast.metrics : undefined);
 
   // Only supplier price changes from the last two weeks; full history lives in Trends & Outlook.
-  const cutoff = new Date(Date.now() - RECENT_DAYS * 86400000).toISOString().slice(0, 10);
+  const today = demoAsOf ?? localDate();
+  const cutoff = new Date(Date.parse(`${today}T12:00:00Z`) - RECENT_DAYS * 86400000).toISOString().slice(0, 10);
   const changes = (prices.data ?? []).flatMap(({ ing, items }) => {
-    const eff = items.filter((p) => p.effective_date <= localDate());
+    const eff = items.filter((p) => p.effective_date <= today);
     const selected = dash.data?.dish_costs.flatMap((d) => d.ingredients).find((i) => i.ingredient_id === ing.id)?.evidence?.record_id;
     const cur = eff.find((p) => p.invoice_line_id === selected) ?? eff.at(-1);
     // Compare with the latest price from an earlier date (several invoices can share a date).
@@ -95,21 +67,15 @@ export default function Overview({ go }: { go: Go }) {
     <div className="stack">
       <Card title={<>Needs attention {attentionCount > 0 && <span className="count">{attentionCount}</span>}</>}>
         {alerts.error ? <ErrorBox>{errorText(alerts.error)}</ErrorBox> : null}
-        {open.map((a) => <AlertItem key={a.id} a={a} onChanged={alerts.refresh} />)}
+        {open.map((a) => <AlertItem key={a.id} a={a} onChanged={alerts.update} onOpenInbox={onOpenAlert} onSource={onSource} />)}
         {review.length > 0 && <Task tone="warn" title={`${review.length} document${review.length > 1 ? 's' : ''} need${review.length > 1 ? '' : 's'} review`}
           text="Held out of the books until checked." action="Open Inbox" onClick={() => go('documents')} />}
-        {forecastStale && <Task tone="info" title="Next-month forecast is out of date" text="New records arrived since it was calculated." action="Recalculate" onClick={() => go('trends')} />}
+        {forecastStale && <Task tone="info" title="Next-month forecast is out of date" text="New records arrived since it was calculated." action="View forecast" onClick={() => go('trends')} />}
         {attentionCount === 0 && (alerts.loading || worker.loading ? <p className="muted">Checking for alerts…</p>
           : alerts.error ? null
           : monitoring ? <p className="allclear">All clear.</p>
-          : monitoringAvailable ? <p className="issues">Automatic monitoring is unavailable. Alerts and forecasts may be out of date.</p>
+          : monitoringAvailable ? <p className="issues">Monitoring offline · forecasts may be out of date.</p>
           : <NotYet checkpoint={4} what="Cost increases and yesterday’s unusual sales" />)}
-        {seen.length > 0 && (
-          <details className="seen-list">
-            <summary>Acknowledged ({seen.length}): resolve when handled</summary>
-            {seen.map((a) => <AlertItem key={a.id} a={a} onChanged={alerts.refresh} />)}
-          </details>
-        )}
       </Card>
 
       <section>
@@ -117,7 +83,7 @@ export default function Overview({ go }: { go: Go }) {
         <div className="metrics">
           {sales.map(({ id, m }) => m ? <MetricCard key={id} m={m} /> : <Ghost key={id} label={GHOST[id]} />)}
         </div>
-        <p className="hint">Updates as receipts are approved. Today’s sales are still in progress; amounts exclude tax and tips.</p>
+        <p className="hint">Today is partial · tax and tips excluded.</p>
         {dash.error ? (isNotYet(dash.error) ? <NotYet checkpoint={3} what="Sales figures" /> : <ErrorBox>{errorText(dash.error)}</ErrorBox>) : null}
       </section>
 
@@ -125,7 +91,7 @@ export default function Overview({ go }: { go: Go }) {
         <section>
           <div className="section-head"><h3>Next month</h3><button className="link" onClick={() => go('trends')}>Full outlook →</button></div>
           <div className="metrics two">
-            {outlook.map(({ id, m }) => m ? <MetricCard key={id} m={m} /> : <Ghost key={id} label={GHOST[id]} note={forecast ? 'Recalculate in Trends & Outlook' : 'Calculate in Trends & Outlook'} />)}
+            {outlook.map(({ id, m }) => m ? <MetricCard key={id} m={m} /> : <Ghost key={id} label={GHOST[id]} note={forecast ? 'Updating automatically' : 'Preparing forecast'} />)}
           </div>
         </section>
         <section>

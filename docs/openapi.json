@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MarginGuard API",
-    "description": "Checkpoint 5: durable ingestion, automatic forecasts, in-app alerts and read-only database-grounded owner chat. No external owner notifications or chat-driven writes. Monetary values and quantities are decimal strings.",
+    "description": "Restaurant records, automatic forecasts, evidence-linked website alerts and read-only database-grounded owner chat. Monetary values and quantities are decimal strings.",
     "version": "1.0.0"
   },
   "paths": {
@@ -16,80 +16,6 @@
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/run": {
-      "post": {
-        "summary": "Run",
-        "operationId": "run_api_run_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RunResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/stream": {
-      "post": {
-        "summary": "Stream",
-        "operationId": "stream_api_stream_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
               }
             }
           }
@@ -2524,6 +2450,118 @@
         }
       }
     },
+    "/api/forecasts/{run_id}/pricing-scenario": {
+      "post": {
+        "tags": [
+          "MarginGuard v1"
+        ],
+        "summary": "Pricing Scenario",
+        "operationId": "pricing_scenario_api_forecasts__run_id__pricing_scenario_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PricingScenarioRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingScenarioResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        }
+      }
+    },
     "/api/forecasts/{run_id}": {
       "get": {
         "tags": [
@@ -3086,44 +3124,6 @@
           "updated_at"
         ],
         "title": "Alert"
-      },
-      "Analysis": {
-        "properties": {
-          "summary": {
-            "type": "string",
-            "title": "Summary"
-          },
-          "findings": {
-            "items": {
-              "$ref": "#/components/schemas/Finding"
-            },
-            "type": "array",
-            "title": "Findings"
-          },
-          "next_steps": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Next Steps"
-          },
-          "unknowns": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Unknowns"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "summary",
-          "findings",
-          "next_steps",
-          "unknowns"
-        ],
-        "title": "Analysis"
       },
       "Body_upload_document_api_documents_post": {
         "properties": {
@@ -4175,25 +4175,6 @@
         ],
         "title": "ErrorResponse"
       },
-      "Evidence": {
-        "properties": {
-          "source_id": {
-            "type": "string",
-            "title": "Source Id"
-          },
-          "quote": {
-            "type": "string",
-            "title": "Quote"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "source_id",
-          "quote"
-        ],
-        "title": "Evidence"
-      },
       "EvidenceReference": {
         "properties": {
           "kind": {
@@ -4251,33 +4232,6 @@
           "record_id"
         ],
         "title": "EvidenceReference"
-      },
-      "Finding": {
-        "properties": {
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "detail": {
-            "type": "string",
-            "title": "Detail"
-          },
-          "evidence": {
-            "items": {
-              "$ref": "#/components/schemas/Evidence"
-            },
-            "type": "array",
-            "title": "Evidence"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "title",
-          "detail",
-          "evidence"
-        ],
-        "title": "Finding"
       },
       "ForecastDay": {
         "properties": {
@@ -4370,6 +4324,30 @@
             ],
             "title": "Seasonal Naive Mae"
           },
+          "selected_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Method"
+          },
+          "selected_method_mae": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Method Mae"
+          },
           "assumptions": {
             "items": {
               "type": "string"
@@ -4392,6 +4370,18 @@
       },
       "ForecastRequest": {
         "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "weekday_average_v1",
+              "regularized_poisson_v1",
+              "poisson_gradient_boosting_v1",
+              "recency_weekday_v1",
+              "adaptive_ensemble_v1"
+            ],
+            "title": "Method",
+            "default": "adaptive_ensemble_v1"
+          },
           "as_of": {
             "anyOf": [
               {
@@ -4555,6 +4545,11 @@
             },
             "type": "array",
             "title": "Limitations"
+          },
+          "model_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Model Metadata"
           }
         },
         "additionalProperties": false,
@@ -4735,19 +4730,6 @@
         ],
         "title": "ForecastSeries"
       },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
-      },
       "Ingredient": {
         "properties": {
           "id": {
@@ -4843,6 +4825,30 @@
           "base_unit"
         ],
         "title": "IngredientPrice"
+      },
+      "IngredientPriceOverride": {
+        "properties": {
+          "ingredient_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "title": "Ingredient Id"
+          },
+          "unit_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Unit Cost"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ingredient_id",
+          "unit_cost"
+        ],
+        "title": "IngredientPriceOverride"
       },
       "IngredientRequirement": {
         "properties": {
@@ -5358,47 +5364,38 @@
         ],
         "title": "MenuPrice"
       },
-      "Metadata": {
+      "MenuPriceOverride": {
         "properties": {
-          "mode": {
+          "dish_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "title": "Dish Id"
+          },
+          "channel_id": {
             "type": "string",
             "enum": [
-              "mock",
-              "openrouter"
+              "in_store",
+              "delivery"
             ],
-            "title": "Mode"
+            "title": "Channel Id"
           },
-          "model": {
+          "price": {
             "type": "string",
-            "title": "Model"
-          },
-          "elapsed_ms": {
-            "type": "integer",
-            "title": "Elapsed Ms"
-          },
-          "usage": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Usage"
-          },
-          "warnings": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Warnings"
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Price"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "mode",
-          "model",
-          "elapsed_ms",
-          "usage",
-          "warnings"
+          "dish_id",
+          "channel_id",
+          "price"
         ],
-        "title": "Metadata"
+        "title": "MenuPriceOverride"
       },
       "Metric": {
         "properties": {
@@ -5778,6 +5775,322 @@
           "end"
         ],
         "title": "Period"
+      },
+      "PricingIngredientRequirement": {
+        "properties": {
+          "ingredient_id": {
+            "type": "string",
+            "title": "Ingredient Id"
+          },
+          "quantity": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Quantity"
+          },
+          "base_unit": {
+            "type": "string",
+            "enum": [
+              "lb",
+              "oz",
+              "each"
+            ],
+            "title": "Base Unit"
+          },
+          "unit_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Unit Cost"
+          },
+          "cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Cost"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceReference"
+          },
+          "price_source": {
+            "type": "string",
+            "enum": [
+              "approved_invoice",
+              "owner_assumption"
+            ],
+            "title": "Price Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ingredient_id",
+          "quantity",
+          "base_unit",
+          "unit_cost",
+          "cost",
+          "evidence",
+          "price_source"
+        ],
+        "title": "PricingIngredientRequirement"
+      },
+      "PricingScenarioRequest": {
+        "properties": {
+          "reference_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Date"
+          },
+          "cost_pass_through_pct": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Cost Pass Through Pct",
+            "default": "100"
+          },
+          "price_elasticity": {
+            "type": "string",
+            "maxLength": 41,
+            "pattern": "^-?(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Price Elasticity",
+            "default": "-1"
+          },
+          "ingredient_prices": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientPriceOverride"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Ingredient Prices"
+          },
+          "menu_prices": {
+            "items": {
+              "$ref": "#/components/schemas/MenuPriceOverride"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Menu Prices"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PricingScenarioRequest"
+      },
+      "PricingScenarioResponse": {
+        "properties": {
+          "forecast_id": {
+            "type": "string",
+            "title": "Forecast Id"
+          },
+          "source_data_version": {
+            "type": "integer",
+            "title": "Source Data Version"
+          },
+          "horizon": {
+            "$ref": "#/components/schemas/Period"
+          },
+          "reference_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Reference Date"
+          },
+          "price_elasticity": {
+            "type": "string",
+            "maxLength": 41,
+            "pattern": "^-?(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Price Elasticity"
+          },
+          "elasticity_source": {
+            "type": "string",
+            "const": "owner_assumption",
+            "title": "Elasticity Source",
+            "default": "owner_assumption"
+          },
+          "cost_pass_through_pct": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Cost Pass Through Pct"
+          },
+          "units": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Units"
+          },
+          "revenue": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Revenue"
+          },
+          "ingredient_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Ingredient Cost"
+          },
+          "revenue_less_ingredient_cost": {
+            "type": "string",
+            "maxLength": 41,
+            "pattern": "^-?(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Revenue Less Ingredient Cost"
+          },
+          "fixed_demand_ingredient_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Fixed Demand Ingredient Cost"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/PricingScenarioSeries"
+            },
+            "type": "array",
+            "title": "Series"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/PricingIngredientRequirement"
+            },
+            "type": "array",
+            "title": "Ingredients"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "forecast_id",
+          "source_data_version",
+          "horizon",
+          "reference_date",
+          "price_elasticity",
+          "cost_pass_through_pct",
+          "units",
+          "revenue",
+          "ingredient_cost",
+          "revenue_less_ingredient_cost",
+          "fixed_demand_ingredient_cost",
+          "series",
+          "ingredients",
+          "assumptions",
+          "limitations"
+        ],
+        "title": "PricingScenarioResponse"
+      },
+      "PricingScenarioSeries": {
+        "properties": {
+          "dish_id": {
+            "type": "string",
+            "title": "Dish Id"
+          },
+          "channel_id": {
+            "type": "string",
+            "enum": [
+              "in_store",
+              "delivery"
+            ],
+            "title": "Channel Id"
+          },
+          "reference_unit_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Reference Unit Cost"
+          },
+          "current_unit_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Current Unit Cost"
+          },
+          "scenario_unit_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Scenario Unit Cost"
+          },
+          "current_menu_price": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Current Menu Price"
+          },
+          "scenario_menu_price": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Scenario Menu Price"
+          },
+          "demand_multiplier": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Demand Multiplier"
+          },
+          "baseline_units": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Baseline Units"
+          },
+          "units": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Units"
+          },
+          "revenue": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Revenue"
+          },
+          "ingredient_cost": {
+            "type": "string",
+            "maxLength": 40,
+            "pattern": "^(0|[1-9]\\d*)(\\.\\d{1,8})?$",
+            "title": "Ingredient Cost"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dish_id",
+          "channel_id",
+          "reference_unit_cost",
+          "current_unit_cost",
+          "scenario_unit_cost",
+          "current_menu_price",
+          "scenario_menu_price",
+          "demand_multiplier",
+          "baseline_units",
+          "units",
+          "revenue",
+          "ingredient_cost"
+        ],
+        "title": "PricingScenarioSeries"
       },
       "Receipt": {
         "properties": {
@@ -6391,59 +6704,6 @@
         ],
         "title": "Restaurant"
       },
-      "RunRequest": {
-        "properties": {
-          "task": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Task"
-          },
-          "sources": {
-            "items": {
-              "$ref": "#/components/schemas/Source"
-            },
-            "type": "array",
-            "maxItems": 8,
-            "title": "Sources"
-          },
-          "image": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4200000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Image"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "task"
-        ],
-        "title": "RunRequest"
-      },
-      "RunResponse": {
-        "properties": {
-          "result": {
-            "$ref": "#/components/schemas/Analysis"
-          },
-          "meta": {
-            "$ref": "#/components/schemas/Metadata"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "result",
-          "meta"
-        ],
-        "title": "RunResponse"
-      },
       "SalesGroup": {
         "properties": {
           "date": {
@@ -6615,77 +6875,6 @@
           "assumptions"
         ],
         "title": "SalesSummary"
-      },
-      "Source": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "maxLength": 60,
-            "minLength": 1,
-            "pattern": "^[a-zA-Z0-9_-]+$",
-            "title": "Id"
-          },
-          "title": {
-            "type": "string",
-            "maxLength": 160,
-            "minLength": 1,
-            "title": "Title"
-          },
-          "text": {
-            "type": "string",
-            "maxLength": 32000,
-            "minLength": 1,
-            "title": "Text"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "id",
-          "title",
-          "text"
-        ],
-        "title": "Source"
-      },
-      "ValidationError": {
-        "properties": {
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
-            "type": "array",
-            "title": "Location"
-          },
-          "msg": {
-            "type": "string",
-            "title": "Message"
-          },
-          "type": {
-            "type": "string",
-            "title": "Error Type"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
-          }
-        },
-        "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
-        "title": "ValidationError"
       },
       "Vendor": {
         "properties": {

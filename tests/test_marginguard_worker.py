@@ -12,7 +12,7 @@ import pytest
 
 from backend.config import ROOT, Settings
 from backend.main import create_app
-from backend.marginguard import analytics
+from backend.marginguard import analytics, forecasting
 from backend.marginguard.chat_tools import execute_tool
 from backend.worker import Worker
 from backend.marginguard.db import connect
@@ -35,6 +35,10 @@ RECEIPT = "live_demo/1_receipt_TB-20261107-001"
 def baseline(tmp_path_factory):
     path = tmp_path_factory.mktemp("worker-baseline") / "history.db"
     import_demo(path)
+    # These acceptance cases assert fixed-demand weekday-baseline amounts.
+    with connect(path) as conn:
+        conn.execute("INSERT INTO worker_state(key,value) VALUES ('forecast_selection',?)", (json.dumps({'method':'weekday_average_v1'}),))
+        conn.execute("INSERT INTO worker_state(key,value) VALUES ('forecast_default_policy',?)", (forecasting.DEFAULT_POLICY_VERSION,))
     return path
 
 
@@ -540,3 +544,16 @@ def test_combined_alert_explains_rising_ingredients_and_net_offsets_with_reconci
     assert finding["increase"] == "471.74"
     assert sum(Decimal(item["price_effect"]) for item in finding["changes"]) == Decimal(finding["increase"])
     assert "Other ingredient changes" in alerts[0]["message"]
+
+
+def test_worker_upgrades_legacy_default_to_auto_without_external_notifications(settings):
+    with connect(settings.database_path) as conn:
+        conn.execute("DELETE FROM worker_state WHERE key='forecast_default_policy'")
+    async def cycle():
+        async with Worker(settings) as worker:
+            await worker.cycle(DAY)
+    asyncio.run(cycle())
+    with connect(settings.database_path) as conn:
+        snapshot = forecasting.latest_forecast(conn, DAY)
+        assert snapshot.status == 'ready' and snapshot.method == 'adaptive_ensemble_v1'
+        assert conn.execute("SELECT value FROM worker_state WHERE key='forecast_default_policy'").fetchone()[0] == forecasting.DEFAULT_POLICY_VERSION

@@ -1,10 +1,11 @@
 {
-  "name": "nova-ai-starter",
+  "name": "marginguard",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "workspaces": ["frontend"],
   "scripts": {
     "dev": "python scripts/dev.py",
+    "demo": "python scripts/demo.py",
     "build": "npm run build --workspace frontend",
     "test:frontend": "npm run test --workspace frontend",
     "typecheck": "npm run typecheck --workspace frontend"

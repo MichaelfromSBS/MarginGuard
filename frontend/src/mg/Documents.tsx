@@ -3,15 +3,25 @@ import type { DocumentDetail, DocumentType, InvoiceExtraction, ReceiptExtraction
 import { api, errorText, loadDocuments, usePoll } from './client';
 import { dateTime, label, money, qty, timeAgo, subtractDecimal } from './format';
 import { Card, Empty, ErrorBox, Pill, StatusBadge } from './ui';
+import AlertInbox from './Alerts';
+import type { AlertFeed } from './useAlerts';
 
-export default function Documents({ selectedId, onSelect }: { selectedId: string | null; onSelect: (id: string | null) => void }) {
+export default function Documents({ selectedId, onSelect, alerts, alertSelection }: { selectedId: string | null; onSelect: (id: string | null) => void; alerts: AlertFeed; alertSelection: { id: string | null; token: number } | null }) {
   const [showHistory, setShowHistory] = useState(false);
   const [filter, setFilter] = useState<'all' | 'attention'>('all');
   const list = usePoll(() => loadDocuments(showHistory), 3000, [showHistory]);
   const docs = (list.data ?? []).filter((d) => filter === 'all' || d.status === 'needs_review' || d.status === 'failed');
   const attention = (list.data ?? []).filter((d) => d.status === 'needs_review' || d.status === 'failed').length;
+  const reviewPanel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!selectedId) return;
+    reviewPanel.current?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    reviewPanel.current?.focus({ preventScroll: true });
+  }, [selectedId]);
 
   return (
+    <div className="stack">
+    <AlertInbox feed={alerts} selection={alertSelection} onSource={onSelect} />
     <div className="docs-layout">
       <div className="stack">
         <Upload onUploaded={(id) => { onSelect(id); list.refresh(); }} />
@@ -23,7 +33,11 @@ export default function Documents({ selectedId, onSelect }: { selectedId: string
           </div>}
         >
           {list.error ? <ErrorBox>Couldn't load documents: {errorText(list.error)}</ErrorBox> : null}
-          {list.loading && <Empty>Loading…</Empty>}
+          <div className="document-results" aria-busy={list.loading}>
+          {list.loading && <div className="document-placeholder" role="status" aria-label="Loading documents">
+            <span className="muted">Loading documents…</span>
+            {Array.from({ length: 6 }, (_, i) => <div className="document-skeleton" key={i} aria-hidden="true"><i /><span><b /><small /></span></div>)}
+          </div>}
           {list.data && docs.length === 0 && <Empty>{filter === 'attention' ? 'Nothing needs attention.' : 'No documents yet. Upload one above.'}</Empty>}
           <ul className="doclist">
             {docs.map((d) => (
@@ -36,10 +50,12 @@ export default function Documents({ selectedId, onSelect }: { selectedId: string
               </li>
             ))}
           </ul>
+          </div>
           <label className="check"><input type="checkbox" checked={showHistory} onChange={(e) => setShowHistory(e.target.checked)} /> Show latest imported history receipts</label>
         </Card>
       </div>
-      <div>{selectedId ? <Detail key={selectedId} id={selectedId} /> : <Card><Empty>Select a document to see what the AI extracted and how it was validated.</Empty></Card>}</div>
+      <div ref={reviewPanel} tabIndex={-1} className="document-review">{selectedId ? <Detail key={selectedId} id={selectedId} /> : <Card><Empty>Select a document to review.</Empty></Card>}</div>
+    </div>
     </div>
   );
 }
@@ -64,7 +80,7 @@ function Upload({ onUploaded }: { onUploaded: (id: string) => void }) {
     try {
       const { doc, duplicate } = await api.upload(type, file);
       setMsg(duplicate
-        ? { tone: 'warn', text: 'Already uploaded. Showing the existing record; nothing was counted twice.' }
+        ? { tone: 'warn', text: 'Already uploaded · no duplicate counted.' }
         : { tone: 'ok', text: 'Uploaded. The AI is reading it now.' });
       setFile(null); if (input.current) input.current.value = '';
       onUploaded(doc.id);
@@ -75,7 +91,6 @@ function Upload({ onUploaded }: { onUploaded: (id: string) => void }) {
 
   return (
     <Card title="Add a document">
-      <p className="demo-note">Demo only: in production, invoices arrive automatically by email forwarding and sales sync from the POS. This inbox shows what was processed and what needs review.</p>
       <div className="seg">
         <button className={type === 'invoice' ? 'on' : ''} onClick={() => setType('invoice')}>Supplier invoice</button>
         <button className={type === 'receipt' ? 'on' : ''} onClick={() => setType('receipt')}>Customer receipt</button>
@@ -181,7 +196,7 @@ function Fields({ doc }: { doc: DocumentDetail }) {
             <tr className="strong"><td colSpan={5} className="r">Total</td><td className="r">{money(inv.total)}</td></tr>
           </tfoot>
         </table>
-        <p className="hint">Hover a line to see the exact text it was read from.</p>
+        <p className="hint">Hover a line for its source.</p>
       </>
     );
   }
@@ -211,7 +226,7 @@ function Fields({ doc }: { doc: DocumentDetail }) {
           <tr className="strong"><td colSpan={4} className="r">Total charged</td><td className="r">{money(r.total)}</td></tr>
         </tfoot>
       </table>
-      <p className="hint">Net item revenue is subtotal minus allocated discounts; tax and tips are excluded.</p>
+      <p className="hint">Net sales exclude tax and tips.</p>
     </>
   );
 }

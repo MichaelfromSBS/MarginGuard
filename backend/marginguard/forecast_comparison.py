@@ -73,6 +73,9 @@ def _compare(conn, previous_id, current_id):
         raise _incompatible("Choose the same forecast month.")
     if previous.method != current.method:
         raise _incompatible("The forecast methods differ.")
+    if previous.method != "weekday_average_v1" and any(previous.model_metadata.get(key) != current.model_metadata.get(key)
+            for key in ("implementation_version", "scikit_learn_version")):
+        raise _incompatible("The fitted model implementation or library versions differ.")
     if any(old_policy.get(key) != new_policy.get(key) for key in ("history_weeks", "min_observations")):
         raise _incompatible("The forecast training policies differ.")
     if set(old_series) != set(new_series) or any(old_series[key].recipe_version_id != new_series[key].recipe_version_id for key in old_series):

@@ -1,6 +1,6 @@
 {
   "answer": "From 2026-11-01 through 2026-11-07, approved receipts show 3 orders, 6 units and $72.00 net item revenue. Tax and tips are excluded.",
-  "as_of": "2026-11-07T21:30:11.384660Z",
+  "as_of": "2026-11-08T20:57:26.898972Z",
   "metrics": [
     {
       "id": "chat.c1.sales.units",
@@ -12,7 +12,7 @@
         "start": "2026-11-01",
         "end": "2026-11-07"
       },
-      "as_of": "2026-11-07T21:30:11.383660Z",
+      "as_of": "2026-11-08T20:57:26.897971Z",
       "coverage": "partial",
       "source_data_version": 1,
       "evidence": [
@@ -62,7 +62,7 @@
         "start": "2026-11-01",
         "end": "2026-11-07"
       },
-      "as_of": "2026-11-07T21:30:11.383660Z",
+      "as_of": "2026-11-08T20:57:26.897971Z",
       "coverage": "partial",
       "source_data_version": 1,
       "evidence": [
@@ -112,7 +112,7 @@
         "start": "2026-11-01",
         "end": "2026-11-07"
       },
-      "as_of": "2026-11-07T21:30:11.383660Z",
+      "as_of": "2026-11-08T20:57:26.897971Z",
       "coverage": "partial",
       "source_data_version": 1,
       "evidence": [
@@ -162,7 +162,7 @@
         "start": "2026-11-01",
         "end": "2026-11-07"
       },
-      "as_of": "2026-11-07T21:30:11.383660Z",
+      "as_of": "2026-11-08T20:57:26.897971Z",
       "coverage": "partial",
       "source_data_version": 1,
       "evidence": [

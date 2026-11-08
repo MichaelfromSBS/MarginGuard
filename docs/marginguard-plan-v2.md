@@ -2,7 +2,7 @@
 
 NOVA 2026 · DoorDash Back of House · Team requirements revision · November 7, 2026
 
-This supersedes the narrower invoice-only plan in `marginguard-plan.md`. It is a project plan; see [progress.md](progress.md) for implementation status. The backend implements checkpoints 1–5 and is integrated with the teammate's restaurant frontend. Notifications stay inside the website, per the team's revised scope. Checkpoint 5 implements read-only database-backed chat; see [checkpoint-5.md](checkpoint-5.md) for its current boundaries.
+This records the team's hackathon requirements. See the [README](../README.md) for the released product and [progress.md](progress.md) for implementation history. The backend implements checkpoints 1–5 and is integrated with the restaurant frontend. Notifications stay inside the website. Checkpoint 5 implements read-only database-backed chat; see [checkpoint-5.md](checkpoint-5.md) for its boundaries.
 
 ## Product and five required capabilities
 

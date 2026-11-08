@@ -41,7 +41,7 @@ export default function Ask({ onSource, onMinimize }: { onSource: (id: string) =
       <div className="chat" ref={box}>
         {msgs.length === 0 && (
           <div className="chat-empty">
-            <p>Ask about sales, costs, forecasts or alerts. You can also ask me to explain an answer.</p>
+            <p>Ask about your sales, costs or forecasts.</p>
             <div className="chips">{SUGGESTED.map((s) => <button key={s} className="chip" onClick={() => send(s)}>{s}</button>)}</div>
           </div>
         )}

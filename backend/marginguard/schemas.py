@@ -411,6 +411,7 @@ class DishCost(ContractModel):
 
 
 class ForecastRequest(ContractModel):
+    method: Literal["weekday_average_v1", "regularized_poisson_v1", "poisson_gradient_boosting_v1", "recency_weekday_v1", "adaptive_ensemble_v1"] = "adaptive_ensemble_v1"
     as_of: date | None = None
     history_weeks: int = Field(default=8, ge=4, le=26)
     min_observations: int = Field(default=4, ge=4, le=26)
@@ -477,6 +478,8 @@ class ForecastEvaluation(ContractModel):
     observations: int
     weekday_average_mae: DecimalString | None
     seasonal_naive_mae: DecimalString | None
+    selected_method: str | None = None
+    selected_method_mae: DecimalString | None = None
     assumptions: list[str]
 
 
@@ -498,6 +501,78 @@ class ForecastResponse(ContractModel):
     scenarios: list[ForecastScenario] = Field(default_factory=list)
     evaluation: ForecastEvaluation | None = None
     limitations: list[str] = Field(default_factory=list)
+    model_metadata: dict = Field(default_factory=dict)
+
+
+class IngredientPriceOverride(ContractModel):
+    ingredient_id: Identifier
+    unit_cost: DecimalString
+
+
+class MenuPriceOverride(ContractModel):
+    dish_id: Identifier
+    channel_id: ChannelId
+    price: DecimalString
+
+
+class PricingScenarioRequest(ContractModel):
+    reference_date: date | None = None
+    cost_pass_through_pct: DecimalString = "100"
+    price_elasticity: SignedDecimalString = "-1"
+    ingredient_prices: list[IngredientPriceOverride] = Field(default_factory=list, max_length=100)
+    menu_prices: list[MenuPriceOverride] = Field(default_factory=list, max_length=100)
+
+    @model_validator(mode="after")
+    def valid_scenario(self):
+        if not -5 <= Decimal(self.price_elasticity) <= 0:
+            raise ValueError("Price elasticity must be between -5 and 0.")
+        if Decimal(self.cost_pass_through_pct) > 100:
+            raise ValueError("Cost pass-through must be between 0 and 100 percent.")
+        if any(Decimal(p.price) <= 0 for p in self.menu_prices):
+            raise ValueError("Menu prices must be positive.")
+        if len({p.ingredient_id for p in self.ingredient_prices}) != len(self.ingredient_prices):
+            raise ValueError("Ingredient overrides must be unique.")
+        if len({(p.dish_id, p.channel_id) for p in self.menu_prices}) != len(self.menu_prices):
+            raise ValueError("Menu overrides must be unique per dish/channel.")
+        return self
+
+
+class PricingScenarioSeries(ContractModel):
+    dish_id: str
+    channel_id: ChannelId
+    reference_unit_cost: DecimalString
+    current_unit_cost: DecimalString
+    scenario_unit_cost: DecimalString
+    current_menu_price: DecimalString
+    scenario_menu_price: DecimalString
+    demand_multiplier: DecimalString
+    baseline_units: DecimalString
+    units: DecimalString
+    revenue: DecimalString
+    ingredient_cost: DecimalString
+
+
+class PricingIngredientRequirement(IngredientRequirement):
+    price_source: Literal["approved_invoice", "owner_assumption"]
+
+
+class PricingScenarioResponse(ContractModel):
+    forecast_id: str
+    source_data_version: int
+    horizon: Period
+    reference_date: date
+    price_elasticity: SignedDecimalString
+    elasticity_source: Literal["owner_assumption"] = "owner_assumption"
+    cost_pass_through_pct: DecimalString
+    units: DecimalString
+    revenue: DecimalString
+    ingredient_cost: DecimalString
+    revenue_less_ingredient_cost: SignedDecimalString
+    fixed_demand_ingredient_cost: DecimalString
+    series: list[PricingScenarioSeries]
+    ingredients: list[PricingIngredientRequirement]
+    assumptions: list[str]
+    limitations: list[str]
 
 
 class DashboardResponse(ContractModel):

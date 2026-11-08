@@ -20,6 +20,7 @@ from .schemas import (
     ChatResponse, Coverage, CoverageRequest, DashboardResponse, Document, DocumentDetail,
     DocumentStatus, DocumentType, ErrorResponse, ForecastResponse, IngredientPrice,
     Invoice, Page, Receipt, Restaurant, ReviewRequest, ForecastRequest, SalesSummary, DishCost, WorkerStatus,
+    PricingScenarioRequest, PricingScenarioResponse,
 )
 
 
@@ -276,7 +277,17 @@ def forecasts(request: Request, limit: Limit = 50, offset: Offset = 0):
 def recalculate_forecast(body: ForecastRequest, request: Request):
     with connection(request) as conn:
         conn.execute("BEGIN IMMEDIATE")
-        return forecasting.calculate(conn, body)
+        policy = forecasting.default_request(conn).model_dump()
+        policy.update(body.model_dump(exclude_unset=True))
+        return forecasting.calculate(conn, ForecastRequest(**policy))
+
+
+@router.post("/forecasts/{run_id}/pricing-scenario", response_model=PricingScenarioResponse)
+def pricing_scenario(run_id: str, body: PricingScenarioRequest, request: Request):
+    from .pricing import scenario
+    with connection(request) as conn:
+        conn.execute("BEGIN")
+        return scenario(conn, run_id, body)
 
 
 @router.get("/forecasts/{run_id}", response_model=ForecastResponse)

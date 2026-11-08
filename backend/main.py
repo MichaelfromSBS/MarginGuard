@@ -1,23 +1,20 @@
 import asyncio
-import json
 from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import ROOT, Settings
-from .pipeline import run_pipeline
-from .provider import AIError, stream_text
-from .schemas import RunRequest, RunResponse
 from .marginguard.db import initialize_database
 from .marginguard.routes import DomainError, router as marginguard_router
 from .marginguard.schemas import API_VERSION, ErrorDetail, ErrorResponse
 from .marginguard.extraction import extract_document
 from .worker import worker_status
 from .marginguard.db import connect
+from .marginguard.analytics import demo_clock
 
 
 def create_app(settings: Settings | None = None, transport=None, document_extractor=None) -> FastAPI:
@@ -26,6 +23,11 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         initialize_database(settings.database_path)
+        if settings.demo_as_of is not None:
+            with connect(settings.database_path) as conn:
+                owner = conn.execute("SELECT is_demo FROM restaurant LIMIT 1").fetchone()
+                if owner is None or not owner["is_demo"]:
+                    raise ValueError("A fixed demo date requires an explicitly fictional demo restaurant.")
         app.state.database_path = settings.database_path
         app.state.settings = settings
         app.state.active_documents = set()
@@ -39,7 +41,7 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
             yield
 
     app = FastAPI(title="MarginGuard API", version=API_VERSION, lifespan=lifespan,
-                  description="Checkpoint 5: durable ingestion, automatic forecasts, in-app alerts and read-only database-grounded owner chat. No external owner notifications or chat-driven writes. Monetary values and quantities are decimal strings.")
+                  description="Restaurant records, automatic forecasts, evidence-linked website alerts and read-only database-grounded owner chat. Monetary values and quantities are decimal strings.")
 
     @app.exception_handler(DomainError)
     async def domain_error_handler(request: Request, exc: DomainError):
@@ -56,8 +58,6 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
     @app.middleware("http")
     async def local_api_guard(request: Request, call_next):
         def reject(code: str, message: str, status: int):
-            if request.url.path in {"/api/run", "/api/stream", "/api/health"}:
-                return JSONResponse({"detail": message}, status_code=status)
             error = ErrorResponse(error=ErrorDetail(code=code, message=message))
             return JSONResponse(error.model_dump(), status_code=status)
 
@@ -65,16 +65,17 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
         if request.url.path.startswith("/api/"):
             origin = request.headers.get("origin")
             allowed = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8000", "http://127.0.0.1:8000"}
+            allowed.update(settings.allowed_origins)
             if origin and origin not in allowed:
                 return reject("origin_not_allowed", "Origin is not allowed for this local development API.", 403)
             length = request.headers.get("content-length")
             if length and (not length.isdigit() or int(length) > 5_000_000):
                 return reject("request_too_large", "Request too large (5 MB limit).", 413)
-        return await call_next(request)
-
-    @app.exception_handler(AIError)
-    async def ai_error_handler(request: Request, exc: AIError):
-        return JSONResponse({"detail": str(exc)}, status_code=exc.status)
+        token = demo_clock.set(settings.demo_as_of)
+        try:
+            return await call_next(request)
+        finally:
+            demo_clock.reset(token)
 
     @app.get("/api/health")
     async def health():
@@ -86,40 +87,8 @@ def create_app(settings: Settings | None = None, transport=None, document_extrac
             "processing_mode": settings.processing_mode,
             "model": settings.openrouter_model if settings.ai_mode == "openrouter" else "mock-fixture",
             "configured": settings.ai_mode == "mock" or bool(settings.openrouter_api_key.get_secret_value().strip() and settings.openrouter_model.strip()),
+            "demo_as_of": settings.demo_as_of,
         }
-
-    @app.post("/api/run", response_model=RunResponse)
-    async def run(body: RunRequest, request: Request):
-        if app.state.ai_lock.locked():
-            raise AIError("Another AI request is running. Wait or cancel it first.", 429)
-        async with app.state.ai_lock:
-            # Total timeout also covers slowly trickling responses.
-            try:
-                async with asyncio.timeout(settings.ai_timeout_seconds):
-                    return await run_pipeline(request.app.state.client, settings, body)
-            except TimeoutError as exc:
-                raise AIError("The request exceeded the total time limit.", 504) from exc
-
-    @app.post("/api/stream")
-    async def stream(body: RunRequest, request: Request):
-        if app.state.ai_lock.locked():
-            raise AIError("Another AI request is running. Wait or cancel it first.", 429)
-
-        async def events():
-            async with app.state.ai_lock:
-                try:
-                    async with asyncio.timeout(settings.ai_timeout_seconds):
-                        yield json.dumps({"type": "start", "mode": settings.ai_mode}) + "\n"
-                        async for event in stream_text(request.app.state.client, settings, body):
-                            if await request.is_disconnected():
-                                return
-                            yield json.dumps(event, ensure_ascii=False) + "\n"
-                except AIError as exc:
-                    yield json.dumps({"type": "error", "message": str(exc)}) + "\n"
-                except TimeoutError:
-                    yield json.dumps({"type": "error", "message": "The stream exceeded the total time limit."}) + "\n"
-
-        return StreamingResponse(events(), media_type="application/x-ndjson", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
     app.include_router(marginguard_router)
 

@@ -69,7 +69,7 @@ def _payload(settings: Settings, document_type: str, prepared: PreparedDocument,
     payload = {
         "model": settings.openrouter_model.strip(),
         "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": content}],
-        "max_tokens": getattr(settings, "extraction_max_output_tokens", settings.ai_max_output_tokens),
+        "max_tokens": settings.extraction_max_output_tokens,
         "response_format": {"type": "json_schema", "json_schema": {
             "name": f"{document_type}_extraction", "strict": True, "schema": schema,
         }},

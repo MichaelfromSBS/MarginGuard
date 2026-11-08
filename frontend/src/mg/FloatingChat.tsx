@@ -6,10 +6,11 @@ export default function FloatingChat({ visible, onSource }: { visible: boolean; 
   const panel = useRef<HTMLDivElement>(null);
   const launcher = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
+  const restoreFocus = useRef(true);
 
   useEffect(() => {
-    if (open) panel.current?.querySelector('input')?.focus({ preventScroll: true });
-    else if (wasOpen.current) launcher.current?.focus({ preventScroll: true });
+    if (open) { restoreFocus.current = true; panel.current?.querySelector('input')?.focus({ preventScroll: true }); }
+    else if (wasOpen.current && restoreFocus.current) launcher.current?.focus({ preventScroll: true });
     wasOpen.current = open;
   }, [open]);
 
@@ -17,6 +18,19 @@ export default function FloatingChat({ visible, onSource }: { visible: boolean; 
     if (!visible || !open) return;
     const chat = panel.current?.querySelector('.chat');
     if (chat) chat.scrollTop = chat.scrollHeight;
+  }, [open, visible]);
+
+  useEffect(() => {
+    if (!visible || !open) return;
+    const dismiss = (event: PointerEvent) => {
+      if (event.button !== 0 || !(event.target instanceof Node)) return;
+      if (panel.current?.contains(event.target) || launcher.current?.contains(event.target)) return;
+      // Let the outside control receive its original click and focus.
+      restoreFocus.current = false;
+      setOpen(false);
+    };
+    document.addEventListener('pointerdown', dismiss, true);
+    return () => document.removeEventListener('pointerdown', dismiss, true);
   }, [open, visible]);
 
   return <aside className="floating-chat" aria-label="MarginGuard assistant" hidden={!visible}>

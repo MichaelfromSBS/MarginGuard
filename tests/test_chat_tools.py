@@ -52,7 +52,7 @@ def values(result):
 
 def save_forecast(ledger, **kwargs):
     with connect(ledger) as conn:
-        result = forecasting.calculate(conn, ForecastRequest(as_of=DAY, **kwargs))
+        result = forecasting.calculate(conn, ForecastRequest(as_of=DAY, **{"method": "weekday_average_v1", **kwargs}))
     assert result.status == "ready"
     return result
 

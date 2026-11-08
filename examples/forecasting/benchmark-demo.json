@@ -1,0 +1,262 @@
+{
+  "source_data_version": 2741,
+  "is_demo": true,
+  "data_start": "2026-09-12",
+  "data_end": "2026-11-06",
+  "horizons": [
+    {
+      "days": 7,
+      "folds": [
+        {
+          "origin": "2026-10-10",
+          "end": "2026-10-16",
+          "eligible_observations": 36,
+          "scored_observations": 36,
+          "skipped_observations": 0,
+          "metrics": {
+            "weekday_average_v1": {
+              "observations": 36,
+              "mae": 4.270833,
+              "rmse": 5.797359,
+              "wape": 0.284196
+            },
+            "seasonal_naive_v1": {
+              "observations": 36,
+              "mae": 5.444444,
+              "rmse": 7.059273,
+              "wape": 0.362292
+            },
+            "regularized_poisson_v1": {
+              "observations": 36,
+              "mae": 3.775541,
+              "rmse": 5.186663,
+              "wape": 0.251237
+            },
+            "poisson_gradient_boosting_v1": {
+              "observations": 36,
+              "mae": 4.842777,
+              "rmse": 6.444483,
+              "wape": 0.322255
+            }
+          }
+        },
+        {
+          "origin": "2026-10-17",
+          "end": "2026-10-23",
+          "eligible_observations": 42,
+          "scored_observations": 36,
+          "skipped_observations": 6,
+          "metrics": {
+            "weekday_average_v1": {
+              "observations": 36,
+              "mae": 4.911111,
+              "rmse": 6.124994,
+              "wape": 0.314591
+            },
+            "seasonal_naive_v1": {
+              "observations": 36,
+              "mae": 4.194444,
+              "rmse": 6.457124,
+              "wape": 0.268683
+            },
+            "regularized_poisson_v1": {
+              "observations": 36,
+              "mae": 5.443303,
+              "rmse": 6.756568,
+              "wape": 0.348681
+            },
+            "poisson_gradient_boosting_v1": {
+              "observations": 36,
+              "mae": 5.394502,
+              "rmse": 6.712039,
+              "wape": 0.345555
+            }
+          }
+        },
+        {
+          "origin": "2026-10-24",
+          "end": "2026-10-30",
+          "eligible_observations": 42,
+          "scored_observations": 42,
+          "skipped_observations": 0,
+          "metrics": {
+            "weekday_average_v1": {
+              "observations": 42,
+              "mae": 3.634921,
+              "rmse": 4.574556,
+              "wape": 0.255723
+            },
+            "seasonal_naive_v1": {
+              "observations": 42,
+              "mae": 5.119048,
+              "rmse": 7.106335,
+              "wape": 0.360134
+            },
+            "regularized_poisson_v1": {
+              "observations": 42,
+              "mae": 3.957136,
+              "rmse": 5.160631,
+              "wape": 0.278392
+            },
+            "poisson_gradient_boosting_v1": {
+              "observations": 42,
+              "mae": 4.197377,
+              "rmse": 5.438764,
+              "wape": 0.295293
+            }
+          }
+        },
+        {
+          "origin": "2026-10-31",
+          "end": "2026-11-06",
+          "eligible_observations": 42,
+          "scored_observations": 42,
+          "skipped_observations": 0,
+          "metrics": {
+            "weekday_average_v1": {
+              "observations": 42,
+              "mae": 4.647392,
+              "rmse": 6.639857,
+              "wape": 0.319984
+            },
+            "seasonal_naive_v1": {
+              "observations": 42,
+              "mae": 5.404762,
+              "rmse": 7.382412,
+              "wape": 0.372131
+            },
+            "regularized_poisson_v1": {
+              "observations": 42,
+              "mae": 4.561402,
+              "rmse": 6.679795,
+              "wape": 0.314064
+            },
+            "poisson_gradient_boosting_v1": {
+              "observations": 42,
+              "mae": 5.020703,
+              "rmse": 7.324461,
+              "wape": 0.345688
+            }
+          }
+        }
+      ],
+      "metrics": {
+        "weekday_average_v1": {
+          "observations": 156,
+          "mae": 4.348764,
+          "rmse": 5.823855,
+          "wape": 0.293683
+        },
+        "seasonal_naive_v1": {
+          "observations": 156,
+          "mae": 5.057692,
+          "rmse": 7.027875,
+          "wape": 0.341558
+        },
+        "regularized_poisson_v1": {
+          "observations": 156,
+          "mae": 4.420878,
+          "rmse": 5.993838,
+          "wape": 0.298553
+        },
+        "poisson_gradient_boosting_v1": {
+          "observations": 156,
+          "mae": 4.84424,
+          "rmse": 6.510619,
+          "wape": 0.327143
+        }
+      },
+      "evaluation_status": "available",
+      "automatic_promotion": false
+    },
+    {
+      "days": 28,
+      "folds": [
+        {
+          "origin": "2026-10-10",
+          "end": "2026-11-06",
+          "eligible_observations": 162,
+          "scored_observations": 162,
+          "skipped_observations": 0,
+          "metrics": {
+            "weekday_average_v1": {
+              "observations": 162,
+              "mae": 4.408951,
+              "rmse": 5.780481,
+              "wape": 0.299853
+            },
+            "seasonal_naive_v1": {
+              "observations": 162,
+              "mae": 5.438272,
+              "rmse": 6.902764,
+              "wape": 0.369857
+            },
+            "regularized_poisson_v1": {
+              "observations": 162,
+              "mae": 4.142417,
+              "rmse": 5.541454,
+              "wape": 0.281726
+            },
+            "poisson_gradient_boosting_v1": {
+              "observations": 162,
+              "mae": 4.827821,
+              "rmse": 6.358573,
+              "wape": 0.32834
+            }
+          }
+        }
+      ],
+      "metrics": {
+        "weekday_average_v1": {
+          "observations": 162,
+          "mae": 4.408951,
+          "rmse": 5.780481,
+          "wape": 0.299853
+        },
+        "seasonal_naive_v1": {
+          "observations": 162,
+          "mae": 5.438272,
+          "rmse": 6.902764,
+          "wape": 0.369857
+        },
+        "regularized_poisson_v1": {
+          "observations": 162,
+          "mae": 4.142417,
+          "rmse": 5.541454,
+          "wape": 0.281726
+        },
+        "poisson_gradient_boosting_v1": {
+          "observations": 162,
+          "mae": 4.827821,
+          "rmse": 6.358573,
+          "wape": 0.32834
+        }
+      },
+      "evaluation_status": "limited_history",
+      "automatic_promotion": false
+    }
+  ],
+  "feature_names": [
+    "dish",
+    "channel",
+    "weekday",
+    "month",
+    "day_of_month",
+    "elapsed_days",
+    "lag_1",
+    "lag_7",
+    "lag_14",
+    "lag_28",
+    "mean_7",
+    "mean_28",
+    "same_weekday_mean_4",
+    "known_days_28"
+  ],
+  "limitations": [
+    "Historical simulation uses the currently approved ledger and coverage, not reconstructed ingestion-time snapshots.",
+    "Future sales actuals are excluded from both fitting and recursive forecasting.",
+    "Only common eligible observations are scored; coverage and skipped counts are reported.",
+    "Overlapping fold errors are dependent. Short or fictional histories do not establish real-world forecast accuracy.",
+    "This benchmark does not promote a model or modify production forecast snapshots."
+  ]
+}

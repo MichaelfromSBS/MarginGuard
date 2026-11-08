@@ -1,5 +1,6 @@
 """Observed sales and modeled replacement costs. No model calls or SQL floats."""
 from collections import Counter, defaultdict
+from contextvars import ContextVar
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from zoneinfo import ZoneInfo
@@ -8,6 +9,7 @@ from .errors import DomainError
 from .ingestion import now, restaurant_record
 
 ZERO = Decimal("0")
+demo_clock = ContextVar("marginguard_demo_date", default=None)
 PRECISION = Decimal("0.00000001")
 CENT = Decimal("0.01")
 SALES_ASSUMPTIONS = [
@@ -32,6 +34,8 @@ def decimal_text(value, *, money=False):
 
 
 def local_today(owner):
+    if owner.get("is_demo") and demo_clock.get() is not None:
+        return demo_clock.get()
     return datetime.now(ZoneInfo(owner["timezone"])).date()
 
 

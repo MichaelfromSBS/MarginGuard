@@ -1,258 +1,178 @@
 # MarginGuard
 
-**Restaurant finance monitoring from supplier invoices and customer sales receipts.**
+**An AI financial watchdog for independent restaurants.**
 
-NOVA 2026 · Carnegie Mellon University · DoorDash Back of House track
+**Top 5 team in People's Choice · NOVA Hackathon 2026 · Carnegie Mellon University**
 
-MarginGuard is being developed to maintain restaurant records automatically, connect ingredient-price changes to dish costs, project next month's sales and ingredient consumption, and explain significant changes through database-backed chat and evidence-linked alerts.
+Built for the DoorDash Back of House track; developed further after the hackathon.
 
-**Current status:** checkpoints 1–5 and the teammate's frontend are integrated. Invoices and receipts feed approved records, deterministic metrics and forecasts, and two website-only alert types. Ask MarginGuard now uses an AI-selected, validated read-only query plan and returns database-calculated answers with source links, plus plain-language explanations for natural follow-ups. The assistant opens in a floating panel on Overview; the original neutral color theme and reduced-motion-aware transitions keep the interface calm. See [checkpoint 5](docs/checkpoint-5.md) to test chat and [checkpoint 4](docs/checkpoint-4.md) for the worker and alert policy.
+MarginGuard connects supplier invoices, sales receipts and recipes to show where ingredient costs are rising, how sales are changing, and what next month might look like. It maintains approved records as documents arrive, calculates financial figures in Python, and surfaces evidence-linked alerts without waiting for the owner to ask.
 
-## Development progress
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MichaelfromSBS/MarginGuard?quickstart=1)
 
-Last updated: **November 7, 2026**. API contract version: **1.0.0**.
+![MarginGuard restaurant dashboard](docs/images/overview.png)
 
-| Milestone | Status | Delivered / acceptance boundary |
-| --- | --- | --- |
-| Reusable AI starter | Complete; prepared November 6 | React/TypeScript, FastAPI, OpenRouter transport, mock mode and streaming |
-| Project specification | Current | [MarginGuard v2](docs/marginguard-plan-v2.md) defines the five product capabilities |
-| Checkpoint 1: database and shared contract | Complete | SQLite schema, explicit demo seed, validated schemas, read APIs, OpenAPI, TypeScript and sample-data handoff |
-| Team demo dataset v2 | Contract-validated; explicit bulk importer available | [History and demo documents](demo_data/README.md); eight invoices and 2,733 receipts |
-| Checkpoint 2: document ingestion | Implemented; pending team review | PDF/image upload, structured extraction, validation, review/retry, duplicate-safe persistence and explicit fixture import |
-| Checkpoint 3: metrics and forecasting | Implemented; pending team review | Sales/day/dish/channel summaries, effective recipe costs, completeness-aware next-month forecasts, sensitivity scenarios and held-out evaluation |
-| Restaurant frontend integration | Merged and verified | Overview, Trends & Outlook, Inbox and grounded owner chat; forecast freshness and mobile navigation checked |
-| Checkpoint 4: background processing and alerts | Implemented and integrated | Durable queue, automatic recalculation, combined cost alert, yesterday-only sales report and in-app acknowledgement |
-| Checkpoint 5: database-backed chat | Implemented; pending team review | Six read-only tools, bounded conversation context, saved-forecast attribution, evidence links and explicit unavailable states |
+## Try it
 
-See [the progress record](docs/progress.md) for commits, verification evidence and integration notes. Each checkpoint ends with a focused review before the next begins.
+### In your browser
 
-## Product workflow
+1. Click **Open in GitHub Codespaces** above and create the codespace. A GitHub account with Codespaces access is required.
+2. Wait for the initial setup to install dependencies and prepare the sample restaurant. This can take a few minutes.
+3. Open **Ports → MarginGuard (8000) → Open in Browser** if it does not open automatically.
 
-The application workflow is:
+The dev container prepares and starts the application automatically. If startup is interrupted, inspect `/tmp/marginguard-demo.log` and run `python scripts/demo.py --no-browser` in the terminal after stopping any existing demo process. See [GitHub's port-forwarding guide](https://docs.github.com/en/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace).
 
-```text
-Supplier invoices + customer sales receipts
-                    ↓
-       Extraction, validation and review
-                    ↓
-       Approved records in the database
-                    ↓
-    Sales metrics, recipe costs and forecasts
-                    ↓
-     Dashboard + owner chat + proactive alerts
-```
+### On your computer
 
-AI extracts document language and maps owner questions to validated read-only tools. Python renders financial chat answers from retrieved facts; AI separately explains concepts and earlier answers in plain language. Python owns financial calculations, unit conversions, forecast methods and measurable anomaly rules. Reported figures distinguish observed results, modeled costs and future projections.
-
-## Technology
-
-| Layer | Technology |
-| --- | --- |
-| Frontend | React, TypeScript, Vite |
-| API | Python, FastAPI, Pydantic |
-| Database | SQLite with transactional, checksummed migrations |
-| Model access | OpenRouter through server-side asynchronous HTTP requests |
-| Testing | pytest, mocked provider responses, Node's test runner |
-| Planned processing | Independent Python worker and persisted jobs |
-
-## Getting started
-
-Prerequisites: Python **3.11+**, Node.js **22.12+** or a supported newer LTS, npm, and Git. The recorded checkpoint validation used Python 3.11.9 and Node.js 22.19.0 on Windows.
-
-Clone the private repository using an account with access:
+Install **Python 3.11+**, **Node.js 22.12+**, npm and Git, then run:
 
 ```bash
 git clone https://github.com/MichaelfromSBS/MarginGuard.git
 cd MarginGuard
-python scripts/setup.py
+python scripts/demo.py
 ```
 
-Setup creates `.venv`, installs the dependency lockfiles and creates `.env` from `.env.example` only when `.env` does not already exist. Stop development servers before rerunning setup; Windows can lock the running bundler's native files.
+The launcher installs dependencies into `.venv`, builds the website, imports the fictional restaurant, prepares forecasts and an example alert, and opens **http://127.0.0.1:8000**. On Windows, you can also double-click **Try MarginGuard.cmd** after downloading/extracting the repository. Use `python3` if that is your system's Python command.
 
-Optionally load the small, explicitly fictional checkpoint-1 dataset:
+Press **Ctrl+C** to stop the API and worker. If port 8000 is occupied, use `python scripts/demo.py --port 8016`. Later launches reuse installed dependencies and preserve demo interactions, including saved/resolved alerts.
 
-```powershell
-.\.venv\Scripts\python.exe -m backend.marginguard.seed
+### A two-minute tour
+
+- **Overview:** inspect sales, projected ingredient costs and the supplier-price increase. Click an alert for the full reason; choose **Save for later** to move it out of Overview.
+- **Trends & Outlook:** compare forecast models, hover over daily predictions, and change cost pass-through or assumed price sensitivity. Charts and calculations update automatically. Ingredient price records expand on click.
+- **Inbox → Notifications:** open a saved alert, inspect its sources, then **Resolve** it. The bell and new-alert notifications also lead here.
+- **Inbox → Documents:** review imported invoices and their extracted fields. Enable imported history receipts to inspect the sales records behind the dashboard.
+
+**No API key is required for this tour.** The demo uses explicit, pre-approved fictional fixtures and a fixed business date of **November 7, 2026**, so the historical dataset remains useful when opened later. It runs in the separate `data/visitor-demo/` directory and does not overwrite your normal database or `.env`. Imported fixtures are labeled; they are not presented as results of a live AI extraction.
+
+**Live invoice/receipt extraction and owner chat require your own OpenRouter key.** They are unavailable in the key-free demo; dashboards, forecasts, pricing scenarios and alert review work without them.
+
+## The problem and solution
+
+Restaurant records are scattered across supplier PDFs, customer receipts and menu recipes. An owner can see revenue while missing the connection between a more expensive ingredient and a dish's replacement cost. A static spreadsheet also needs someone to notice and investigate the change.
+
+MarginGuard turns incoming documents into a maintained ledger, connects ingredient prices to recipe economics, and provides a shared view of current performance and future assumptions. Alerts link back to the records that support them, and the owner can ask follow-up questions about the data.
+
+| Capability | What it delivers |
+| --- | --- |
+| Document ingestion | PDF/PNG/JPEG invoices and receipts, structured AI extraction, catalog matching, arithmetic/unit checks, review states and duplicate protection |
+| Automatic updates | Durable processing jobs, an independent worker, folder monitoring and immediate observed sales/cost updates after approval |
+| Business analytics | Sales by day, dish and channel; effective ingredient prices; recipe replacement costs; explicit partial-day coverage |
+| Adaptive forecasting | Per-dish/channel demand models selected or blended through chronological validation, with daily next-month projections and held-out evaluation |
+| Pricing scenarios | Ingredient changes → recipe costs → proposed menu prices → assumed demand response → projected revenue and ingredient consumption |
+| Proactive alerts | Combined ingredient/projected-cost increases and next-day reports of unusually low sales, each with measured facts and sources |
+| Grounded owner chat | AI-planned read-only queries, Python-calculated answers, evidence links and conversational explanations |
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[Invoices and receipts] --> B[Durable job queue]
+    B --> C[AI extraction]
+    C --> D[Python validation]
+    D --> E[(Approved SQLite ledger)]
+    E --> F[Sales and recipe costs]
+    E --> G[Forecasts and pricing scenarios]
+    F --> H[Evidence-based alerts]
+    G --> H
+    E --> I[Read-only chat tools]
+    F --> J[Restaurant dashboard]
+    G --> J
+    H --> J
+    I --> J
 ```
 
-On macOS/Linux, use `.venv/bin/python -m backend.marginguard.seed`. Repeating the seed command is a no-op. It refuses to mix fixtures into an existing, unseeded business database. API startup applies migrations but never inserts demo financial records automatically.
+**AI reads and explains; Python owns the numbers.** Extraction converts document language into typed records. Validation checks totals, quantities, unit conversions, business keys and source evidence before approval. Chat maps questions to a bounded set of validated database tools; financial answers use retrieved calculations rather than model-invented figures. Follow-up explanations are separately labeled.
 
-For the full v2 history, use a separate fresh database instead of the small seed:
+The worker scans the configured local `inbox/` folder, handles queued uploads, refreshes forecasts and runs deterministic anomaly checks. Alerts and notifications stay inside the website. Saving an alert persists its state; resolving it retains its evidence in the database.
 
-```powershell
-.\.venv\Scripts\python.exe -m backend.marginguard.import_demo --database data/demo-v2.db
+### Forecasting
+
+Auto compares weekday averages, a prior-week seasonal baseline, recency-weighted weekdays, regularized Poisson regression and Poisson gradient boosting. It selects or blends candidates separately for each dish/channel and forecast lead range using chronological validation. Coverage gates, a weekday baseline anchor and long-horizon shrinkage limit unsupported extrapolation. A separate seven-day holdout evaluates the full selection procedure.
+
+Ingredient-price changes flow through recipe costs. The pricing planner applies an explicitly **assumed price elasticity** to proposed menu prices and adjusts demand, revenue and ingredient requirements. This coefficient is not learned from the short demo history. Scenarios do not change actual menu prices or the ledger.
+
+The included corpus is fictional and short; it does not establish real-world forecasting accuracy. See the [forecasting guide](docs/forecasting.md) for algorithms, validation, performance measurements and limitations.
+
+![Daily current-menu and pricing-scenario forecasts from the fictional demo](docs/images/forecast.png)
+
+## Enable live AI
+
+Setup creates `.env` from [.env.example](.env.example) if it does not already exist. Add your key and a model ID from [OpenRouter's catalog](https://openrouter.ai/models):
+
+```dotenv
+AI_MODE=openrouter
+OPENROUTER_API_KEY=your-key-here
+OPENROUTER_MODEL=your-compatible-model-id
 ```
 
-Set `MARGINGUARD_DATABASE_PATH=data/demo-v2.db` in `.env` before starting the server. This is explicit pre-approved fixture import, makes no model calls, and refuses to mix with the checkpoint-1 seed. See [checkpoint 2 setup and review](docs/checkpoint-2.md).
-
-Start the API, independent worker and frontend:
+Stop the demo and restart with:
 
 ```bash
+python scripts/demo.py --live-ai
+```
+
+Choose a model with compatible structured-output support; photo extraction also needs image input. Live calls use your provider credits. Keys stay on the server and are excluded from Git.
+
+Try uploading the supplied [invoice](demo_data/live_demo/2_invoice_RF-20261107-004.pdf), [receipt](demo_data/live_demo/1_receipt_TB-20261107-001.pdf) or [receipt photo](demo_data/live_demo/3_receipt_TB-20261107-002_photo.png). The first two are already present in the populated demo, so exact duplicates return the existing record. Use the photo to exercise a fresh live extraction. Ask questions such as “Why did ingredient costs increase?”, “What were sales last week?”, “Which dishes cost the most to make?” and “What does that mean?”
+
+Chat can report and explain approved data, assumptions and saved forecasts. It cannot edit the ledger, change prices, resolve alerts, send messages or execute arbitrary SQL. Failed or unsupported requests produce explicit errors rather than silently fabricating results.
+
+## Technology
+
+| Layer | Stack |
+| --- | --- |
+| Frontend | React 19, TypeScript, Vite, custom responsive SVG charts |
+| API and validation | Python 3.11+, FastAPI, Pydantic, Decimal arithmetic |
+| Storage and processing | SQLite, versioned migrations, transactional approval, persisted jobs, independent Python worker |
+| AI | OpenRouter over asynchronous HTTP; structured extraction and bounded read-only query planning |
+| Forecasting | NumPy, scikit-learn, regularized Poisson regression, Poisson gradient boosting and adaptive statistical ensembles |
+| Verification | pytest, Node's test runner, production builds and recorded desktop/mobile browser checks |
+
+## Development
+
+```bash
+python scripts/setup.py --forecasting
 npm run dev
 ```
 
-- [MarginGuard dashboard](http://127.0.0.1:5173)
-- [Interactive API documentation](http://127.0.0.1:8000/docs)
-- [API capabilities](http://127.0.0.1:8000/api/capabilities)
+The development launcher starts the API, worker and Vite frontend. Open **http://127.0.0.1:5173**; API documentation is at **http://127.0.0.1:8000/docs**. It uses the normal `.env` configuration rather than the visitor demo's isolated settings. A fresh normal database is empty until explicitly configured or seeded; the visitor launcher above is the easiest populated starting point.
 
-Ctrl+C stops all three processes. Frontend edits reload automatically; restart after Python or `.env` changes. Ports 8000 and 5173 must be free. If PowerShell blocks `npm.ps1`, use `npm.cmd run dev`.
+Python and `.env` changes require restarting services; frontend edits reload automatically. Ports 8000 and 5173 must be free. If PowerShell blocks `npm.ps1`, use `npm.cmd`. The Windows launcher uses a selector event loop to avoid the Proactor `WinError 64` listener failure.
 
-For backend-only development with reload:
+For the smaller dependency set, omit `--forecasting`; statistical forecasts remain available while optional scientific models are excluded or report their missing dependency. Environment variables override `.env`. The standard paths are `data/marginguard.db`, `data/uploads/` and `inbox/`. Dates use the restaurant's configured timezone and forecast training excludes incomplete days.
 
-```powershell
-.\.venv\Scripts\python.exe -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+Run the release checks with:
+
+```bash
+python scripts/check.py
 ```
 
-For queued document processing and automatic analytics, also run `.\.venv\Scripts\python.exe -m backend.worker` in another terminal using the same database settings. API-only uploads remain queued without the worker. `/api/worker` reports runtime health independently of API availability. See [checkpoint 4](docs/checkpoint-4.md).
+This runs isolated backend tests, frontend tests, a production build and Python dependency checks. GitHub Actions runs the same checks on Windows and Linux. To regenerate the API contract and response examples, use `.venv/Scripts/python.exe scripts/export_contract.py` on Windows or `.venv/bin/python scripts/export_contract.py` on macOS/Linux. The exporter uses an isolated fixture database.
 
-## Configuration
+### API and repository guide
 
-Edit the local root `.env`:
-
-```dotenv
-AI_MODE=mock
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=
-AI_TIMEOUT_SECONDS=60
-AI_MAX_OUTPUT_TOKENS=1800
-MARGINGUARD_DATABASE_PATH=data/marginguard.db
-MARGINGUARD_UPLOAD_DIRECTORY=data/uploads
-MARGINGUARD_EXTRACTION_MAX_OUTPUT_TOKENS=6000
-```
-
-Sales metrics and forecasting work without a model key. For live document extraction through Inbox, set `AI_MODE=openrouter`, add the team key, choose a current compatible model ID, and restart. Structured responses require compatible model/endpoint support; image input is a separate capability. See [OpenRouter's model catalog](https://openrouter.ai/models).
-
-Checkpoint-2 HTTP extraction uses that same live configuration. In mock mode, uploads never fabricate approved financial records: extraction fails visibly with `live_model_required`. Offline history and single-document expected-output imports are separately labeled `fixture_history` and `fixture_expected` and are restricted to explicit demo use.
-
-Live mode does not silently fall back to mock fixtures. Live OpenRouter extraction with Gemini 3.8 Flash has now been verified for the main demo PDF invoice and receipt in an isolated v2-history database. Both completed validation and ledger approval; this small smoke check does not establish general extraction accuracy. See the [progress record](docs/progress.md).
-
-Environment variables override `.env`. Relative database paths resolve from the repository root. `.env`, local databases, uploads, caches and dependencies are excluded from Git. Keep keys server-side; do not put them in frontend code or `VITE_*` variables.
-
-## Available API
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| GET | `/api/health` | Service, database and configuration status |
-| GET | `/api/capabilities` | Checkpoint and feature availability |
-| GET | `/api/restaurant` | Restaurant identity, currency, timezone and demo status |
-| GET | `/api/catalog` | Ingredients, dishes, channels, menu prices and recipe versions |
-| GET | `/api/ingredients/{ingredient_id}/prices` | Effective-dated ingredient prices and invoice-line references |
-| GET | `/api/documents` | Paginated document metadata and processing status |
-| GET | `/api/documents/{document_id}` | Document detail with available persisted source text |
-| GET | `/api/documents/{document_id}/source` | Inspect a saved upload with hash-integrity checking |
-| POST | `/api/documents` | Accept PDF/PNG/JPEG multipart upload and start bounded in-process extraction |
-| POST | `/api/documents/{document_id}/review` | Validate a corrected extraction and record the review outcome |
-| POST | `/api/documents/{document_id}/process` | Retry a failed/pending document from its saved bytes |
-| GET | `/api/invoices` | Approved invoice records and line items |
-| GET | `/api/receipts` | Approved receipt records and items |
-| GET | `/api/coverage` | Complete, partial, unknown or closed date/channel coverage |
-| POST | `/api/coverage/complete` | Audited confirmation of a finished day/channel or explicit closure |
-| GET | `/api/sales` | Observed sales totals, breakdowns, coverage and sampled receipt evidence |
-| GET | `/api/dishes/{dish_id}/cost` | Effective replacement recipe costs and channel contribution assumptions |
-| GET | `/api/dashboard` | Actual/modeled metrics, dish costs and saved forecast for the as-of date |
-| POST | `/api/forecasts/recalculate` | Calculate and persist a versioned next-calendar-month planning snapshot |
-| GET | `/api/forecasts` | Paginated saved snapshots with freshness status |
-| GET | `/api/forecasts/{run_id}` | Forecast details, daily/series values, ingredient requirements, scenarios and evaluation |
-| GET | `/api/alerts` | Persistent evidence-based findings and in-app notification state |
-| POST | `/api/alerts/{alert_id}/acknowledge` | Persist owner acknowledgement without changing financial facts |
-| POST | `/api/alerts/{alert_id}/resolve` | Mark a reviewed finding resolved, preserving evidence |
-| GET | `/api/worker` | Worker heartbeat, queue counts, new-alert count and safe processing errors |
-| POST | `/api/chat` | AI-planned, read-only financial questions with grounded metrics, sources and query traces |
-
-Money and quantities are decimal strings. List endpoints return `items`, `total`, `limit` and `offset`. Product errors use a versioned `error` object. A fresh database returns empty catalogs/lists and a typed restaurant-not-configured response until configured or explicitly seeded.
-
-Owner chat requires a configured OpenRouter model with structured-output support; unconfigured/mock chat returns an explicit HTTP 503. AI selects tools and filters, or explains concepts and prior answers in a separately labeled qualitative response; Python queries approved records and renders all financial figures. Chat cannot alter records, recalculate forecasts or send messages. Other financial calculations run without a model request. Incomplete history produces explicit limitations and null restaurant forecast totals. The legacy workbench's `/api/run` and `/api/stream` remain separate from business-data chat.
-
-Approved inputs immediately affect observed sales and effective recipe costs. The default sales window includes today and its six previous local dates; Overview and daily-sales charts refresh every three seconds. Today’s observed receipts remain partial rather than being treated as a complete forecast-training day. They invalidate saved forecasts; the worker automatically refreshes current projections. The explicit recalculation endpoint remains available. Forecasts distinguish ingredient consumption from purchases/actual profit and sensitivity scenarios from statistical prediction intervals.
-
-Uploads return HTTP 202 with a durable pending job; the independent worker advances document status. Poll for `completed`, `needs_review` or `failed`. Exact-byte duplicates return the existing ID, while different bytes with an existing invoice/receipt business key enter review. Images are labeled as visual evidence, without claiming an independent OCR quote check. See [checkpoint 2](docs/checkpoint-2.md) for formats/review and [checkpoint 4](docs/checkpoint-4.md) for queue/restart behavior.
-
-Authoritative handoff artifacts:
-
-- [Exported OpenAPI schema](docs/openapi.json)
-- [Frontend TypeScript contracts](frontend/src/marginguard-api.ts)
-- [Actual seeded read-response examples](examples/api)
-- [Checkpoint 1 review checklist](docs/checkpoint-1.md)
-- [Checkpoint 2 upload/review checklist](docs/checkpoint-2.md)
-- [Checkpoint 3 calculation definitions and copyable test commands](docs/checkpoint-3.md)
-- [Checkpoint 4 worker, anomaly policies and in-app notification review](docs/checkpoint-4.md)
-- [Checkpoint 5 grounded chat, tools and copyable test commands](docs/checkpoint-5.md)
-
-## Demo data and document generation
-
-There are two distinct fixture collections:
-
-| Collection | Purpose | Current integration |
-| --- | --- | --- |
-| `examples/` and the built-in seed | Canonical contracts, paired source/expected extraction examples and a small ledger | Supported by the explicit seed command and contract tests |
-| `demo_data/` | Contract-compatible JSONL history, paired invoice PDFs/text/JSON, image receipts and negative controls | Explicit validated bulk importer and shared approval tests |
-
-Give the document-generating teammate [the sample-data contract and copyable Claude prompt](docs/sample-data-contract.md). Its examples specify stable IDs, decimal strings, timezone-aware timestamps and source references.
-
-The v2 dataset replaces the earlier incompatible corpus. Its catalog IDs, decimal strings, timestamp offsets and status/coverage fields match the contract. The `seed` command still loads only the small checkpoint-1 ledger; `import_demo` loads the full v2 history into a fresh database. See [integration notes](docs/progress.md#demo-dataset-integration-notes).
-
-PDF byte offsets must not be changed by Git line-ending conversion. `.gitattributes` marks PDF/image files appropriately; the original committed v2 PDFs are valid and were restored exactly on Windows. This fixes a checkout issue rather than regenerating business content.
-
-All seeded financial records are fictional. The small checkpoint seed is not an eight-week forecasting history, and seeded records are not evidence that AI extraction has already processed their source documents.
-
-## Verification
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-npm run test:frontend
-npm run build
-```
-
-On macOS/Linux, replace the first command with `.venv/bin/python -m pytest -q`. Tests isolate their databases from the configured local ledger.
-
-Current checkpoint-5 verification: **373 backend tests**, **7 frontend tests**, TypeScript/production build and dependency consistency passed. Live configured-model and desktop/mobile browser checks verified immediate receipt sales updates, grounded chat, follow-ups, document sources and the $730.17 forecast-cost attribution. Earlier checkpoint verification and detailed acceptance results are recorded in [the progress record](docs/progress.md). The test-client dependency emits one existing deprecation warning.
-
-After an intentional contract change, regenerate the OpenAPI and seeded response artifacts:
-
-```powershell
-.\.venv\Scripts\python.exe scripts/export_contract.py
-```
-
-The exporter uses an isolated temporary database and leaves the configured business database untouched. Keep the TypeScript contracts aligned with intentional backend schema changes.
-
-## Repository layout
+The [interactive API docs](http://127.0.0.1:8000/docs) and [OpenAPI export](docs/openapi.json) describe the complete contract. Primary routes cover `/api/documents`, `/api/sales`, `/api/dashboard`, `/api/forecasts`, `/api/alerts` and `/api/chat`. Money and quantities are decimal strings; list responses include pagination. The API's existing `acknowledged` state and `/acknowledge` endpoint represent **Save for later** in the interface.
 
 ```text
-backend/
-  main.py                    FastAPI application and starter endpoints
-  config.py                  Environment-backed settings
-  marginguard/
-    db.py                    Connection and migration management
-    migrations/              Versioned SQLite schema
-    schemas.py               Versioned wire contracts
-    routes.py                Read APIs, ingestion, review and future contracts
-    document_io.py           Bounded PDF/PNG/JPEG reading
-    extraction.py            Structured OpenRouter extraction
-    validation.py            Arithmetic, catalog, units and evidence checks
-    ingestion.py             Upload state, approval, review and retry
-    analytics.py             Observed sales, coverage and replacement recipe costs
-    forecasting.py           Versioned weekday-average projections and evaluation
-    jobs.py                  Cross-process extraction claims and retry limits
-    detectors.py             Measured findings, evidence and in-app alert state
-    alert_explanations.py    Optional AI follow-up with deterministic fallback
-    import_demo.py           Explicit validated full-history fixture importer
-    fixture.py               Explicit offline single-document demonstration
-    seed.py                  Opt-in fictional seed CLI
-  worker.py                  Independent inbox/queue/analytics/alert process
-frontend/src/
-  App.tsx                    MarginGuard navigation and connection/alert state
-  mg/                        Restaurant screens, API client and presentation helpers
-  marginguard-api.ts          Product TypeScript contracts
-docs/                        Plan, progress, review guide and OpenAPI export
-examples/                    Canonical document pairs and API examples
-demo_data/                   Team-contributed demo corpus
-scripts/                     Setup, development launcher and contract exporter
-tests/                       Database, API, contract and provider tests
-data/                        Local runtime database; excluded from Git
+backend/marginguard/   Ingestion, validation, analytics, models, chat and alerts
+backend/worker.py     Durable queue and automatic processing loop
+frontend/src/mg/      Restaurant screens, charts, chat and notification workflow
+scripts/             Setup, visitor demo, development and verification launchers
+tests/               Isolated backend acceptance and regression tests
+demo_data/           Fictional history, source documents and negative controls
+examples/            API responses, extraction examples and forecasting results
+docs/                Architecture details, development history and review guides
+.devcontainer/       GitHub Codespaces visitor setup
+.github/workflows/   Windows/Linux verification
 ```
 
-## Scope and disclosure
+## Project context and limits
 
-The local application has no production authentication or deployment configuration. Model-supported interpretations and exact source matches do not establish that a business conclusion is correct. Cost projections describe ingredient consumption under stated assumptions, not actual net profit or a purchasing cash budget.
+MarginGuard placed among the **top five teams in People's Choice at NOVA Hackathon 2026** at CMU. The restaurant-specific ingestion, analytics, chat and monitoring workflow grew out of the DoorDash Back of House challenge. Subsequent work added adaptive forecasting, price-sensitive scenarios, faster calculations and interface refinements. [PREEXISTING.md](PREEXISTING.md) records the generic preparation completed before the event; [the progress record](docs/progress.md) distinguishes implementation and validation stages.
 
-The reusable starter was prepared before the event. See [PREEXISTING.md](PREEXISTING.md) for the preparation inventory and disclose it accurately during judging. Preserve the distinction between fictional fixtures, recorded test results and functionality built during each checkpoint.
+This is a working local prototype and reproducible demonstration, not a production restaurant accounting service. Ingredient projections describe modeled consumption and replacement costs, not audited COGS, cash purchases or net profit. Forecasts depend on coverage and planning assumptions. Uploaded documents require validation; some cases enter review. The app does not include production authentication, POS/delivery-platform integrations or automatic business-email access. The worker's local folder watcher is implemented; mailbox authorization and email-attachment ingestion remain [planned work](docs/post-hackathon-plan.md).
+
+All bundled business records are fictional. No API key, owner database or uploaded private document is included in this repository.
+
+Additional material: [presentation notes](docs/presentation-summary.md), [sample-data contract](docs/sample-data-contract.md), and [dataset guide](demo_data/README.md).

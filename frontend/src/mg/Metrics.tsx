@@ -39,13 +39,12 @@ const KIND: Partial<Record<Metric['kind'], [string, 'info' | 'accent']>> = { pro
 export function MetricCard({ m }: { m: Metric }) {
   const [name, hint] = displayName(m);
   const badge = KIND[m.kind];
-  return <div className="metric" title={m.label}>
+  return <div className="metric" title={[m.label, hint].filter(Boolean).join(' · ')}>
     <div className="metric-top"><span>{name}</span>{badge && <Pill tone={badge[1]}>{badge[0]}</Pill>}</div>
     <div className="metric-value">{formatMetric(m)}</div>
     <div className="metric-foot">
       {m.period ? `${shortDate(m.period.start)} – ${shortDate(m.period.end)}` : hint ?? ''}
       {m.coverage !== 'complete' && <Pill tone="warn">{label(m.coverage)} data</Pill>}
     </div>
-    {m.period && hint && <div className="metric-hint">{hint}</div>}
   </div>;
 }

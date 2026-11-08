@@ -1,4 +1,4 @@
-"""Versioned weekday-average planning snapshots; no LLM or fitted ML dependency."""
+"""Versioned planning snapshots with selectable, coverage-aware demand models."""
 from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal, ROUND_DOWN
@@ -10,8 +10,10 @@ from .analytics import (CENT, ZERO, coverage_summary, dates, decimal_text,
 from .errors import DomainError
 from .ingestion import identifier, insert, now, restaurant_record
 from .schemas import ForecastResponse
+from . import demand_models
 
 METHOD = "weekday_average_v1"
+DEFAULT_POLICY_VERSION = "adaptive_default_v1"
 ASSUMPTIONS = [
     "Demand is a weekday average of approved units by dish/channel using complete past local days only.",
     "Complete days without a sale are zero observations only after the dish's first effective menu price and recipe.",
@@ -20,9 +22,71 @@ ASSUMPTIONS = [
     "Current effective menu prices, ingredient prices and recipes are held constant across the horizon, with no assumed discounts.",
     "Prices are selected by effective date from currently approved records; this is not a reconstruction of what was known at that historical instant.",
     "Ingredient consumption cost excludes stock on hand, waste, purchase scheduling, package rounding, freight, tax, labor and rent.",
-    "Low/high results are volume sensitivity scenarios, not calibrated prediction intervals. No price elasticity is modeled.",
+    "Low/high results are volume sensitivity scenarios, not calibrated prediction intervals. Menu-price demand effects are explored separately in the pricing scenario.",
     "Money uses half-up cents. Rounded row allocations reconcile to restaurant totals; units retain eight decimals.",
 ]
+
+
+def default_request(conn, as_of=None):
+    """Keep the last successfully selected policy across worker refreshes/restarts."""
+    from .schemas import ForecastRequest
+    row = conn.execute("SELECT value FROM worker_state WHERE key='forecast_selection'").fetchone()
+    if row is None:
+        row = conn.execute("SELECT assumptions_json FROM forecast_runs ORDER BY created_at DESC,rowid DESC LIMIT 1").fetchone()
+    saved = json.loads(row[0]) if row else {}
+    marker = conn.execute("SELECT value FROM worker_state WHERE key='forecast_default_policy'").fetchone()
+    if marker is None or marker[0] != DEFAULT_POLICY_VERSION:
+        saved['method'] = demand_models.ADAPTIVE
+    policy = {key: saved[key] for key in ForecastRequest.model_fields if key in saved and key != "as_of"}
+    return ForecastRequest(**policy, as_of=as_of)
+
+
+def activate(conn, result, request):
+    """Selection is separate from immutable creation time, including cache hits."""
+    for key, value in [("forecast_selection", request.model_dump_json(exclude={"as_of"})), ("active_forecast_id", result.id), ("forecast_default_policy", DEFAULT_POLICY_VERSION)]:
+        conn.execute("INSERT INTO worker_state(key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, value))
+    return result
+
+
+def model_predictions(conn, as_of, horizon_end, request, cache=None):
+    """Bridge the rest of this month recursively; never use future actual sales."""
+    try:
+        panel = demand_models.load_panel(conn, as_of)
+    except ValueError:
+        return {}, None, {}
+    end_text = horizon_end.isoformat()
+    closed_days = {r[0] for r in conn.execute("SELECT date FROM restaurant_calendar WHERE is_open=0 AND date BETWEEN ? AND ?", (as_of.isoformat(), end_text))}
+    closed_channels = {(r[0], r[1]) for r in conn.execute("SELECT date,channel_id FROM daily_coverage WHERE status='closed' AND date BETWEEN ? AND ?", (as_of.isoformat(), end_text))}
+    panel.closed = panel.closed | frozenset((d, *s) for d in dates(as_of, horizon_end) for s in panel.series
+        if d.isoformat() in closed_days or (d.isoformat(), s[1]) in closed_channels)
+    diagnostics = {}
+    try:
+        predictions = demand_models.predict(panel, as_of, (horizon_end - as_of).days + 1, request.method,
+            history_weeks=request.history_weeks, minimum=request.min_observations, diagnostics=diagnostics, cache=cache)
+    except ValueError as exc:
+        raise DomainError("forecast_model_unavailable", str(exc), 503) from exc
+    return predictions, panel, diagnostics
+
+
+def selected_evaluation(panel, as_of, request, evaluation, cache=None):
+    evaluation["selected_method"] = request.method
+    if request.method == METHOD:
+        evaluation["selected_method_mae"] = evaluation["weekday_average_mae"]
+        return
+    if panel is None:
+        return
+    cut = as_of - timedelta(days=7)
+    predicted = demand_models.predict(panel, cut, 7, request.method,
+        history_weeks=request.history_weeks, minimum=request.min_observations, cache=cache)
+    baseline = demand_models.predict(panel, cut, 7, METHOD,
+        history_weeks=request.history_weeks, minimum=request.min_observations, cache=cache)
+    naive = demand_models.predict(panel, cut, 7, demand_models.NAIVE, cache=cache)
+    eligible = {k for k in panel.observed if cut <= k[0] < as_of}
+    matched = eligible & predicted.keys() & baseline.keys() & naive.keys()
+    evaluation["observations"] = len(matched)
+    evaluation["status"] = "ready" if matched and len(matched) == len(eligible) else "insufficient_history"
+    for name, predictions in [("selected_method_mae", predicted), ("weekday_average_mae", baseline), ("seasonal_naive_mae", naive)]:
+        evaluation[name] = decimal_text(sum((abs(Decimal(str(panel.observed[k])) - Decimal(str(predictions[k]))) for k in matched), ZERO) / len(matched)) if matched else None
 
 
 def next_month(as_of):
@@ -54,9 +118,7 @@ def demand_inputs(conn, start, end):
 
 
 def first_offered(conn, dish_id, channel_id):
-    price = conn.execute("SELECT MIN(effective_date) FROM menu_prices WHERE dish_id=? AND channel_id=?", (dish_id, channel_id)).fetchone()[0]
-    recipe = conn.execute("SELECT MIN(effective_date) FROM recipe_versions WHERE dish_id=?", (dish_id,)).fetchone()[0]
-    return max(price, recipe) if price and recipe else "9999-12-31"
+    return demand_models.first_offered(conn, dish_id, channel_id)
 
 
 def estimates(start, end, dish_id, channel_id, complete, quantities, offered, minimum):
@@ -105,12 +167,21 @@ def calculate(conn, request):
     as_of = request.as_of or local_today(owner)
     horizon_start, horizon_end = next_month(as_of)
     start, end = as_of - timedelta(weeks=request.history_weeks), as_of - timedelta(days=1)
-    policy = {**request.model_dump(mode="json"), "as_of": as_of.isoformat(), "source_data_version": owner["data_version"], "method": METHOD}
+    policy = {**request.model_dump(mode="json"), "as_of": as_of.isoformat(), "source_data_version": owner["data_version"], "implementation_version": 4}
     cache_key = hashlib.sha256(json.dumps(policy, sort_keys=True).encode()).hexdigest()
     cached = conn.execute("SELECT run_id FROM forecast_snapshots WHERE cache_key=?", (cache_key,)).fetchone()
     if cached:
-        return get_forecast(conn, cached["run_id"])
+        return activate(conn, get_forecast(conn, cached["run_id"]), request)
     coverage, complete, quantities = demand_inputs(conn, start, end)
+    prediction_cache = {}
+    predictions, panel, diagnostics = model_predictions(conn, as_of, horizon_end, request, prediction_cache) if request.method != METHOD else ({}, None, {})
+    assumptions = list(ASSUMPTIONS)
+    if request.method != METHOD:
+        assumptions[0] = "Demand uses " + request.method + "; pooled calendar and strictly past demand features, recursively predicted across the current-month gap and next month."
+        assumptions.append("Additional models are experimental; no automatic accuracy improvement or model promotion is claimed.")
+    if request.method == demand_models.ADAPTIVE:
+        assumptions[0] = "Adaptive demand combines models per dish/channel and lead-time bucket using chronological validation, with a weekday-average anchor."
+        assumptions.extend(diagnostics.get('assumptions', []))
     dishes = [dict(r) for r in conn.execute("SELECT * FROM dishes ORDER BY id")]
     channels = [dict(r) for r in conn.execute("SELECT * FROM channels ORDER BY id")]
     costs = {d["id"]: dish_cost(conn, d["id"], as_of) for d in dishes}
@@ -130,6 +201,9 @@ def calculate(conn, request):
             for day in dates(horizon_start, horizon_end):
                 is_open = calendar.get(day.isoformat(), 1) == 1 and (day.isoformat(), channel["id"]) not in closed
                 mean = fitted[day.weekday()]["mean_units"]
+                if request.method != METHOD:
+                    value = predictions.get((day, dish["id"], channel["id"]))
+                    mean = decimal_text(Decimal(str(value))) if value is not None and mean is not None else None
                 rows.append({"date": day, "dish_id": dish["id"], "channel_id": channel["id"], "is_open": is_open,
                              "units": mean if is_open else "0"})
             missing = sorted({r["date"].weekday() for r in rows if r["units"] is None})
@@ -184,21 +258,35 @@ def calculate(conn, request):
         metrics.append({"id": f"forecast.{name}", "label": label, "value": decimal_text(value, money=unit == "USD") if value is not None else None,
                         "unit": unit, "kind": "projected", "period": {"start": horizon_start, "end": horizon_end}, "as_of": stamp,
                         "coverage": "complete" if ready else "insufficient_history", "source_data_version": owner["data_version"],
-                        "evidence": [{"kind": "forecast_run", "record_id": run_id}], "assumptions": ASSUMPTIONS})
+                        "evidence": [{"kind": "forecast_run", "record_id": run_id}], "assumptions": assumptions})
+    evaluation = evaluate(conn, as_of, request, dishes, channels)
+    selected_evaluation(panel, as_of, request, evaluation, prediction_cache)
+    metadata = {"implementation_version": 4, "training_data_version": owner["data_version"],
+                "training_cutoff": end.isoformat(), "prediction_origin": as_of.isoformat(),
+                "refit_policy": "Refit from approved history for each new data version/date/policy; immutable predictions are cached.",
+                "elasticity_fitted": False}
+    if diagnostics:
+        metadata['adaptive'] = diagnostics
+    if request.method != METHOD:
+        from importlib.metadata import version, PackageNotFoundError
+        try:
+            metadata["scikit_learn_version"] = version("scikit-learn")
+        except PackageNotFoundError:
+            metadata["scikit_learn_version"] = None
     result = ForecastResponse.model_validate({"id": run_id, "status": "ready" if ready else "insufficient_history",
-        "horizon": {"start": horizon_start, "end": horizon_end}, "method": METHOD, "source_data_version": owner["data_version"],
-        "created_at": stamp, "metrics": metrics, "assumptions": ASSUMPTIONS,
+        "horizon": {"start": horizon_start, "end": horizon_end}, "method": request.method, "source_data_version": owner["data_version"],
+        "created_at": stamp, "metrics": metrics, "assumptions": assumptions, "model_metadata": metadata,
         "as_of": as_of, "training_period": {"start": start, "end": end}, "training_coverage": coverage,
         "series": series, "daily": daily, "ingredients": ingredients, "scenarios": scenarios,
-        "evaluation": evaluate(conn, as_of, request, dishes, channels), "limitations": limitations})
+        "evaluation": evaluation, "limitations": limitations})
     insert(conn, "forecast_runs", id=run_id, horizon_start=horizon_start.isoformat(), horizon_end=horizon_end.isoformat(),
-           status=result.status, method=METHOD, source_data_version=owner["data_version"], assumptions_json=json.dumps(policy), created_at=stamp)
+           status=result.status, method=request.method, source_data_version=owner["data_version"], assumptions_json=json.dumps(policy), created_at=stamp)
     insert(conn, "forecast_snapshots", run_id=run_id, cache_key=cache_key, as_of_date=as_of.isoformat(), response_json=result.model_dump_json())
     if ready:
         for row in series:
             insert(conn, "forecast_values", id=identifier("forecast_value"), run_id=run_id,
                    **{key: row[key] for key in ["dish_id", "channel_id", "units", "revenue", "ingredient_cost"]})
-    return result
+    return activate(conn, result, request)
 
 
 def get_forecast(conn, run_id):
@@ -222,5 +310,14 @@ def list_forecasts(conn, limit, offset):
 
 
 def latest_forecast(conn, as_of):
+    def current_policy(result):
+        marker = conn.execute("SELECT value FROM worker_state WHERE key='forecast_default_policy'").fetchone()
+        if marker is None or marker[0] != DEFAULT_POLICY_VERSION:
+            result.status = 'pending'
+            result.limitations.append('Forecast defaults changed. Refresh using the current saved policy.')
+        return result
+    active = conn.execute("SELECT s.run_id FROM forecast_snapshots s JOIN worker_state w ON w.key='active_forecast_id' AND w.value=s.run_id WHERE s.as_of_date=?", (as_of.isoformat(),)).fetchone()
+    if active:
+        return current_policy(get_forecast(conn, active["run_id"]))
     row = conn.execute("SELECT r.id FROM forecast_runs r JOIN forecast_snapshots s ON s.run_id=r.id WHERE s.as_of_date=? ORDER BY r.created_at DESC,r.rowid DESC LIMIT 1", (as_of.isoformat(),)).fetchone()
-    return get_forecast(conn, row["id"]) if row else None
+    return current_policy(get_forecast(conn, row["id"])) if row else None

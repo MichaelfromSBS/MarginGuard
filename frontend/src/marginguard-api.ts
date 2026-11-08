@@ -291,6 +291,7 @@ export interface ForecastResponse {
   scenarios: ForecastScenario[];
   evaluation: ForecastEvaluation | null;
   limitations: string[];
+  model_metadata: Record<string, unknown>;
 }
 
 export interface CoverageSummary {
@@ -364,6 +365,7 @@ export interface DishCost {
 }
 
 export interface ForecastRequest {
+  method?: ForecastMethod;
   as_of?: ISODate;
   history_weeks?: number;
   min_observations?: number;
@@ -420,7 +422,36 @@ export interface ForecastEvaluation {
   observations: number;
   weekday_average_mae: DecimalString | null;
   seasonal_naive_mae: DecimalString | null;
+  selected_method: string | null;
+  selected_method_mae: DecimalString | null;
   assumptions: string[];
+}
+
+export type ForecastMethod = 'weekday_average_v1' | 'regularized_poisson_v1' | 'poisson_gradient_boosting_v1' | 'recency_weekday_v1' | 'adaptive_ensemble_v1';
+
+export interface PricingScenarioRequest {
+  reference_date?: ISODate;
+  cost_pass_through_pct?: DecimalString;
+  price_elasticity?: SignedDecimalString;
+  ingredient_prices?: { ingredient_id: string; unit_cost: DecimalString }[];
+  menu_prices?: { dish_id: string; channel_id: ChannelId; price: DecimalString }[];
+}
+
+export interface PricingScenarioSeries {
+  dish_id: string; channel_id: ChannelId;
+  reference_unit_cost: DecimalString; current_unit_cost: DecimalString; scenario_unit_cost: DecimalString;
+  current_menu_price: DecimalString; scenario_menu_price: DecimalString; demand_multiplier: DecimalString;
+  baseline_units: DecimalString; units: DecimalString; revenue: DecimalString; ingredient_cost: DecimalString;
+}
+
+export interface PricingScenarioResponse {
+  forecast_id: string; source_data_version: number; horizon: Period; reference_date: ISODate;
+  price_elasticity: SignedDecimalString; elasticity_source: 'owner_assumption'; cost_pass_through_pct: DecimalString;
+  units: DecimalString; revenue: DecimalString; ingredient_cost: DecimalString;
+  revenue_less_ingredient_cost: SignedDecimalString; fixed_demand_ingredient_cost: DecimalString;
+  series: PricingScenarioSeries[];
+  ingredients: (IngredientRequirement & { price_source: 'approved_invoice' | 'owner_assumption' })[];
+  assumptions: string[]; limitations: string[];
 }
 
 export interface DashboardResponse {
