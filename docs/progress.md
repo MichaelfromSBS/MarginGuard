@@ -403,6 +403,10 @@ Validation: **405 backend tests passed**, **11 frontend tests passed**, TypeScri
 
 The first complete test attempt exhausted the system temp drive while copying fixture databases. The successful rerun used workspace-local temporary files, which the verification script now cleans after its own run. Automatic approval review rejected deletion of the failed run outside the workspace; those system-temp files were left untouched. No unrelated user files or applications were changed.
 
+## 2026-11-08: visitor image compatibility patch (1.0.1)
+
+The final registry check found that the older Python dev-container image tag was no longer published. Pinned the visitor configuration to the registry-confirmed `mcr.microsoft.com/devcontainers/python:3.3.2-3.11-bookworm` tag instead. Runtime/product behavior is unchanged. The Codespaces cloud lifecycle itself remains unexecuted locally; the clean Windows/Linux CI install and checks validate its application dependencies and scripts.
+
 ## Checkpoint review status
 
 | Checkpoint | Required outcome | State |

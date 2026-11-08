@@ -1,7 +1,7 @@
 {
   "name": "marginguard",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "workspaces": ["frontend"],
   "scripts": {
     "dev": "python scripts/dev.py",
